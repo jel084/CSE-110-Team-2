@@ -2,7 +2,7 @@ import './App.css';
 import { Route, Routes } from 'react-router-dom';
 import { StartingScreen } from './pages/startingScreen';
 import { PinScreen } from './pages/pinScreen';
-import { CreateGameScreen } from './pages/lobbyCreationScreen';
+import { CreateGameScreen } from './pages/createGameScreen';
 import { LobbyScreen } from './pages/lobbyScreen';
 import { ScavengeScreen } from './pages/scavengeScreen';
 import { TimeUpScreen } from './pages/timeUpScreen';
