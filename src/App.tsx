@@ -1,4 +1,6 @@
 import './App.css';
+import MainPage from "./MainPage/MainPage";
+import "./App.css";
 import { Route, Routes } from 'react-router-dom';
 import { StartingScreen } from './pages/startingScreen';
 import { PinScreen } from './pages/pinScreen';
@@ -20,6 +22,5 @@ function App() {
       <Route path="/winners" element={<WinningScreen />} />
     </Routes>
   );
-}
 
 export default App;
