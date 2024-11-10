@@ -1,9 +1,10 @@
 import {createContext, useState} from "react";
+import { Item } from "../types/types";
 
 
 interface AppContextType {
-    items: string[];
-    setItems: React.Dispatch<React.SetStateAction<string[]>>;
+    items: Item[];
+    setItems: React.Dispatch<React.SetStateAction<Item[]>>;
     timer: string;
     setTime: React.Dispatch<React.SetStateAction<string>>;
 }
@@ -19,7 +20,7 @@ const initialState: AppContextType = {
 export const AppContext = createContext<AppContextType>(initialState);
 
 export const AppProvider = (props: any) => {
-    const [items, setItems] = useState<string[]>(initialState.items);
+    const [items, setItems] = useState<Item[]>(initialState.items);
     const [timer, setTime] = useState<string>(initialState.timer);
 
     return (
