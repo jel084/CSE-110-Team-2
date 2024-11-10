@@ -1,5 +1,5 @@
 import { API_BASE_URL } from "../constants/constants";
-import { Player } from "../types/types";
+import { Player, Item } from "../types/types";
 
 // Function to get all players from the backend. Method: GET
 export const getPlayers = async (): Promise<Player[]> => {
@@ -18,7 +18,7 @@ export const getPlayers = async (): Promise<Player[]> => {
 };
 
 // Function to get the player's item list from the backend. Method: GET
-export const getItems = async (name: string): Promise<string[]> => {
+export const getItems = async (name: string): Promise<Item[]> => {
 	const response = await fetch(`${API_BASE_URL}/players/${name}`);
 	if (!response.ok) {
     	throw new Error('Failed to fetch player item list');
@@ -34,10 +34,10 @@ export const getItems = async (name: string): Promise<string[]> => {
 	return itemList;
 };	
 
-// Function to mark an item as found in the backend. Method: DELETE
+// Function to mark an item as found in the backend. Method: PUT
 export const markItem = async (player: string, item: string): Promise<void> => {
 	const response = await fetch(`${API_BASE_URL}/expenses/${player}/${item}`, {
-    	method: "DELETE"
+    	method: "PUT"
 	});
 	if (!response.ok) {
     	throw new Error("Failed to mark item");
