@@ -22,5 +22,5 @@ function App() {
       <Route path="/winners" element={<WinningScreen />} />
     </Routes>
   );
-
+}
 export default App;
