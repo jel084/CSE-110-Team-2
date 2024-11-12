@@ -1,5 +1,5 @@
 import { render, screen, fireEvent } from "@testing-library/react";
-import { LobbyScreen } from "../pages/lobbyScreen";
+import LobbyScreen from "../pages/lobbyScreen";
 import { BrowserRouter } from "react-router-dom";
 
 describe("Read LobbyScreen", () => {
