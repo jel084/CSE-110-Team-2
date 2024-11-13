@@ -8,7 +8,7 @@
     font-family: "Comfortaa";
 }
 
-.host-view {
+.scavenger-view {
     background-color: white;
     padding: 20px;
     text-align: center;
@@ -88,27 +88,22 @@ button:hover{
     transform: none;
 }
 
+.item-list{
+    font-weight: bold;
+}
 .item-carousel{
     display: flex;
     align-items: center;
-    justify-content: space-between;
     background-color: #D9D9D9;
     padding: 15px;
     border-radius: 20px;
-    width: 100%;
     margin-top: 20px;
     font-weight: normal;
 }
-
-.item-list{
-    position: absolute;
-    align-items: left;
-    float: left;
-    left: 0px;
-    justify-content: space-between;
-    margin-left: 2vw;
-    font-weight: bold;
+.item-carousel.found {
+    background-color: #41BA00;
 }
+
 
 
 
@@ -117,6 +112,7 @@ button:hover{
     font-size: 24px;
     color: white;
 }
+
 
 .arrow-button{
     background-color: #FFB703;
@@ -134,13 +130,13 @@ button:hover{
     position: relative;
     display: flex;
     justify-content: space-between;
-    left: 20vw;
     align-items: center;
     float: center;
     
+    left: 5vw;
+    
     text-align:center;
     border: none;
-    width: 200px;
     margin: 10px;
     box-sizing: border-box;
     padding: 10px 20px;
@@ -150,7 +146,6 @@ button:hover{
     color: white;
 
     margin-top: 6.1vh;
-    margin-left: 20vw;
 }
 
 .delete-button {
@@ -158,10 +153,9 @@ button:hover{
     justify-content: space-between;
     align-items: center;
     float: center;
-    
     text-align:center;
     border: none;
-    width: 5vw;
+
     margin: 10px;
     box-sizing: border-box;
     padding: 10px 20px;
@@ -170,9 +164,10 @@ button:hover{
     font-size: 24px;
     color: white;
 
+    right: 8vw;
     margin-top: 6vh;
 
-    margin-left: 20vw; 
+
 
 }
 
@@ -199,43 +194,45 @@ button:hover{
 }
 
 .set-time {
-    position: relative;
+
     display: flex;
     flex-direction: column;
     align-items: center;
     margin: 0;
     padding: 0;
     font-weight: bold;
-    margin-left: 20vw;
 }
 .set-time input{
     text-align:center;
     border: none;
-    width: 12vw;
     margin: 10px;
-    box-sizing: border-box;
     padding: 10px 20px;
-    border-radius: 15px;
+    border-radius: 20px;
     background-color: #FFB703;
     font-size: 24px;
     color: white;
 }
 
 .image-preview {
-    margin-top: 20px;
     text-align: center;
     border: 2px solid #ccc;
     border-radius: 10px;
     padding: 10px;
     background-color: #f9f9f9;
-    height: 25vw;
+    height: 23vw;
     width: 25vw;
     overflow:auto;
-    margin-left: 37vw;
+    margin-left: 37%;
 }
 
 .image-preview img {
     max-width: 100%;
     max-height: 100%;
     border-radius: 10px;
+}
+
+.found-text{
+    color:#41BA00;
+    font-weight: bold;
+
 }
