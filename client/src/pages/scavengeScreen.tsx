@@ -4,9 +4,11 @@ import {AppContext} from "../context/AppContext";
 import {Item} from "../types/types";
 import './scavengeScreen.css';
 
-function ScavengeScreen(){
+const ScavengeScreen = () => {
     const {timer, items, players} = useContext(AppContext);
     const [currentIndex, setCurrentIndex] = useState(0);
+    const [selectedImage, setSelectedImage] = useState<string | null>(null);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     const prevItem = () => {
         setCurrentIndex((prevIndex) => (prevIndex === 0 ? items.length - 1 : prevIndex - 1));
@@ -20,6 +22,28 @@ function ScavengeScreen(){
 
 
     //TODO: Add functionality for image preview
+
+    const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (file) {
+            const validImageTypes = ['image/jpeg', 'image/png'];
+            if (!validImageTypes.includes(file.type)) {
+                setErrorMessage('Invalid file type. Please select jpg or png.');
+                setSelectedImage(null);
+                return;
+            }
+            setErrorMessage(null);
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                setSelectedImage(e.target?.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const deleteImage = () => {
+        setSelectedImage(null);
+    }
 
 
     return(
@@ -45,9 +69,9 @@ function ScavengeScreen(){
             </section>
             <div className = 'image-container'>
                 <label htmlFor="image">Upload Image</label>
-                <input type="file" name="image" id = "image"/>
+                <input type="file" name="image" id = "image" accept = "image/*" onChange={handleImageChange}/>
                 </div>
-                <button className="delete-button" >🗑️</button>
+                <button className="delete-button" onClick = {deleteImage}>🗑️</button>
                 <div className = 'set-time'>
                     <label>Time Remaining:</label>
                     <input 
@@ -58,7 +82,13 @@ function ScavengeScreen(){
                 </div>
             </header>
         
-            
+            <div className='image-preview'>
+                    {selectedImage ? (
+                        <img src={selectedImage} alt="Selected" />
+                    ) : (
+                        <p>{errorMessage || 'No image selected'}</p>
+                    )}
+                </div>
         </div>
         <div className = 'spacer2'>
         <button className = 'submit-items-button'>Submit</button>
