@@ -3,6 +3,7 @@ export type Item = {
     name: string;
     points: number;
     found: boolean;
+    image?: string;
 }
 
 export type Player = {

@@ -77,6 +77,17 @@ button:hover{
     transform: translateY(-3px);
 }
 
+.submit-items-button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+.submit-items-button:disabled:hover {
+    background-color: #ccc; /* Ensure the background color stays the same */
+    box-shadow: none;
+    transform: none;
+}
+
 .item-carousel{
     display: flex;
     align-items: center;

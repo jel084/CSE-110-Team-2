@@ -5,9 +5,8 @@ import {Item} from "../types/types";
 import './scavengeScreen.css';
 
 const ScavengeScreen = () => {
-    const {timer, items, players} = useContext(AppContext);
+    const {timer, items, players, setItems} = useContext(AppContext);
     const [currentIndex, setCurrentIndex] = useState(0);
-    const [selectedImage, setSelectedImage] = useState<string | null>(null);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     const prevItem = () => {
@@ -29,22 +28,26 @@ const ScavengeScreen = () => {
             const validImageTypes = ['image/jpeg', 'image/png'];
             if (!validImageTypes.includes(file.type)) {
                 setErrorMessage('Invalid file type. Please select jpg or png.');
-                setSelectedImage(null);
                 return;
             }
             setErrorMessage(null);
             const reader = new FileReader();
             reader.onload = (e) => {
-                setSelectedImage(e.target?.result as string);
+                const updatedItems = [...items];
+                updatedItems[currentIndex].image = e.target?.result as string;
+                setItems(updatedItems);
             };
             reader.readAsDataURL(file);
         }
     };
 
     const deleteImage = () => {
-        setSelectedImage(null);
+        const updatedItems = [...items];
+        updatedItems[currentIndex].image = undefined;
+        setItems(updatedItems);
     }
 
+    const allItemsFound = items.every(item => item.image);
 
     return(
         <>
@@ -83,15 +86,13 @@ const ScavengeScreen = () => {
             </header>
         
             <div className='image-preview'>
-                    {selectedImage ? (
-                        <img src={selectedImage} alt="Selected" />
-                    ) : (
-                        <p>{errorMessage || 'No image selected'}</p>
-                    )}
+                    {items[currentIndex].image ? (<img src={items[currentIndex].image} alt="Selected" />) : 
+                    (<p>{errorMessage || 'No image selected'}</p>)
+                    }
                 </div>
         </div>
         <div className = 'spacer2'>
-        <button className = 'submit-items-button'>Submit</button>
+        <button className = 'submit-items-button' disabled = {!allItemsFound}>Submit</button>
         </div>
     </>
 
