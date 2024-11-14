@@ -36,7 +36,7 @@ export const getItems = async (name: string): Promise<Item[]> => {
 
 // Function to mark an item as found in the backend. Method: PUT
 export const markItem = async (player: string, item: string): Promise<void> => {
-	const response = await fetch(`${API_BASE_URL}/expenses/${player}/${item}`, {
+	const response = await fetch(`${API_BASE_URL}/players/${player}/${item}`, {
     	method: "PUT"
 	});
 	if (!response.ok) {

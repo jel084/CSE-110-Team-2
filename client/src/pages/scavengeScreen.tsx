@@ -2,6 +2,7 @@ import React from "react";
 import {useState, useContext} from "react";
 import {AppContext} from "../context/AppContext";
 import {Item, Player} from "../types/types";
+import { markItem } from "../utils/player-utils";
 import './scavengeScreen.css';
 
 const ScavengeScreen = (player: Player) => {
@@ -37,6 +38,7 @@ const ScavengeScreen = (player: Player) => {
                 updatedItems[currentIndex].found = true;
                 setItems(updatedItems);
                 event.target.value = '';
+                markItem(player.name, updatedItems[currentIndex].name);
             };
             reader.readAsDataURL(file);
         }
@@ -47,6 +49,7 @@ const ScavengeScreen = (player: Player) => {
         updatedItems[currentIndex].image = undefined;
         updatedItems[currentIndex].found = false;
         setItems(updatedItems);
+        markItem(player.name, updatedItems[currentIndex].name);
     }
 
     const allItemsFound = items.every(item => item.image);
