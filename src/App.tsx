@@ -2,12 +2,12 @@ import "./App.css";
 import { createBrowserRouter, Route, Routes } from "react-router-dom";
 import HomePage from "./pages/HomePage/HomePage";
 import NotFoundPage from "./pages/ErrorPage/NotFoundPage";
-import { PinScreen } from "./pages/pinScreen";
-import { CreateGameScreen } from "./pages/createGameScreen";
-import { LobbyScreen } from "./pages/lobbyScreen";
-import { ScavengeScreen } from "./pages/scavengeScreen";
-import { TimeUpScreen } from "./pages/timeUpScreen";
-import { WinningScreen } from "./pages/winningScreen";
+import { PinScreen } from "./pages/PinPage/PinPage";
+import { CreateGameScreen } from "./pages/CreateGamePage/CreateGamePage";
+import { LobbyScreen } from "./pages/LobbyPage/LobbyPage";
+import { ScavengeScreen } from "./pages/ScavengerPage.tsx/ScavengerPage";
+import { TimeUpScreen } from "./pages/TimeUpPage/TimeUpPage";
+import { WinningScreen } from "./pages/WinningPage/WinningPage";
 
 function App() {
   return (
