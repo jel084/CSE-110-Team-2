@@ -1,12 +1,12 @@
 import { render, screen, fireEvent } from "@testing-library/react";
-import { CreateGameScreen } from "../pages/CreateGamePage/CreateGamePage";
+import CreateGamePage from "../pages/CreateGamePage/CreateGamePage";
 import { BrowserRouter } from "react-router-dom";
 
 describe("Read CreateGameScreen", () => {
   test("renders page", () => {
     render(
       <BrowserRouter>
-        <CreateGameScreen />
+        <CreateGamePage />
       </BrowserRouter>
     );
     //check if they appear

@@ -1,12 +1,12 @@
 import { render, screen, fireEvent } from "@testing-library/react";
-import { LobbyScreen } from "../pages/LobbyPage/LobbyPage";
+import LobbyPage from "../pages/LobbyPage/LobbyPage";
 import { BrowserRouter } from "react-router-dom";
 
 describe("Read LobbyScreen", () => {
   test("renders page", () => {
     render(
       <BrowserRouter>
-        <LobbyScreen />
+        <LobbyPage />
       </BrowserRouter>
     );
     //check if they appear
