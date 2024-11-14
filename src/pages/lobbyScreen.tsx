@@ -13,7 +13,7 @@ function LobbyScreen() {
             </div>
             <div className="players-grid">
                 {players.map((player, index) => (
-                    <div key={index} className="player-box">
+                    <div key={index} className="player-box" data-testid="player-box">
                         {player}
                     </div>
                 ))}
