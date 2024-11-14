@@ -1,12 +1,12 @@
 import { render, screen, fireEvent } from "@testing-library/react";
-import LobbyScreen from "../pages/lobbyScreen";
+import LobbyPage from "../pages/LobbyPage/LobbyPage";
 import { BrowserRouter, MemoryRouter } from "react-router-dom";
 
 describe("Read LobbyScreen", () => {
       test("renders page", () => {
         render(
             <BrowserRouter>
-              <LobbyScreen />
+              <LobbyPage />
             </BrowserRouter>
           );
         //check if they appear
@@ -23,7 +23,7 @@ describe("Read LobbyScreen", () => {
       test("navigates to /scavenge on clicking Start link", () => {
         render(
             <MemoryRouter>
-                <LobbyScreen />
+                <LobbyPage />
             </MemoryRouter>
         );
 
