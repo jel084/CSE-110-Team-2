@@ -16,6 +16,11 @@ router.get('/lobbies', async (req, res) => {
 
 router.post('/create', async (req, res) => {
   const { lobbyName, scavengerItems, userId, pin } = req.body;
+
+  if (!userId) {
+    return res.status(400).json({ error: 'Host userId is required' });
+  }
+
   try {
     const db = await connectDB();
     await db.run(
@@ -23,10 +28,10 @@ router.post('/create', async (req, res) => {
       VALUES (?, ?, ?, ?, ?, ?, ?)`,
       [
         lobbyName,
-        userId,
-        JSON.stringify([]), 
+        userId,  
+        JSON.stringify([]),  
         JSON.stringify(scavengerItems),
-        JSON.stringify({}), 
+        JSON.stringify([]),  
         pin,
         'waiting'
       ]
@@ -49,11 +54,21 @@ router.post('/join', async (req, res) => {
       return res.status(404).json({ error: 'Lobby not found or PIN is incorrect' });
     }
 
-    const players = JSON.parse(lobby.players);
+    const players = JSON.parse(lobby.players || '[]');
+    let pointsArray = JSON.parse(lobby.points || '[]');
+
+    if (!Array.isArray(pointsArray)) {
+      pointsArray = [];
+    }
 
     if (!players.includes(userId)) {
       players.push(userId);
-      await db.run(`UPDATE lobbies SET players = ? WHERE id = ?`, [JSON.stringify(players), lobbyId]);
+      pointsArray.push({ id: userId, points: 0 }); 
+
+      await db.run(
+        `UPDATE lobbies SET players = ?, points = ? WHERE id = ?`,
+        [JSON.stringify(players), JSON.stringify(pointsArray), lobbyId]
+      );
     }
 
     res.json({ message: `User ${userId} joined lobby ${lobbyId}` });
@@ -62,5 +77,46 @@ router.post('/join', async (req, res) => {
     res.status(500).json({ error: 'Failed to join lobby' });
   }
 });
+
+router.post('/update-points', async (req, res) => {
+  const { lobbyId, userId, points } = req.body;
+
+  try {
+    const db = await connectDB();
+    const lobby = await db.get(`SELECT * FROM lobbies WHERE id = ?`, [lobbyId]);
+
+    if (!lobby) {
+      return res.status(404).json({ error: 'Lobby not found' });
+    }
+
+    let pointsArray = JSON.parse(lobby.points || '[]');
+
+    const player = pointsArray.find((p: { id: string; points: number }) => p.id === userId);
+    if (!player) {
+      return res.status(404).json({ error: 'User not found in lobby' });
+    }
+
+    player.points += points;
+
+    await db.run(`
+      UPDATE lobbies SET points = ? WHERE id = ?
+    `, [JSON.stringify(pointsArray), lobbyId]);
+
+    res.status(200).json({ message: 'Points updated successfully' });
+  } catch (error) {
+    console.error('Error updating points:', error);
+    res.status(500).json({ error: 'Failed to update points' });
+  }
+});
+
+
+const parseJsonField = (field: string | null) => {
+  try {
+      return field ? JSON.parse(field) : {};
+  } catch (error) {
+      console.error("Failed to parse JSON field:", error);
+      return {}; 
+  }
+};
 
 export default router;

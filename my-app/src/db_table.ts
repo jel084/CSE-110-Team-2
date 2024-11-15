@@ -3,7 +3,6 @@ import { connectDB } from './db';
 export const initDatabase = async () => {
   const db = await connectDB();
 
-  // Create the lobbies table if it doesn't exist
   await db.exec(`
     CREATE TABLE IF NOT EXISTS lobbies (
       id INTEGER PRIMARY KEY AUTOINCREMENT,

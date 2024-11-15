@@ -1,10 +1,6 @@
 import { Request, Response } from 'express';
 import { connectDB } from '../db';
 
-const parseJsonField = (field: string | null) => {
-  return field ? JSON.parse(field) : [];
-};
-
 export const createLobby = async (req: Request, res: Response) => {
   const { lobbyName, scavengerItems, userId, pin } = req.body;
 
@@ -40,8 +36,8 @@ export const joinLobby = async (req: Request, res: Response) => {
 
   try {
     const db = await connectDB();
-
     const lobby = await db.get(`SELECT * FROM lobbies WHERE id = ?`, [lobbyId]);
+
     if (!lobby) {
       return res.status(404).json({ error: 'Lobby does not exist' });
     }
@@ -50,18 +46,18 @@ export const joinLobby = async (req: Request, res: Response) => {
       return res.status(403).json({ error: 'Incorrect PIN' });
     }
 
-    const players = parseJsonField(lobby.players);
-    if (players.includes(userId) || userId === lobby.host) {
-      return res.status(400).json({ error: 'User already in lobby or is the host' });
+    const players = JSON.parse(lobby.players || '[]');
+    let pointsArray = JSON.parse(lobby.points || '[]');
+
+   
+    if (!players.includes(userId)) {
+      players.push(userId);
+      pointsArray.push({ id: userId, points: 0 }); 
+
+      await db.run(`
+        UPDATE lobbies SET players = ?, points = ? WHERE id = ?
+      `, [JSON.stringify(players), JSON.stringify(pointsArray), lobbyId]);
     }
-
-    players.push(userId);
-    const points = parseJsonField(lobby.points);
-    points[userId] = 0;
-
-    await db.run(`
-      UPDATE lobbies SET players = ?, points = ? WHERE id = ?
-    `, [JSON.stringify(players), JSON.stringify(points), lobbyId]);
 
     res.status(200).json({ message: 'Joined lobby successfully' });
   } catch (error) {
@@ -70,21 +66,3 @@ export const joinLobby = async (req: Request, res: Response) => {
   }
 };
 
-export const getAllLobbies = async (req: Request, res: Response) => {
-  try {
-    const db = await connectDB();
-    const lobbies = await db.all(`SELECT * FROM lobbies`);
-
-    const parsedLobbies = lobbies.map((lobby: { players: string | null; scavengerItems: string | null; points: string | null; }) => ({
-      ...lobby,
-      players: parseJsonField(lobby.players), 
-      scavengerItems: parseJsonField(lobby.scavengerItems),
-      points: parseJsonField(lobby.points), 
-    }));
-
-    res.status(200).json(parsedLobbies);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Failed to retrieve lobbies' });
-  }
-};

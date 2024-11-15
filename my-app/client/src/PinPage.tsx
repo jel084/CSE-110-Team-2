@@ -5,6 +5,7 @@ function PinPage() {
   const [lobbyCode, setLobbyCode] = useState('');
   const [userId, setUserId] = useState('');
   const [showError, setShowError] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false); // State for success popup
 
   const handleLobbyCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const input = e.target.value;
@@ -39,6 +40,8 @@ function PinPage() {
 
       if (response.ok) {
         setShowError(false);
+        setShowSuccess(true); // Show success popup on successful join
+        setTimeout(() => setShowSuccess(false), 3000); // Auto-hide after 3 seconds
         console.log('Lobby code is valid. Proceeding to join game...');
       } else {
         setShowError(true);
@@ -89,6 +92,14 @@ function PinPage() {
           <div className="error-popup-content">
             <p>Error: Invalid Lobby Code or User ID</p>
             <button onClick={handleCloseError}>OK</button>
+          </div>
+        </div>
+      )}
+
+      {showSuccess && (
+        <div className="success-popup">
+          <div className="success-popup-content">
+            <p>Successfully joined the lobby!</p>
           </div>
         </div>
       )}

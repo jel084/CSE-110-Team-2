@@ -107,3 +107,20 @@ button:hover {
 .error-popup-content button:hover {
     background-color: #CC0000;
 }
+
+.success-popup {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: #4caf50;
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+  }
+  
+  .success-popup-content p {
+    margin: 0;
+    font-size: 14px;
+  }

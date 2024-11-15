@@ -15,7 +15,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const db_1 = require("./db");
 const router = express_1.default.Router();
-// Route to get all active lobbies
 router.get('/lobbies', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const db = yield (0, db_1.connectDB)();
@@ -27,9 +26,11 @@ router.get('/lobbies', (req, res) => __awaiter(void 0, void 0, void 0, function*
         res.status(500).json({ error: 'Failed to retrieve lobbies' });
     }
 }));
-// Route to create a lobby
 router.post('/create', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { lobbyName, scavengerItems, userId, pin } = req.body;
+    if (!userId) {
+        return res.status(400).json({ error: 'Host userId is required' });
+    }
     try {
         const db = yield (0, db_1.connectDB)();
         yield db.run(`INSERT INTO lobbies (lobbyName, host, players, scavengerItems, points, pin, status)
@@ -38,7 +39,7 @@ router.post('/create', (req, res) => __awaiter(void 0, void 0, void 0, function*
             userId,
             JSON.stringify([]),
             JSON.stringify(scavengerItems),
-            JSON.stringify({}),
+            JSON.stringify([]),
             pin,
             'waiting'
         ]);
@@ -49,25 +50,26 @@ router.post('/create', (req, res) => __awaiter(void 0, void 0, void 0, function*
         res.status(500).json({ error: 'Failed to create lobby' });
     }
 }));
-// Route to join a lobby using a PIN
 router.post('/join', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { lobbyId, userId, pin } = req.body;
     try {
         const db = yield (0, db_1.connectDB)();
-        // Retrieve lobby by ID and PIN
         const lobby = yield db.get(`SELECT * FROM lobbies WHERE id = ? AND pin = ?`, [lobbyId, pin]);
-        // If lobby not found or PIN is incorrect
         if (!lobby) {
             return res.status(404).json({ error: 'Lobby not found or PIN is incorrect' });
         }
-        // Parse players array
-        const players = JSON.parse(lobby.players);
-        // Add user to players if they are not already in the lobby
+        const players = JSON.parse(lobby.players || '[]');
+        let pointsArray = JSON.parse(lobby.points || '[]');
+        // Ensure pointsArray is an array, default to empty array if not
+        if (!Array.isArray(pointsArray)) {
+            pointsArray = [];
+        }
+        // Check if user is already in the lobby
         if (!players.includes(userId)) {
             players.push(userId);
-            yield db.run(`UPDATE lobbies SET players = ? WHERE id = ?`, [JSON.stringify(players), lobbyId]);
+            pointsArray.push({ id: userId, points: 0 }); // Initialize the player's points
+            yield db.run(`UPDATE lobbies SET players = ?, points = ? WHERE id = ?`, [JSON.stringify(players), JSON.stringify(pointsArray), lobbyId]);
         }
-        // Send success response
         res.json({ message: `User ${userId} joined lobby ${lobbyId}` });
     }
     catch (error) {
@@ -75,4 +77,39 @@ router.post('/join', (req, res) => __awaiter(void 0, void 0, void 0, function* (
         res.status(500).json({ error: 'Failed to join lobby' });
     }
 }));
+router.post('/update-points', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { lobbyId, userId, points } = req.body;
+    try {
+        const db = yield (0, db_1.connectDB)();
+        const lobby = yield db.get(`SELECT * FROM lobbies WHERE id = ?`, [lobbyId]);
+        if (!lobby) {
+            return res.status(404).json({ error: 'Lobby not found' });
+        }
+        let pointsArray = JSON.parse(lobby.points || '[]');
+        // Find the player in the points array
+        const player = pointsArray.find((p) => p.id === userId);
+        if (!player) {
+            return res.status(404).json({ error: 'User not found in lobby' });
+        }
+        // Update the player's points
+        player.points += points;
+        yield db.run(`
+      UPDATE lobbies SET points = ? WHERE id = ?
+    `, [JSON.stringify(pointsArray), lobbyId]);
+        res.status(200).json({ message: 'Points updated successfully' });
+    }
+    catch (error) {
+        console.error('Error updating points:', error);
+        res.status(500).json({ error: 'Failed to update points' });
+    }
+}));
+const parseJsonField = (field) => {
+    try {
+        return field ? JSON.parse(field) : {};
+    }
+    catch (error) {
+        console.error("Failed to parse JSON field:", error);
+        return {}; // Return an empty object if parsing fails
+    }
+};
 exports.default = router;
