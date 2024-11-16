@@ -25,19 +25,25 @@ export async function getItems(req: Request, res: Response, db: Database) {
 
 export async function markItem(req: Request, res: Response, db: Database) {
     try {
-        const name = req.params.name;
-        const foundItem = req.params.item;
-        let itemTable = await db.all(`SELECT items FROM players WHERE name = ?;`, [name]);
-        itemTable = itemTable[0].items; // pulls single item from table (same for found and points)
-        await db.run(`UPDATE ${itemTable} SET found = NOT found WHERE name = ?;`, [foundItem]);
-        let found = await db.all(`SELECT found FROM ${itemTable} WHERE name = ?;`, [foundItem]);
-        let points = await db.all(`SELECT points FROM ${itemTable} WHERE name = ?;`, [foundItem]);
-        found = found[0].found;
-        points = points[0].points;
-        if (found)
-            await db.run(`UPDATE players SET points = points + ? WHERE name = ?;`, [points, name]);
-        else
-            await db.run(`UPDATE players SET points = points - ? WHERE name = ?;`, [points, name]);
+        const playerName = req.params.name;
+        let { name, points, found, image } = req.body as { name: string, points: number, found: boolean, image: string };
+
+        if (!name || !points) {
+            return res.status(400).send({ error: "Missing required fields" });
+        }
+        if (image == undefined) {
+            image = '';
+        }
+
+        let itemTable = await db.all(`SELECT items FROM players WHERE name = ?;`, [playerName]);
+        itemTable = itemTable[0].items; // pulls single item from table
+        const currFound = await db.all(`SELECT found FROM ${itemTable} WHERE name = ?;`, [name]);
+        await db.run(`UPDATE ${itemTable} SET found = ? WHERE name = ?;`, [found, name]);
+        await db.run(`UPDATE ${itemTable} SET image = ? WHERE name = ?;`, [image, name]);
+        if (found && !currFound[0].found)
+            await db.run(`UPDATE players SET points = points + ? WHERE name = ?;`, [points, playerName]);
+        else if (!found && currFound[0].found)
+            await db.run(`UPDATE players SET points = points - ? WHERE name = ?;`, [points, playerName]);
         res.status(200).send({ message: 'Item marked successfully' });
     } catch (error) {
         return res.status(400).send({ error: `Could not mark item` });

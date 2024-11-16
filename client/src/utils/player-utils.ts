@@ -35,9 +35,13 @@ export const getItems = async (name: string): Promise<Item[]> => {
 };	
 
 // Function to mark an item as found in the backend. Method: PUT
-export const markItem = async (player: string, item: string): Promise<void> => {
-	const response = await fetch(`${API_BASE_URL}/players/${player}/${item}`, {
-    	method: "PUT"
+export const markItem = async (player: string, item: Item): Promise<void> => {
+	const response = await fetch(`${API_BASE_URL}/players/${player}`, {
+    	method: "PUT",
+		headers: {
+        	"Content-Type": "application/json",
+    	},
+    	body: JSON.stringify(item),
 	});
 	if (!response.ok) {
     	throw new Error("Failed to mark item");

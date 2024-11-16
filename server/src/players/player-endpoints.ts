@@ -19,7 +19,7 @@ export function createPlayerEndpoints(app: any, db: Database) {
     });
 
     // Mark an item as found
-    app.put("/players/:name/:item", (req: Request, res: Response) => {
+    app.put("/players/:name", (req: Request, res: Response) => {
 
         markItem(req, res, db);
 

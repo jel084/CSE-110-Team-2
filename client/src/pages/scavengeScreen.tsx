@@ -10,6 +10,9 @@ const ScavengeScreen = (player: Player) => {
     const [items, setItems] = useState<Item[]>(player.items);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    
+    // Prevents found from being displayed when false
+    items[currentIndex].found = items[currentIndex].found ? true : false;
 
     const prevItem = () => {
         setCurrentIndex((prevIndex) => (prevIndex === 0 ? items.length - 1 : prevIndex - 1));
@@ -38,7 +41,7 @@ const ScavengeScreen = (player: Player) => {
                 updatedItems[currentIndex].found = true;
                 setItems(updatedItems);
                 event.target.value = '';
-                markItem(player.name, updatedItems[currentIndex].name);
+                markItem(player.name, updatedItems[currentIndex]);
             };
             reader.readAsDataURL(file);
         }
@@ -49,7 +52,7 @@ const ScavengeScreen = (player: Player) => {
         updatedItems[currentIndex].image = undefined;
         updatedItems[currentIndex].found = false;
         setItems(updatedItems);
-        markItem(player.name, updatedItems[currentIndex].name);
+        markItem(player.name, updatedItems[currentIndex]);
     }
 
     const allItemsFound = items.every(item => item.image);
