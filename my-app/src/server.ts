@@ -10,6 +10,9 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
+// Add this line to serve static files from the uploads folder
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
 initDatabase().then(() => {
   console.log('Database created');
 }).catch((error) => {

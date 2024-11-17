@@ -14,6 +14,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const db_1 = require("./db");
+const multer_1 = __importDefault(require("multer"));
+const path_1 = __importDefault(require("path"));
 const router = express_1.default.Router();
 router.get('/lobbies', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -60,14 +62,12 @@ router.post('/join', (req, res) => __awaiter(void 0, void 0, void 0, function* (
         }
         const players = JSON.parse(lobby.players || '[]');
         let pointsArray = JSON.parse(lobby.points || '[]');
-        // Ensure pointsArray is an array, default to empty array if not
         if (!Array.isArray(pointsArray)) {
             pointsArray = [];
         }
-        // Check if user is already in the lobby
         if (!players.includes(userId)) {
             players.push(userId);
-            pointsArray.push({ id: userId, points: 0 }); // Initialize the player's points
+            pointsArray.push({ id: userId, points: 0 });
             yield db.run(`UPDATE lobbies SET players = ?, points = ? WHERE id = ?`, [JSON.stringify(players), JSON.stringify(pointsArray), lobbyId]);
         }
         res.json({ message: `User ${userId} joined lobby ${lobbyId}` });
@@ -86,12 +86,10 @@ router.post('/update-points', (req, res) => __awaiter(void 0, void 0, void 0, fu
             return res.status(404).json({ error: 'Lobby not found' });
         }
         let pointsArray = JSON.parse(lobby.points || '[]');
-        // Find the player in the points array
         const player = pointsArray.find((p) => p.id === userId);
         if (!player) {
             return res.status(404).json({ error: 'User not found in lobby' });
         }
-        // Update the player's points
         player.points += points;
         yield db.run(`
       UPDATE lobbies SET points = ? WHERE id = ?
@@ -103,13 +101,70 @@ router.post('/update-points', (req, res) => __awaiter(void 0, void 0, void 0, fu
         res.status(500).json({ error: 'Failed to update points' });
     }
 }));
-const parseJsonField = (field) => {
+router.get('/lobbies/:lobbyId/players/:userId/items', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { lobbyId, userId } = req.params;
     try {
-        return field ? JSON.parse(field) : {};
+        const db = yield (0, db_1.connectDB)();
+        const lobby = yield db.get(`SELECT * FROM lobbies WHERE id = ?`, [lobbyId]);
+        if (!lobby) {
+            return res.status(404).json({ error: 'Lobby not found' });
+        }
+        let scavengerItems = JSON.parse(lobby.scavengerItems || '[]');
+        // Ensure scavengerItems is an array of objects
+        if (!Array.isArray(scavengerItems) || scavengerItems.length === 0) {
+            return res.status(200).json({ items: [] });
+        }
+        // Properly return scavenger items
+        res.status(200).json(scavengerItems);
     }
     catch (error) {
-        console.error("Failed to parse JSON field:", error);
-        return {}; // Return an empty object if parsing fails
+        console.error('Error retrieving items:', error);
+        res.status(500).json({ error: 'Failed to retrieve items' });
     }
-};
+}));
+const storage = multer_1.default.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'uploads/'); // Make sure the "uploads" folder exists
+    },
+    filename: function (req, file, cb) {
+        cb(null, file.fieldname + '-' + Date.now() + path_1.default.extname(file.originalname));
+    },
+});
+const upload = (0, multer_1.default)({ storage: storage });
+// Image upload and mark item as found
+router.put('/lobbies/:lobbyId/players/:userId/items/:itemId/upload', upload.single('image'), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { lobbyId, userId, itemId } = req.params;
+    try {
+        const db = yield (0, db_1.connectDB)();
+        const lobby = yield db.get(`SELECT * FROM lobbies WHERE id = ?`, [lobbyId]);
+        if (!lobby) {
+            return res.status(404).json({ error: 'Lobby not found' });
+        }
+        let scavengerItems = JSON.parse(lobby.scavengerItems || '[]');
+        let pointsArray = JSON.parse(lobby.points || '[]');
+        // Find the item and player
+        const itemIndex = scavengerItems.findIndex((item) => item.id == parseInt(itemId));
+        const player = pointsArray.find((p) => p.id === userId);
+        if (itemIndex === -1) {
+            return res.status(404).json({ error: 'Item not found' });
+        }
+        if (!player) {
+            return res.status(404).json({ error: 'Player not found' });
+        }
+        // Mark the item as found and assign image URL
+        let item = scavengerItems[itemIndex];
+        item.found = true;
+        item.image = req.file ? `/uploads/${req.file.filename}` : ''; // Assign image URL
+        // Update player points
+        player.points += item.points;
+        // Update the database
+        scavengerItems[itemIndex] = item;
+        yield db.run(`UPDATE lobbies SET scavengerItems = ?, points = ? WHERE id = ?`, [JSON.stringify(scavengerItems), JSON.stringify(pointsArray), lobbyId]);
+        res.status(200).json({ message: 'Item marked successfully and image uploaded', item });
+    }
+    catch (error) {
+        console.error('Error uploading image or marking item:', error);
+        res.status(500).json({ error: 'Failed to upload image or mark item' });
+    }
+}));
 exports.default = router;

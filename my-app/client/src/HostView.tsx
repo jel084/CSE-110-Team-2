@@ -7,7 +7,7 @@ function HostView() {
     const [timeInput, setTimeInput] = useState('00:00:00');
     const [timeRemaining, setTimeRemaining] = useState(0);
     const [newItem, setNewItem] = useState('');
-    const [items, setItems] = useState<string[]>([]);
+    const [items, setItems] = useState<{ id: number; name: string; points: number; found: boolean; }[]>([]);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [hostName, setHostName] = useState('');
 
@@ -26,14 +26,21 @@ function HostView() {
 
     const addItem = () => {
         if (newItem.trim() !== '') {
-            setItems((prevItems) => [...prevItems, newItem]);
+            const newId = items.length > 0 ? items[items.length - 1].id + 1 : 1;
+            const newItemObject = {
+                id: newId,
+                name: newItem,
+                points: 10, 
+                found: false,
+            };
+            setItems((prevItems) => [...prevItems, newItemObject]);
             setNewItem('');
             setCurrentIndex(items.length);
         }
     };
 
     const deleteItem = () => {
-        if(items.length > 0){
+        if (items.length > 0) {
             const updatedItems = items.filter((_, index) => index !== currentIndex);
             setItems(updatedItems);
             setCurrentIndex((prevIndex) => (prevIndex > 0 ? prevIndex - 1 : 0));
@@ -58,7 +65,7 @@ function HostView() {
             const response = await axios.post('http://localhost:5000/api/create', {
                 lobbyName: `Lobby-${lobbyCode}`, 
                 scavengerItems: items,
-                userId: hostName || 'Host', 
+                userId: hostName || 'HostUser1', 
                 pin: lobbyCode
             });
 
@@ -150,7 +157,7 @@ function HostView() {
                             <div className='item-carousel'>
                                 <button className="arrow-button" onClick={prevItem}>&larr;</button>
                                 <span className="item-display">
-                                    {`Item #${currentIndex + 1}: ${items[currentIndex]}`}
+                                    {`Item #${currentIndex + 1}: ${items[currentIndex].name}`}
                                 </span>
                                 <button className="delete-button" data-testid={`delete-button-${currentIndex}`} onClick={deleteItem}>🗑️</button>
                                 <button className="arrow-button" onClick={nextItem}>&rarr;</button>

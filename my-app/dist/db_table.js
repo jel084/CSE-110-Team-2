@@ -13,7 +13,6 @@ exports.initDatabase = void 0;
 const db_1 = require("./db");
 const initDatabase = () => __awaiter(void 0, void 0, void 0, function* () {
     const db = yield (0, db_1.connectDB)();
-    // Create the lobbies table if it doesn't exist
     yield db.exec(`
     CREATE TABLE IF NOT EXISTS lobbies (
       id INTEGER PRIMARY KEY AUTOINCREMENT,

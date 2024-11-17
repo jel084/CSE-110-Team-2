@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './PinPageStyle.css';
 
 function PinPage() {
   const [lobbyCode, setLobbyCode] = useState('');
   const [userId, setUserId] = useState('');
   const [showError, setShowError] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false); // State for success popup
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [lobbyId, setLobbyId] = useState<number | null>(null);  // Store lobby ID after successful join
+  const navigate = useNavigate();  // Hook to navigate programmatically
 
   const handleLobbyCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const input = e.target.value;
@@ -30,7 +33,7 @@ function PinPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          lobbyId: 1, // Replace with actual lobby ID or set dynamically
+          lobbyId: 1, // Replace with actual lobby ID or set dynamically if needed
           userId: userId,
           pin: lobbyCode,
         }),
@@ -40,9 +43,8 @@ function PinPage() {
 
       if (response.ok) {
         setShowError(false);
+        setLobbyId(1);  // Assuming the lobby ID is 1, update with the correct value as needed
         setShowSuccess(true); // Show success popup on successful join
-        setTimeout(() => setShowSuccess(false), 3000); // Auto-hide after 3 seconds
-        console.log('Lobby code is valid. Proceeding to join game...');
       } else {
         setShowError(true);
         console.error(data.error);
@@ -55,6 +57,12 @@ function PinPage() {
 
   const handleCloseError = () => {
     setShowError(false);
+  };
+
+  const handleNavigateToScavenge = () => {
+    if (lobbyId !== null && userId) {
+      navigate(`/scavenge/${lobbyId}/${userId}`);
+    }
   };
 
   return (
@@ -100,6 +108,7 @@ function PinPage() {
         <div className="success-popup">
           <div className="success-popup-content">
             <p>Successfully joined the lobby!</p>
+            <button onClick={handleNavigateToScavenge}>Proceed to Scavenge</button> {/* Button to navigate manually */}
           </div>
         </div>
       )}

@@ -9,11 +9,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAllLobbies = exports.joinLobby = exports.createLobby = void 0;
+exports.joinLobby = exports.createLobby = void 0;
 const db_1 = require("../db");
-const parseJsonField = (field) => {
-    return field ? JSON.parse(field) : [];
-};
 const createLobby = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { lobbyName, scavengerItems, userId, pin } = req.body;
     if (!pin || !/^\d{4}$/.test(pin)) {
@@ -21,6 +18,10 @@ const createLobby = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     }
     try {
         const db = yield (0, db_1.connectDB)();
+        // Ensure scavengerItems is an array of objects
+        if (!Array.isArray(scavengerItems) || !scavengerItems.every(item => typeof item === 'object')) {
+            return res.status(400).json({ error: 'Scavenger items must be an array of objects' });
+        }
         const result = yield db.run(`
       INSERT INTO lobbies (lobbyName, host, players, scavengerItems, points, pin)
       VALUES (?, ?, ?, ?, ?, ?)
@@ -29,7 +30,7 @@ const createLobby = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             userId,
             JSON.stringify([]),
             JSON.stringify(scavengerItems),
-            JSON.stringify({}),
+            JSON.stringify([]),
             pin
         ]);
         res.status(201).json({ lobbyId: result.lastID });
@@ -53,10 +54,9 @@ const joinLobby = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         }
         const players = JSON.parse(lobby.players || '[]');
         let pointsArray = JSON.parse(lobby.points || '[]');
-        // Check if user is already in the lobby
         if (!players.includes(userId)) {
             players.push(userId);
-            pointsArray.push({ id: userId, points: 0 }); // Add player with 0 points
+            pointsArray.push({ id: userId, points: 0 });
             yield db.run(`
         UPDATE lobbies SET players = ?, points = ? WHERE id = ?
       `, [JSON.stringify(players), JSON.stringify(pointsArray), lobbyId]);
@@ -69,16 +69,3 @@ const joinLobby = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.joinLobby = joinLobby;
-const getAllLobbies = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const db = yield (0, db_1.connectDB)();
-        const lobbies = yield db.all(`SELECT * FROM lobbies`);
-        const parsedLobbies = lobbies.map((lobby) => (Object.assign(Object.assign({}, lobby), { players: parseJsonField(lobby.players), scavengerItems: parseJsonField(lobby.scavengerItems), points: parseJsonField(lobby.points) })));
-        res.status(200).json(parsedLobbies);
-    }
-    catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Failed to retrieve lobbies' });
-    }
-});
-exports.getAllLobbies = getAllLobbies;

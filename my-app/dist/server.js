@@ -12,6 +12,8 @@ const app = (0, express_1.default)();
 const PORT = process.env.PORT || 5000;
 app.use((0, cors_1.default)());
 app.use(express_1.default.json());
+// Add this line to serve static files from the uploads folder
+app.use('/uploads', express_1.default.static(path_1.default.join(__dirname, '../uploads')));
 (0, db_table_1.initDatabase)().then(() => {
     console.log('Database created');
 }).catch((error) => {

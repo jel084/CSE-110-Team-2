@@ -4,7 +4,6 @@ import { connectDB } from '../db';
 export const createLobby = async (req: Request, res: Response) => {
   const { lobbyName, scavengerItems, userId, pin } = req.body;
 
- 
   if (!pin || !/^\d{4}$/.test(pin)) {
     return res.status(400).json({ error: 'A valid 4-digit PIN is required' });
   }
@@ -12,16 +11,21 @@ export const createLobby = async (req: Request, res: Response) => {
   try {
     const db = await connectDB();
 
+    // Ensure scavengerItems is an array of objects
+    if (!Array.isArray(scavengerItems) || !scavengerItems.every(item => typeof item === 'object')) {
+      return res.status(400).json({ error: 'Scavenger items must be an array of objects' });
+    }
+
     const result = await db.run(`
       INSERT INTO lobbies (lobbyName, host, players, scavengerItems, points, pin)
       VALUES (?, ?, ?, ?, ?, ?)
     `, [
       lobbyName,
       userId,
-      JSON.stringify([]),           
-      JSON.stringify(scavengerItems), 
-      JSON.stringify({}),             
-      pin                              
+      JSON.stringify([]),  // Initialize players as empty array
+      JSON.stringify(scavengerItems),  // Properly formatted scavenger items array
+      JSON.stringify([]),  // Initialize points as empty array
+      pin
     ]);
 
     res.status(201).json({ lobbyId: result.lastID });
@@ -49,10 +53,9 @@ export const joinLobby = async (req: Request, res: Response) => {
     const players = JSON.parse(lobby.players || '[]');
     let pointsArray = JSON.parse(lobby.points || '[]');
 
-   
     if (!players.includes(userId)) {
       players.push(userId);
-      pointsArray.push({ id: userId, points: 0 }); 
+      pointsArray.push({ id: userId, points: 0 });
 
       await db.run(`
         UPDATE lobbies SET players = ?, points = ? WHERE id = ?
@@ -65,4 +68,3 @@ export const joinLobby = async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Failed to join lobby' });
   }
 };
-
