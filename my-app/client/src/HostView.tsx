@@ -11,7 +11,6 @@ function HostView() {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [hostName, setHostName] = useState('');
 
-    // Convert the input time string to total seconds
     const convertTimeToSeconds = (time: string) => {
         const [hours, minutes, seconds] = time.split(':').map(Number);
         return (hours * 3600) + (minutes * 60) + (seconds || 0);
@@ -30,7 +29,7 @@ function HostView() {
             const newItemObject = {
                 id: newId,
                 name: newItem,
-                points: 10, 
+                points: 10,
                 found: false,
             };
             setItems((prevItems) => [...prevItems, newItemObject]);
@@ -63,9 +62,9 @@ function HostView() {
 
         try {
             const response = await axios.post('http://localhost:5000/api/create', {
-                lobbyName: `Lobby-${lobbyCode}`, 
+                lobbyName: `Lobby-${lobbyCode}`,
                 scavengerItems: items,
-                userId: hostName || 'HostUser1', 
+                userId: hostName || 'HostUser1',
                 pin: lobbyCode
             });
 
@@ -152,18 +151,16 @@ function HostView() {
                 </section>
                 <section className='item-list'>
                     <p>Item List:</p>
-                    <div className='item-container'>
-                        {items.length > 0 && (
-                            <div className='item-carousel'>
-                                <button className="arrow-button" onClick={prevItem}>&larr;</button>
-                                <span className="item-display">
-                                    {`Item #${currentIndex + 1}: ${items[currentIndex].name}`}
-                                </span>
-                                <button className="delete-button" data-testid={`delete-button-${currentIndex}`} onClick={deleteItem}>🗑️</button>
-                                <button className="arrow-button" onClick={nextItem}>&rarr;</button>
-                            </div>
-                        )}
-                    </div>
+                    {items.length > 0 && (
+                        <div className='item-carousel'>
+                            <button className="arrow-button" onClick={prevItem}>&larr;</button>
+                            <span className="item-display">
+                                {`Item #${currentIndex + 1}: ${items[currentIndex].name}`}
+                            </span>
+                            <button className="delete-button" data-testid={`delete-button-${currentIndex}`} onClick={deleteItem}>🗑️</button>
+                            <button className="arrow-button" onClick={nextItem}>&rarr;</button>
+                        </div>
+                    )}
                 </section>
                 <button className='start-game-button' onClick={() => { handleCreateLobby(); startTimer(); }}>Start Game</button>
             </div>

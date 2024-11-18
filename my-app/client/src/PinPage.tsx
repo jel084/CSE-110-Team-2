@@ -7,12 +7,12 @@ function PinPage() {
   const [userId, setUserId] = useState('');
   const [showError, setShowError] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  const [lobbyId, setLobbyId] = useState<number | null>(null);  // Store lobby ID after successful join
-  const navigate = useNavigate();  // Hook to navigate programmatically
+  const [lobbyId, setLobbyId] = useState<number | null>(null);
+  const navigate = useNavigate();
 
   const handleLobbyCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const input = e.target.value;
-    const numericInput = input.replace(/\D/g, '').slice(0, 4); // Limit to 4 digits
+    const numericInput = input.replace(/\D/g, '').slice(0, 4);
     setLobbyCode(numericInput);
   };
 
@@ -33,7 +33,7 @@ function PinPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          lobbyId: 1, // Replace with actual lobby ID or set dynamically if needed
+          lobbyId: 1, 
           userId: userId,
           pin: lobbyCode,
         }),
@@ -43,8 +43,8 @@ function PinPage() {
 
       if (response.ok) {
         setShowError(false);
-        setLobbyId(1);  // Assuming the lobby ID is 1, update with the correct value as needed
-        setShowSuccess(true); // Show success popup on successful join
+        setLobbyId(1);  
+        setShowSuccess(true);
       } else {
         setShowError(true);
         console.error(data.error);
@@ -108,7 +108,7 @@ function PinPage() {
         <div className="success-popup">
           <div className="success-popup-content">
             <p>Successfully joined the lobby!</p>
-            <button onClick={handleNavigateToScavenge}>Proceed to Scavenge</button> {/* Button to navigate manually */}
+            <button onClick={handleNavigateToScavenge}>Proceed to Scavenge</button>
           </div>
         </div>
       )}

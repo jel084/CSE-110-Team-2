@@ -1,3 +1,6 @@
+/* Updated scavengeScreen.css */
+
+/* General Styles */
 @import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;700&display=swap');
 
 * {
@@ -10,16 +13,15 @@
 
 .scavenger-view {
     background-color: white;
-    padding: 20px;
+    padding: 50px 20px;  
     text-align: center;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    align-items: left;
-    justify-content: flex-start; /* Keep items aligned at the top */
-    gap: 20px; /* Add gap between items */
+    align-items: center;  
+    justify-content: flex-start;
+    gap: 40px;  
     font-size: 35px;
-    font-family: 'Comfortaa';
 }
 
 .header {
@@ -35,12 +37,12 @@
     width: 100vw;
     height: 13vh;
     text-align: center;
-    font-family: 'Comfortaa';
     justify-content: center;
     align-items: center;
     display: flex;
     font-size: 30px;
 }
+
 .spacer2 {
     margin: 0;
     background-color: #FB8500;
@@ -54,8 +56,7 @@
     display: flex;
 }
 
-
-.submit-items-button{
+.submit-items-button {
     text-align: center;
     border: none;
     width: 15vw;
@@ -71,8 +72,9 @@
 button {
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
-button:hover{
-    background-color: #FFA726; 
+
+button:hover {
+    background-color: #FFA726;
     box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
     transform: translateY(-3px);
 }
@@ -83,29 +85,31 @@ button:hover{
 }
 
 .submit-items-button:disabled:hover {
-    background-color: #ccc; /* Ensure the background color stays the same */
+    background-color: #ccc;
     box-shadow: none;
     transform: none;
 }
 
-.item-list{
+.item-list {
     font-weight: bold;
 }
-.item-carousel{
+
+.item-carousel {
     display: flex;
     align-items: center;
     background-color: #D9D9D9;
-    padding: 15px;
+    padding: 10px 10px; 
     border-radius: 20px;
-    margin-top: 20px;
+    margin-top: 35px; 
     font-weight: normal;
+    width: 80%; 
+    margin-left: 10%;
 }
+
+
 .item-carousel.found {
     background-color: #41BA00;
 }
-
-
-
 
 .item-display {
     margin: 0 20px;
@@ -113,8 +117,7 @@ button:hover{
     color: white;
 }
 
-
-.arrow-button{
+.arrow-button {
     background-color: #FFB703;
     border: none;
     border-radius: 50%;
@@ -126,57 +129,21 @@ button:hover{
 }
 
 .image-container {
-
     position: relative;
     display: flex;
-    justify-content: space-between;
+    justify-content: center;  
     align-items: center;
-    float: center;
-    
-    left: 5vw;
-    
-    text-align:center;
+    text-align: center;
     border: none;
-    margin: 10px;
-    box-sizing: border-box;
-    padding: 10px 20px;
-    border-radius: 15px;
+    margin: 20px 0;  
+    padding: 15px 25px;
+    border-radius: 20px;
     background-color: #8ECAE6;
     font-size: 24px;
     color: white;
-
-    margin-top: 6.1vh;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
 }
-
-.delete-button {
-    position: relative;
-    justify-content: space-between;
-    align-items: center;
-    float: center;
-    text-align:center;
-    border: none;
-
-    margin: 10px;
-    box-sizing: border-box;
-    padding: 10px 20px;
-    border-radius: 15px;
-    background-color: #FF0000;
-    font-size: 24px;
-    color: white;
-
-    right: 8vw;
-    margin-top: 6vh;
-
-
-
-}
-
-
-.arrow-button:hover,
-.delete-button:hover {
-    opacity: 0.8;
-}
-
 
 .image-container input {
     display: none;
@@ -187,14 +154,31 @@ button:hover{
     text-align: center;
 }
 
-.image-container:hover{
-    background-color: #FFA726; 
+.image-container:hover {
+    background-color: #FFA726;
     box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
     transform: translateY(-3px);
 }
 
-.set-time {
+.delete-button {
+    background-color: #FB8500;
+    border: none;
+    border-radius: 10px;
+    padding: 10px;
+    cursor: pointer;
+    font-size: 20px;
+    color: white;
+    margin-left: 10px;
+    position: relative;
+    top: -10px;  
+}
 
+.arrow-button:hover,
+.delete-button:hover {
+    opacity: 0.8;
+}
+
+.set-time {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -202,8 +186,9 @@ button:hover{
     padding: 0;
     font-weight: bold;
 }
-.set-time input{
-    text-align:center;
+
+.set-time input {
+    text-align: center;
     border: none;
     margin: 10px;
     padding: 10px 20px;
@@ -221,8 +206,8 @@ button:hover{
     background-color: #f9f9f9;
     height: 23vw;
     width: 25vw;
-    overflow:auto;
-    margin-left: 37%;
+    overflow: auto;
+    margin-left: 0%;
 }
 
 .image-preview img {
@@ -231,8 +216,7 @@ button:hover{
     border-radius: 10px;
 }
 
-.found-text{
-    color:#41BA00;
+.found-text {
+    color: #41BA00;
     font-weight: bold;
-
 }
