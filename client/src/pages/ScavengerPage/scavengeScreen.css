@@ -19,17 +19,20 @@
     justify-content: flex-start; /* Keep items aligned at the top */
     gap: 20px; /* Add gap between items */
     font-size: 35px;
-    font-family: 'Comfortaa';
+    box-sizing: border-box;
+    overflow: hidden;
+    font-family: "Comfortaa";
 }
 
-.header {
+.scavenge-header {
+    position: relative;
     display: flex;
-    align-items: center;
+    flex-direction: row;
+    align-items: flex-start;
     justify-content: space-between;
-    padding: 10px;
 }
 
-.spacer {
+.scavenge-spacer {
     margin: 0;
     background-color: #FB8500;
     width: 100vw;
@@ -41,7 +44,7 @@
     display: flex;
     font-size: 30px;
 }
-.spacer2 {
+.scavenge-spacer2 {
     margin: 0;
     background-color: #FB8500;
     width: 100vw;
@@ -55,7 +58,7 @@
 }
 
 
-.submit-items-button{
+.scavenge-submit-items-button{
     text-align: center;
     border: none;
     width: 15vw;
@@ -66,6 +69,7 @@
     font-size: 4.8vh;
     background-color: #FFB703;
     color: white;
+    
 }
 
 button {
@@ -77,21 +81,21 @@ button:hover{
     transform: translateY(-3px);
 }
 
-.submit-items-button:disabled {
+.scavenge-submit-items-button:disabled {
     background-color: #ccc;
     cursor: not-allowed;
 }
 
-.submit-items-button:disabled:hover {
+.scavenge-submit-items-button:disabled:hover {
     background-color: #ccc; /* Ensure the background color stays the same */
     box-shadow: none;
     transform: none;
 }
 
-.item-list{
+.scavenge-item-list{
     font-weight: bold;
 }
-.item-carousel{
+.scavenge-item-carousel{
     display: flex;
     align-items: center;
     background-color: #D9D9D9;
@@ -100,21 +104,21 @@ button:hover{
     margin-top: 20px;
     font-weight: normal;
 }
-.item-carousel.found {
+.scavenge-item-carousel.found {
     background-color: #41BA00;
 }
 
 
 
 
-.item-display {
+.scavenge-item-display {
     margin: 0 20px;
     font-size: 24px;
     color: white;
 }
 
 
-.arrow-button{
+.scavenge-arrow-button{
     background-color: #FFB703;
     border: none;
     border-radius: 50%;
@@ -125,7 +129,7 @@ button:hover{
     margin: 0 10px;
 }
 
-.image-container {
+.scavenge-image-container {
 
     position: relative;
     display: flex;
@@ -148,7 +152,7 @@ button:hover{
     margin-top: 6.1vh;
 }
 
-.delete-button {
+.scavenge-delete-button {
     position: relative;
     justify-content: space-between;
     align-items: center;
@@ -178,22 +182,22 @@ button:hover{
 }
 
 
-.image-container input {
+.scavenge-image-container input {
     display: none;
 }
 
-.image-container label {
+.scavenge-image-container label {
     cursor: pointer;
     text-align: center;
 }
 
-.image-container:hover{
+.scavenge-image-container:hover{
     background-color: #FFA726; 
     box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
     transform: translateY(-3px);
 }
 
-.set-time {
+.scavenge-set-time {
 
     display: flex;
     flex-direction: column;
@@ -202,7 +206,7 @@ button:hover{
     padding: 0;
     font-weight: bold;
 }
-.set-time input{
+.scavenge-set-time input{
     text-align:center;
     border: none;
     margin: 10px;
@@ -213,7 +217,7 @@ button:hover{
     color: white;
 }
 
-.image-preview {
+.scavenge-image-preview {
     text-align: center;
     border: 2px solid #ccc;
     border-radius: 10px;
@@ -225,13 +229,13 @@ button:hover{
     margin-left: 37%;
 }
 
-.image-preview img {
+.scavenge-image-preview img {
     max-width: 100%;
     max-height: 100%;
     border-radius: 10px;
 }
 
-.found-text{
+.scavenge-found-text{
     color:#41BA00;
     font-weight: bold;
 

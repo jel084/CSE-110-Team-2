@@ -1,5 +1,5 @@
 import React from 'react';
-import { testPlayers } from '../constants/constants'; // Adjust the path as needed
+import { testPlayers } from '../../constants/constants'; // Adjust the path as needed
 import './scoreScreen.css';
 
 const ScoreScreen: React.FC = () => {

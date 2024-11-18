@@ -1,7 +1,7 @@
 import React from "react";
 import {useState, useContext} from "react";
-import {AppContext} from "../context/AppContext";
-import {Item, Player} from "../types/types";
+import {AppContext} from "../../context/AppContext";
+import {Item, Player} from "../../types/types";
 import './scavengeScreen.css';
 
 const ScavengeScreen = (player: Player) => {
@@ -53,32 +53,32 @@ const ScavengeScreen = (player: Player) => {
 
     return(
         <>
-        <div className = 'spacer'>
+        <div className = 'scavenge-spacer'>
             <h1>Capture Your Find</h1>
         </div>
         <div className = 'scavenger-view'>
-            <header className = 'header'>
-            <section className = {`item-list` }>
+            <header className = 'scavenge-header'>
+            <section className = {`scavenge-item-list` }>
                 <p>Item List:</p>
-                <div className = 'item-container'>
+                <div className = 'scavenge-item-container'>
                     {items.length > 0 && (
-                        <div className = {`item-carousel ${items[currentIndex].found ? 'found' : ''}` }>
-                        <button className="arrow-button" onClick={prevItem}>&larr;</button>
-                        <span className= "item-display" >
+                        <div className = {`scavenge-item-carousel ${items[currentIndex].found ? 'found' : ''}` }>
+                        <button className="scavenge-arrow-button" onClick={prevItem}>&larr;</button>
+                        <span className= "scavenge-item-display" >
                             {`Item #${currentIndex + 1}: ${items[currentIndex].name}`}
                         </span>
-                        <button className="arrow-button" onClick={nextItem}>&rarr;</button>
+                        <button className="scavenge-arrow-button" onClick={nextItem}>&rarr;</button>
                     </div>
                     )}
                 </div>
                 
             </section>
-            <div className = 'image-container'>
+            <div className = 'scavenge-image-container'>
                 <label htmlFor="image">Upload Image</label>
                 <input type="file" name="image" id = "image" accept = "image/*" onChange={handleImageChange}/>
                 </div>
-                <button className="delete-button" onClick = {deleteImage}>🗑️</button>
-                <div className = 'set-time'>
+                <button className="scavenge-delete-button" onClick = {deleteImage}>🗑️</button>
+                <div className = 'scavenge-set-time'>
                     <label>Time Remaining:</label>
                     <input 
                     type = 'text' 
@@ -87,20 +87,20 @@ const ScavengeScreen = (player: Player) => {
                     />
                 </div>
             </header>
-            <div className='image-preview'>
+            <div className='scavenge-image-preview'>
                     {items[currentIndex].image ? (<img src={items[currentIndex].image} alt="Selected" />) : 
                     (<p>{errorMessage || 'No image selected'}</p>)
                     }
                 </div>
-                <div className = "foundText">
+                <div className = "scavenge-foundText">
             {items[currentIndex].found && (
-                            <p className="found-text">Item found!</p>
+                            <p className="scavenge-found-text">Item found!</p>
                         )}
             </div>
         </div>
         
-        <div className = 'spacer2'>
-        <button className = 'submit-items-button' disabled = {!allItemsFound}>Submit</button>
+        <div className = 'scavenge-spacer2'>
+        <button className = 'scavenge-submit-items-button' disabled = {!allItemsFound}>Submit</button>
         </div>
     </>
 

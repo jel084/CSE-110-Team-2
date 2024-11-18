@@ -1,4 +1,4 @@
-import ScavengeScreen from './pages/scavengeScreen';
+import ScavengeScreen from './pages/ScavengerPage/scavengeScreen';
 import { testItems } from './constants/constants';
 
 

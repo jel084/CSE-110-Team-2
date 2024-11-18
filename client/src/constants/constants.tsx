@@ -27,3 +27,5 @@ export const testPlayers = [
     {name : "Sarah", points : 50, items : []},
     {name : "Timothy", points : 40, items : []},
 ]
+
+export const dummyPlayer = {name : "Dave", points : 20, items : testItems}
