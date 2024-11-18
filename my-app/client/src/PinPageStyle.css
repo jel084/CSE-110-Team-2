@@ -117,8 +117,8 @@ button:hover {
 
 .success-popup {
     position: fixed;
-    top: 20px;
-    right: 20px;
+    top: 700px;
+    right: 730px;
     background-color: #4caf50;
     color: white;
     padding: 10px;

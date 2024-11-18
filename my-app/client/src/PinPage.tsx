@@ -67,7 +67,16 @@ function PinPage() {
 
   return (
     <>
-      <div className="spacer"></div>
+      <div className="spacer">
+      {showSuccess && (
+        <div className="success-popup">
+          <div className="success-popup-content">
+            <p>Successfully joined the lobby!</p>
+            <button onClick={handleNavigateToScavenge}>Proceed to Scavenge</button>
+          </div>
+        </div>
+      )}
+      </div>
       <div className="pin-page">
         <header className="header">
           <h1>Enter Lobby Code</h1>
@@ -104,14 +113,7 @@ function PinPage() {
         </div>
       )}
 
-      {showSuccess && (
-        <div className="success-popup">
-          <div className="success-popup-content">
-            <p>Successfully joined the lobby!</p>
-            <button onClick={handleNavigateToScavenge}>Proceed to Scavenge</button>
-          </div>
-        </div>
-      )}
+      
     </>
   );
 }

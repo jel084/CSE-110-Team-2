@@ -16,7 +16,7 @@ const ScavengeScreen: React.FC = () => {
       const fetchItems = async () => {
         try {
           const fetchedItems = await getItemsForPlayer(parseInt(lobbyId), userId);
-          console.log("Fetched items:", fetchedItems); // Logging for debugging
+          console.log("Fetched items:", fetchedItems); 
           if (Array.isArray(fetchedItems)) {
             setItems(fetchedItems);
           } else {
@@ -68,7 +68,7 @@ const ScavengeScreen: React.FC = () => {
         if (response.status === 200) {
           const updatedItems = [...items];
           updatedItems[currentIndex].found = true;
-          updatedItems[currentIndex].image = response.data.item.image; // Update the image URL
+          updatedItems[currentIndex].image = response.data.item.image; 
           setItems(updatedItems);
           setErrorMessage(null);
           console.log('Item marked as found successfully');
@@ -76,6 +76,27 @@ const ScavengeScreen: React.FC = () => {
       } catch (error) {
         console.error('Error uploading image:', error);
         setErrorMessage('Failed to upload image. Please try again.');
+      }
+    }
+  };
+
+  const handleDeleteImage = async () => {
+    if (lobbyId && userId && items[currentIndex]?.image) {
+      try {
+        const response = await axios.delete(
+          `http://localhost:5000/api/lobbies/${lobbyId}/players/${userId}/items/${items[currentIndex].id}/deleteImage`
+        );
+
+        if (response.status === 200) {
+          const updatedItems = [...items];
+          updatedItems[currentIndex].image = ''; 
+          updatedItems[currentIndex].found = false; 
+          setItems(updatedItems);
+          console.log('Image deleted successfully');
+        }
+      } catch (error) {
+        console.error('Error deleting image:', error);
+        setErrorMessage('Failed to delete image. Please try again.');
       }
     }
   };
@@ -94,7 +115,7 @@ const ScavengeScreen: React.FC = () => {
                 <div className={`item-carousel ${items[currentIndex]?.found ? 'found' : ''}`}>
                   <button className="arrow-button" onClick={prevItem}>&larr;</button>
                   <span className="item-display">
-                    {/* Explicitly accessing `name` to avoid [object Object] */}
+                  
                     {`Item #${currentIndex + 1}: ${items[currentIndex].name}`}
                   </span>
                   <button className="arrow-button" onClick={nextItem}>&rarr;</button>
@@ -115,6 +136,7 @@ const ScavengeScreen: React.FC = () => {
         <div className='image-preview'>
           {items[currentIndex]?.image ? (
             <img src={`http://localhost:5000${items[currentIndex].image}`} alt="Selected" />
+            
           ) : (
             <p>{errorMessage || 'No image selected'}</p>
           )}

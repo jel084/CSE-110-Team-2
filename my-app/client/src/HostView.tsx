@@ -10,6 +10,7 @@ function HostView() {
     const [items, setItems] = useState<{ id: number; name: string; points: number; found: boolean; }[]>([]);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [hostName, setHostName] = useState('');
+    const [successMessage, setSuccessMessage] = useState('');  // New state for success message
 
     const convertTimeToSeconds = (time: string) => {
         const [hours, minutes, seconds] = time.split(':').map(Number);
@@ -69,7 +70,8 @@ function HostView() {
             });
 
             if (response.status === 201) {
-                alert('Lobby created successfully!');
+                setSuccessMessage('Lobby created successfully!'); // Set the success message
+                setTimeout(() => setSuccessMessage(''), 5000); // Hide the success message after 5 seconds
             }
         } catch (error) {
             console.error('Error creating lobby:', error);
@@ -109,8 +111,16 @@ function HostView() {
 
     return (
         <>
-            <div className='spacer'></div>
+        
+            <div className='spacer'>
+            {successMessage && (
+                    <div className='success-message'>
+                        {successMessage}
+                    </div>
+                )}
+            </div>
             <div className='host-view'>
+            
                 <header className='header'>
                     <h1>Lobby Code</h1>
                     <div className="lobby-code">
@@ -136,6 +146,7 @@ function HostView() {
                         <p>Time Remaining: {formatTime(timeRemaining)}</p>
                     </div>
                 </header>
+
                 <section className='add-item-section'>
                     <h2>Add Item:</h2>
                     <input
