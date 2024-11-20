@@ -33,7 +33,7 @@ function PinPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          lobbyId: 1, 
+          lobbyId: 1,  // For now, let's assume the lobby ID is 1, dynamically set if needed
           userId: userId,
           pin: lobbyCode,
         }),
@@ -43,8 +43,13 @@ function PinPage() {
 
       if (response.ok) {
         setShowError(false);
-        setLobbyId(1);  
+        setLobbyId(data.lobbyId);  // Set the lobbyId from the backend response
         setShowSuccess(true);
+
+        // Redirect to the lobby page using the correct lobby ID
+        if (data.lobbyId) {
+          navigate(`/lobby/${data.lobbyId}`);
+        }
       } else {
         setShowError(true);
         console.error(data.error);
@@ -59,23 +64,16 @@ function PinPage() {
     setShowError(false);
   };
 
-  const handleNavigateToScavenge = () => {
-    if (lobbyId !== null && userId) {
-      navigate(`/scavenge/${lobbyId}/${userId}`);
-    }
-  };
-
   return (
     <>
       <div className="spacer">
-      {showSuccess && (
-        <div className="success-popup">
-          <div className="success-popup-content">
-            <p>Successfully joined the lobby!</p>
-            <button onClick={handleNavigateToScavenge}>Proceed to Scavenge</button>
+        {showSuccess && (
+          <div className="success-popup">
+            <div className="success-popup-content">
+              <p>Successfully joined the lobby!</p>
+            </div>
           </div>
-        </div>
-      )}
+        )}
       </div>
       <div className="pin-page">
         <header className="header">
@@ -112,8 +110,6 @@ function PinPage() {
           </div>
         </div>
       )}
-
-      
     </>
   );
 }

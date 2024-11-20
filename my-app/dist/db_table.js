@@ -13,6 +13,7 @@ exports.initDatabase = void 0;
 const db_1 = require("./db");
 const initDatabase = () => __awaiter(void 0, void 0, void 0, function* () {
     const db = yield (0, db_1.connectDB)();
+    // Create lobbies table if not exists
     yield db.exec(`
     CREATE TABLE IF NOT EXISTS lobbies (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -25,6 +26,18 @@ const initDatabase = () => __awaiter(void 0, void 0, void 0, function* () {
       status TEXT DEFAULT 'waiting'
     )
   `);
-    console.log('Database initialized with lobbies table.');
+    //Player scavenge item status 
+    yield db.exec(`
+    CREATE TABLE IF NOT EXISTS player_items (
+      player_id TEXT NOT NULL,
+      lobby_id INTEGER NOT NULL,
+      item_id INTEGER NOT NULL,
+      found BOOLEAN DEFAULT 0,
+      image TEXT,
+      PRIMARY KEY (player_id, lobby_id, item_id),
+      FOREIGN KEY (lobby_id) REFERENCES lobbies(id)
+    )
+  `);
+    console.log('Database initialized with lobbies and player_items tables.');
 });
 exports.initDatabase = initDatabase;

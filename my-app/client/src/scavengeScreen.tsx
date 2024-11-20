@@ -47,14 +47,14 @@ const ScavengeScreen: React.FC = () => {
         setErrorMessage('Invalid file type. Please select jpg or png.');
         return;
       }
-
+  
       try {
         const formData = new FormData();
         formData.append('image', file);
         formData.append('lobbyId', lobbyId);
         formData.append('userId', userId);
         formData.append('itemId', items[currentIndex].id.toString());
-
+  
         const response = await axios.put(
           `http://localhost:5000/api/lobbies/${lobbyId}/players/${userId}/items/${items[currentIndex].id}/upload`,
           formData,
@@ -64,14 +64,18 @@ const ScavengeScreen: React.FC = () => {
             },
           }
         );
-
-        if (response.status === 200) {
+  
+        console.log(response); // Log response to verify the format
+        if (response.status === 200 && response.data && response.data.item) {
+          const updatedItem = response.data.item;
           const updatedItems = [...items];
-          updatedItems[currentIndex].found = true;
-          updatedItems[currentIndex].image = response.data.item.image; 
+          updatedItems[currentIndex].found = updatedItem.found;
+          updatedItems[currentIndex].image = updatedItem.image; 
           setItems(updatedItems);
           setErrorMessage(null);
           console.log('Item marked as found successfully');
+        } else {
+          setErrorMessage('Failed to upload image. Unexpected response format.');
         }
       } catch (error) {
         console.error('Error uploading image:', error);

@@ -25,20 +25,38 @@ router.post('/create', async (req, res) => {
 
   try {
     const db = await connectDB();
+
+    // Insert the new lobby
     await db.run(
       `INSERT INTO lobbies (lobbyName, host, players, scavengerItems, points, pin, status)
       VALUES (?, ?, ?, ?, ?, ?, ?)`,
       [
         lobbyName,
-        userId,  
-        JSON.stringify([]),  
+        userId,
+        JSON.stringify([userId]), // Add host to players immediately
         JSON.stringify(scavengerItems),
-        JSON.stringify([]),  
+        JSON.stringify([{ id: userId, points: 0 }]), // Add initial points for the host
         pin,
         'waiting'
       ]
     );
-    res.status(201).json({ message: `Lobby '${lobbyName}' created by ${userId}` });
+
+    // Retrieve the newly created lobby to get its ID
+    const newLobby = await db.get(`SELECT * FROM lobbies WHERE host = ? ORDER BY id DESC LIMIT 1`, [userId]);
+    const lobbyId = newLobby.id;
+
+    // Add scavenger items for the host into the `player_items` table
+    if (Array.isArray(scavengerItems) && scavengerItems.length > 0) {
+      for (let item of scavengerItems) {
+        await db.run(
+          `INSERT OR IGNORE INTO player_items (player_id, lobby_id, item_id, found, image)
+          VALUES (?, ?, ?, ?, ?)`,
+          [userId, lobbyId, item.id, false, '']
+        );
+      }
+    }
+
+    res.status(201).json({ message: `Lobby '${lobbyName}' created by ${userId}`, lobbyId });
   } catch (error) {
     console.error('Error creating lobby:', error);
     res.status(500).json({ error: 'Failed to create lobby' });
@@ -65,15 +83,25 @@ router.post('/join', async (req, res) => {
 
     if (!players.includes(userId)) {
       players.push(userId);
-      pointsArray.push({ id: userId, points: 0 }); 
+      pointsArray.push({ id: userId, points: 0 });
 
       await db.run(
         `UPDATE lobbies SET players = ?, points = ? WHERE id = ?`,
         [JSON.stringify(players), JSON.stringify(pointsArray), lobbyId]
       );
+
+      // Insert items for the player into player_items
+      let scavengerItems = JSON.parse(lobby.scavengerItems || '[]');
+      for (let item of scavengerItems) {
+        await db.run(
+          `INSERT OR IGNORE INTO player_items (player_id, lobby_id, item_id, found, image)
+          VALUES (?, ?, ?, ?, ?)`,
+          [userId, lobbyId, item.id, false, '']
+        );
+      }
     }
 
-    res.json({ message: `User ${userId} joined lobby ${lobbyId}` });
+    res.json({ message: `User ${userId} joined lobby ${lobbyId}`, lobbyId });
   } catch (error) {
     console.error('Error joining lobby:', error);
     res.status(500).json({ error: 'Failed to join lobby' });
@@ -153,42 +181,32 @@ router.put('/lobbies/:lobbyId/players/:userId/items/:itemId/upload', upload.sing
 
   try {
     const db = await connectDB();
-    const lobby = await db.get(`SELECT * FROM lobbies WHERE id = ?`, [lobbyId]);
 
-    if (!lobby) {
-      return res.status(404).json({ error: 'Lobby not found' });
-    }
-
-    let scavengerItems = JSON.parse(lobby.scavengerItems || '[]');
-    let pointsArray = JSON.parse(lobby.points || '[]');
-
-    // Find the item and player
-    const itemIndex = scavengerItems.findIndex((item: { id: number }) => item.id == parseInt(itemId));
-    const player = pointsArray.find((p: { id: string }) => p.id === userId);
-
-    if (itemIndex === -1) {
-      return res.status(404).json({ error: 'Item not found' });
-    }
-    if (!player) {
-      return res.status(404).json({ error: 'Player not found' });
-    }
-
-    // Mark the item as found and assign image URL
-    let item = scavengerItems[itemIndex];
-    item.found = true;
-    item.image = req.file ? `/uploads/${req.file.filename}` : ''; // Assign image URL
-
-    // Update player points
-    player.points += item.points;
-
-    // Update the database
-    scavengerItems[itemIndex] = item;
-    await db.run(
-      `UPDATE lobbies SET scavengerItems = ?, points = ? WHERE id = ?`,
-      [JSON.stringify(scavengerItems), JSON.stringify(pointsArray), lobbyId]
+    // Get the player's specific item
+    const playerItem = await db.get(
+      `SELECT * FROM player_items WHERE lobby_id = ? AND player_id = ? AND item_id = ?`,
+      [lobbyId, userId, itemId]
     );
 
-    res.status(200).json({ message: 'Item marked successfully and image uploaded', item });
+    if (!playerItem) {
+      return res.status(404).json({ error: 'Player item not found' });
+    }
+
+    // Update the item to mark it as found and add the image
+    const imageUrl = req.file ? `/uploads/${req.file.filename}` : '';
+    await db.run(
+      `UPDATE player_items SET found = ?, image = ? WHERE lobby_id = ? AND player_id = ? AND item_id = ?`,
+      [true, imageUrl, lobbyId, userId, itemId]
+    );
+
+    // Re-fetch the updated item after updating the database
+    const updatedPlayerItem = await db.get(
+      `SELECT * FROM player_items WHERE lobby_id = ? AND player_id = ? AND item_id = ?`,
+      [lobbyId, userId, itemId]
+    );
+
+    // Return the updated item
+    res.status(200).json({ message: 'Item marked successfully and image uploaded', item: updatedPlayerItem });
   } catch (error) {
     console.error('Error uploading image or marking item:', error);
     res.status(500).json({ error: 'Failed to upload image or mark item' });
@@ -231,13 +249,13 @@ router.post('/lobbies/:lobbyId/start', async (req, res) => {
       return res.status(404).json({ error: 'Lobby not found' });
     }
 
-    // Update the lobby status to 'started'
+    // Update lobby status to started
     await db.run(`UPDATE lobbies SET status = ? WHERE id = ?`, ['started', lobbyId]);
 
-    res.status(200).json({ message: 'Lobby has started successfully' });
+    res.status(200).json({ message: `Lobby ${lobbyId} started` });
   } catch (error) {
-    console.error('Error starting the lobby:', error);
-    res.status(500).json({ error: 'Failed to start the lobby' });
+    console.error('Error starting lobby:', error);
+    res.status(500).json({ error: 'Failed to start lobby' });
   }
 });
 
