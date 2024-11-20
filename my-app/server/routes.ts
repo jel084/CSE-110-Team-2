@@ -195,4 +195,50 @@ router.put('/lobbies/:lobbyId/players/:userId/items/:itemId/upload', upload.sing
   }
 });
 
+router.get('/lobbies/:lobbyId/players', async (req, res) => {
+  const { lobbyId } = req.params;
+
+  try {
+    const db = await connectDB();
+    const lobby = await db.get(`SELECT * FROM lobbies WHERE id = ?`, [lobbyId]);
+
+    if (!lobby) {
+      return res.status(404).json({ error: 'Lobby not found' });
+    }
+
+    const players = JSON.parse(lobby.players || '[]');
+
+    // Ensure players is an array of strings
+    if (!Array.isArray(players)) {
+      return res.status(500).json({ error: 'Invalid players data' });
+    }
+
+    res.status(200).json({ players });
+  } catch (error) {
+    console.error('Error retrieving players:', error);
+    res.status(500).json({ error: 'Failed to retrieve players' });
+  }
+});
+
+router.post('/lobbies/:lobbyId/start', async (req, res) => {
+  const { lobbyId } = req.params;
+
+  try {
+    const db = await connectDB();
+    const lobby = await db.get(`SELECT * FROM lobbies WHERE id = ?`, [lobbyId]);
+
+    if (!lobby) {
+      return res.status(404).json({ error: 'Lobby not found' });
+    }
+
+    // Update the lobby status to 'started'
+    await db.run(`UPDATE lobbies SET status = ? WHERE id = ?`, ['started', lobbyId]);
+
+    res.status(200).json({ message: 'Lobby has started successfully' });
+  } catch (error) {
+    console.error('Error starting the lobby:', error);
+    res.status(500).json({ error: 'Failed to start the lobby' });
+  }
+});
+
 export default router;
