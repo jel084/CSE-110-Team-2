@@ -21,7 +21,7 @@ function PinPage() {
   };
 
   const handleJoinGame = async () => {
-    if (!userId || !lobbyCode) {
+    if (!userId || !lobbyCode || lobbyCode.length < 4) {
       setShowError(true);
       return;
     }
