@@ -44,3 +44,85 @@
     font-size: 2.6rem;
     cursor: pointer;
 }
+
+.homepage-button:hover {
+    background: rgba(252, 133, 0, 1);
+}
+
+/* Question Button */
+.question-button {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    width: 60px; /* Match the button size with the image size */
+    height: 60px;
+    border: none; /* Remove border */
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0; /* Remove extra padding */
+    border-radius: 30px;
+}
+
+.question-icon {
+    width: 100%; /* Make the image fill the button size */
+    height: 100%;
+    object-fit: contain; /* Ensure the image scales properly */
+}
+
+.question-button:hover {
+    background-color: rgba(252, 133, 0, 1);
+}
+
+/* Rules Popup */
+.rules-popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.popup-content {
+    background-color: white;
+    padding: 2rem;
+    border-radius: 10px;
+    width: 80%;
+    max-width: 550px;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.popup-content h2 {
+    margin-bottom: 1rem;
+    font-size: 2rem;
+    color: rgba(252, 133, 0, 1);
+}
+
+.popup-content p {
+    font-size: 1.2rem;
+    line-height: 1.5;
+}
+
+.close-button {
+    position: absolute;
+    padding: 10px;
+    width: 50px; /* Match the button size with the image size */
+    height: 50px;
+    border-radius: 25px;
+    top: 10px;
+    left: 10px;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: black;
+    background: rgba(252, 133, 0, 0.8);
+}
