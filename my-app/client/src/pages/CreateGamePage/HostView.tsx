@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './HostViewStyle.css';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 function HostView() {
     const [lobbyCode, setLobbyCode] = useState('');
@@ -11,7 +12,8 @@ function HostView() {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [hostName, setHostName] = useState('');
     const [successMessage, setSuccessMessage] = useState('');  // New state for success message
-
+    const navigate = useNavigate();
+    
     const convertTimeToSeconds = (time: string) => {
         const [hours, minutes, seconds] = time.split(':').map(Number);
         return (hours * 3600) + (minutes * 60) + (seconds || 0);
@@ -70,8 +72,10 @@ function HostView() {
             });
 
             if (response.status === 201) {
+                const { lobbyId } = response.data;
                 setSuccessMessage('Lobby created successfully!'); // Set the success message
                 setTimeout(() => setSuccessMessage(''), 5000); // Hide the success message after 5 seconds
+                navigate(`/lobby/${lobbyId}`);
             }
         } catch (error) {
             console.error('Error creating lobby:', error);
