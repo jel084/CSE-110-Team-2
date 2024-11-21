@@ -33,9 +33,9 @@ router.post('/create', async (req, res) => {
       [
         lobbyName,
         userId,
-        JSON.stringify([userId]), // Add host to players immediately
+        JSON.stringify([userId]), 
         JSON.stringify(scavengerItems),
-        JSON.stringify([{ id: userId, points: 0 }]), // Add initial points for the host
+        JSON.stringify([{ id: userId, points: 0 }]), 
         pin,
         'waiting'
       ]
@@ -152,12 +152,10 @@ router.get('/lobbies/:lobbyId/players/:userId/items', async (req, res) => {
 
     let scavengerItems = JSON.parse(lobby.scavengerItems || '[]');
 
-    // Ensure scavengerItems is an array of objects
     if (!Array.isArray(scavengerItems) || scavengerItems.length === 0) {
       return res.status(200).json({ items: [] });
     }
 
-    // Properly return scavenger items
     res.status(200).json(scavengerItems);
   } catch (error) {
     console.error('Error retrieving items:', error);
@@ -167,7 +165,7 @@ router.get('/lobbies/:lobbyId/players/:userId/items', async (req, res) => {
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, 'uploads/'); // Make sure the "uploads" folder exists
+    cb(null, 'uploads/');
   },
   filename: function (req, file, cb) {
     cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
@@ -175,14 +173,14 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage: storage });
 
-// Image upload and mark item as found
+// mark item as found
 router.put('/lobbies/:lobbyId/players/:userId/items/:itemId/upload', upload.single('image'), async (req, res) => {
   const { lobbyId, userId, itemId } = req.params;
 
   try {
     const db = await connectDB();
 
-    // Step 1: Get the player's specific item to validate it exists
+ 
     const playerItem = await db.get(
       `SELECT * FROM player_items WHERE lobby_id = ? AND player_id = ? AND item_id = ?`,
       [lobbyId, userId, itemId]
@@ -192,15 +190,13 @@ router.put('/lobbies/:lobbyId/players/:userId/items/:itemId/upload', upload.sing
       return res.status(404).json({ error: 'Player item not found' });
     }
 
-    // Step 2: Update the item to mark it as found and add the image
     const imageUrl = req.file ? `/uploads/${req.file.filename}` : '';
     await db.run(
       `UPDATE player_items SET found = ?, image = ? WHERE lobby_id = ? AND player_id = ? AND item_id = ?`,
       [true, imageUrl, lobbyId, userId, itemId]
     );
 
-    // Step 3: Update the player's points in the lobbies table
-    // Retrieve lobby details to update points
+    //  Update the player's points in the lobbies table
     const lobby = await db.get(`SELECT * FROM lobbies WHERE id = ?`, [lobbyId]);
 
     if (!lobby) {
@@ -213,14 +209,11 @@ router.put('/lobbies/:lobbyId/players/:userId/items/:itemId/upload', upload.sing
     // Find the player in the points array
     const playerIndex = pointsArray.findIndex((p: { id: string; points: number }) => p.id === userId);
     if (playerIndex !== -1) {
-      // Increment the points (you may want to use some point increment logic here, e.g., 10 points per item)
-      pointsArray[playerIndex].points += 10; // Assuming each item is worth 10 points
+ 
+      pointsArray[playerIndex].points += 10;
     }
-
-    // Step 4: Update the lobbies table with the new points array
     await db.run(`UPDATE lobbies SET points = ? WHERE id = ?`, [JSON.stringify(pointsArray), lobbyId]);
 
-    // Step 5: Return the updated player item as a response
     const updatedPlayerItem = await db.get(
       `SELECT * FROM player_items WHERE lobby_id = ? AND player_id = ? AND item_id = ?`,
       [lobbyId, userId, itemId]
@@ -246,7 +239,6 @@ router.get('/lobbies/:lobbyId/players', async (req, res) => {
 
     const players = JSON.parse(lobby.players || '[]');
 
-    // Ensure players is an array of strings
     if (!Array.isArray(players)) {
       return res.status(500).json({ error: 'Invalid players data' });
     }
@@ -269,7 +261,6 @@ router.post('/lobbies/:lobbyId/start', async (req, res) => {
       return res.status(404).json({ error: 'Lobby not found' });
     }
 
-    // Update lobby status to started
     await db.run(`UPDATE lobbies SET status = ? WHERE id = ?`, ['started', lobbyId]);
 
     res.status(200).json({ message: `Lobby ${lobbyId} started` });
@@ -292,7 +283,6 @@ router.get('/lobbies/:lobbyId/score', async (req, res) => {
 
     let pointsArray = JSON.parse(lobby.points || '[]');
 
-    // Validate that pointsArray is properly formatted
     if (!Array.isArray(pointsArray)) {
       return res.status(500).json({ error: 'Invalid points data' });
     }
