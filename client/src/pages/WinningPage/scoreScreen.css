@@ -38,7 +38,7 @@ html, body {
     background: #FFB703;
     border: none;
     border-radius: 10px;
-    color: #fff;
+    color: #023047;
     cursor: pointer;
 }
 
@@ -80,17 +80,17 @@ html, body {
     height: 90px;
 }
 
-/* Content container for scores with flex-grow to fill available space */
+/* Content container for scores */
 .score-list {
     flex: 1;
     background-color: #8ECAE6; /* Light blue */
     padding: 20px;
     padding-top: 130px; /* Offset for fixed header */
     padding-bottom: 110px; /* Offset for fixed footer */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    overflow-y: auto;
+    display: flex; /* Switch back to flex for alignment */
+    flex-direction: column; /* Stacks items vertically */
+    align-items: center; /* Centers items horizontally */
+    overflow-y: auto; /* Enables scrolling when content overflows */
 }
 
 /* Score item styling */
@@ -99,20 +99,22 @@ html, body {
     justify-content: space-between;
     align-items: center;
     width: 80%;
-    padding: 10px 20px;
+    padding: 15px 20px;
     border-radius: 10px;
     margin: 10px 0;
     font-size: 40px;
     color: #fff;
-}
+    min-height: 65px;
+    text-align: center; /* Ensures text alignment */
+}   
 
 /* Colors for different positions */
 .position-1 {
-    background-color: #FFB703;
+    background-color: #eca918;
 }
 
 .position-2 {
-    background-color: #C0C0C0;
+    background-color: #a6a8b0;
 }
 
 .position-3 {
@@ -140,18 +142,29 @@ html, body {
     text-align: right;
 }
 
-/* Button styles */
+/* Action button styles */
 .action-button {
-    background: #FFB703;
-    color: #fff;
-    font-size: 30px;
-    font-family: "Comfortaa";
-    padding: 10px 20px;
+    background-color: #FFB703; /* Original orange */
+    color: #023047;
     border: none;
-    border-radius: 10px;
+    padding: 10px 20px;
+    font-size: 30px;
     cursor: pointer;
+    border-radius: 10px;
+    margin: 0 10px;
+    transition: background-color 0.3s ease;
 }
 
-.action-button:hover {
-    background: #ce9300; /* Darker shade of the original color */
+.action-button:hover:not(:disabled) {
+    background-color: #CE9300; /* Darker orange on hover */
+}
+
+.action-button:disabled {
+    cursor: not-allowed; /* Disabled state cursor */
+}
+
+/* Saved button styles */
+.action-button.saved {
+    background-color: #41BA00; /* Green color for Saved state */
+    color: #fff;
 }

@@ -8,7 +8,7 @@ import PinPage from "../pages/PinPage/PinPage";
 import CreateGamePage from "../pages/CreateGamePage/hostview";
 import LobbyPage from "../pages/LobbyPage/LobbyPage";
 import TimeUpPage from "../pages/TimeUpPage/TimeUpPage";
-import WinningPage from "../pages/WinningPage/scoreScreen";
+import WinningPage from "../pages/WinningPage/ScoreScreen";
 import ScavengerPage from "../pages/ScavengerPage/scavengeScreen";
 
 export const router = createBrowserRouter([

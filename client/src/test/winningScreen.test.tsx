@@ -1,8 +1,8 @@
 import { render, screen, fireEvent } from "@testing-library/react";
-import WinningPage from "../pages/WinningPage/scoreScreen";
+import WinningPage from "../pages/WinningPage/ScoreScreen";
 import { BrowserRouter } from "react-router-dom";
 
-describe("Read WinningScreen", () => {
+describe("Read ScoreScreen", () => {
   test("renders page", () => {
     render(
       <BrowserRouter>
@@ -10,7 +10,7 @@ describe("Read WinningScreen", () => {
       </BrowserRouter>
     );
     //check if they appear
-    const text = screen.getByText("This is the WinningScreen");
+    const text = screen.getByText("Time is up!");
 
     expect(text).toBeInTheDocument();
   });
