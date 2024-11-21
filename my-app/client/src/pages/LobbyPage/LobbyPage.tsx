@@ -14,7 +14,7 @@ export default function LobbyPage() {
         const fetchPlayers = async () => {
             if (lobbyId) {
                 try {
-                    const response = await axios.get(`http://localhost:5000/api/lobbies/${lobbyId}/players`);
+                    const response = await axios.get(`http://localhost:8080/api/lobbies/${lobbyId}/players`);
                     setPlayers(response.data.players);
                 } catch (error) {
                     console.error('Error fetching players:', error);
@@ -31,7 +31,7 @@ export default function LobbyPage() {
             const startGame = async () => {
                 try {
                     if (lobbyId) {
-                        await axios.post(`http://localhost:5000/api/lobbies/${lobbyId}/start`);
+                        await axios.post(`http://localhost:8080/api/lobbies/${lobbyId}/start`);
                         // Redirect each player to their respective scavenge screen
                         navigate(`/scavenge/${lobbyId}/userId`);  // Replace "userId" dynamically
                     }

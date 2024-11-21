@@ -56,7 +56,7 @@ const ScavengeScreen: React.FC = () => {
         formData.append('itemId', items[currentIndex].id.toString());
   
         const response = await axios.put(
-          `http://localhost:5000/api/lobbies/${lobbyId}/players/${userId}/items/${items[currentIndex].id}/upload`,
+          `http://localhost:8080/api/lobbies/${lobbyId}/players/${userId}/items/${items[currentIndex].id}/upload`,
           formData,
           {
             headers: {
@@ -88,7 +88,7 @@ const ScavengeScreen: React.FC = () => {
     if (lobbyId && userId && items[currentIndex]?.image) {
       try {
         const response = await axios.delete(
-          `http://localhost:5000/api/lobbies/${lobbyId}/players/${userId}/items/${items[currentIndex].id}/deleteImage`
+          `http://localhost:8080/api/lobbies/${lobbyId}/players/${userId}/items/${items[currentIndex].id}/deleteImage`
         );
 
         if (response.status === 200) {
@@ -139,7 +139,7 @@ const ScavengeScreen: React.FC = () => {
         </header>
         <div className='image-preview'>
           {items[currentIndex]?.image ? (
-            <img src={`http://localhost:5000${items[currentIndex].image}`} alt="Selected" />
+            <img src={`http://localhost:8080${items[currentIndex].image}`} alt="Selected" />
             
           ) : (
             <p>{errorMessage || 'No image selected'}</p>

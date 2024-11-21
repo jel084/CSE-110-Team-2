@@ -64,7 +64,7 @@ function HostView() {
         }
 
         try {
-            const response = await axios.post('http://localhost:5000/api/create', {
+            const response = await axios.post('http://localhost:8080/api/create', {
                 lobbyName: `Lobby-${lobbyCode}`,
                 scavengerItems: items,
                 userId: hostName || 'HostUser1',
@@ -74,7 +74,7 @@ function HostView() {
             if (response.status === 201) {
                 const { lobbyId } = response.data;
                 setSuccessMessage('Lobby created successfully!'); // Set the success message
-                setTimeout(() => setSuccessMessage(''), 5000); // Hide the success message after 5 seconds
+                setTimeout(() => setSuccessMessage(''), 8080); // Hide the success message after 5 seconds
                 navigate(`/lobby/${lobbyId}`);
             }
         } catch (error) {
