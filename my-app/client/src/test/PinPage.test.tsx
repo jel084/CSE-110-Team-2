@@ -1,7 +1,7 @@
 import '@testing-library/jest-dom/jest-globals';
 import '@testing-library/jest-dom';
 import { render, screen, fireEvent } from "@testing-library/react";
-import PinPage from "../PinPage";
+import PinPage from "../pages/PinPage/PinPage";
 import { BrowserRouter } from "react-router-dom";
 import axios from 'axios';
 

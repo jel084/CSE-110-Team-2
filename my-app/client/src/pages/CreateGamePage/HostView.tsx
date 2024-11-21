@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import './HostViewStyle.css';
 import axios from 'axios';
+import { Item } from '../../types/types';
 
 function HostView() {
     const [lobbyCode, setLobbyCode] = useState('');
     const [timeInput, setTimeInput] = useState('00:00:00');
     const [timeRemaining, setTimeRemaining] = useState(0);
     const [newItem, setNewItem] = useState('');
-    const [items, setItems] = useState<{ id: number; name: string; points: number; found: boolean; }[]>([]);
+    const [items, setItems] = useState<Item[]>([]);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [hostName, setHostName] = useState('');
     const [successMessage, setSuccessMessage] = useState('');  // New state for success message

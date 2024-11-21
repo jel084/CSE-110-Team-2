@@ -1,7 +1,7 @@
 import '@testing-library/jest-dom/jest-globals';
 import '@testing-library/jest-dom';
 import { render, screen, fireEvent } from "@testing-library/react";
-import HostView from "../HostView";
+import HostView from "../pages/CreateGamePage/HostView";
 import { BrowserRouter } from "react-router-dom";
 
 describe("Test Host View Screen", () => {

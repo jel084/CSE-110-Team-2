@@ -7,7 +7,7 @@
     overflow: hidden;
 }
 
-.pin-page {
+.pinPage {
     background-color: #8ECae6;
     padding: 130px;
     text-align: center;
@@ -44,14 +44,14 @@
     gap: 15px;
 }
 
-.input-container {
+.inputContainer {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 15px; 
 }
 
-.input-box {
+.inputBox {
     text-align: center;
     border: none;
     width: 300px;
@@ -62,7 +62,7 @@
     margin: 10px 0; 
 }
 
-.start-game-button {
+.startGameButton {
     text-align: center;
     border: none;
     width: 300px;
@@ -84,7 +84,7 @@ button:hover {
     transform: translateY(-3px);
 }
 
-.error-popup {
+.errorPopup {
     position: fixed;
     top: 50%;
     left: 50%;
@@ -96,11 +96,11 @@ button:hover {
     z-index: 1000;
 }
 
-.error-popup-content {
+.errorPopupContent {
     text-align: center;
 }
 
-.error-popup-content button {
+.errorPopupContent button {
     margin-top: 10px;
     padding: 10px 20px;
     border: none;
@@ -111,11 +111,11 @@ button:hover {
     cursor: pointer;
 }
 
-.error-popup-content button:hover {
+.errorPopupContent button:hover {
     background-color: #CC0000;
 }
 
-.success-popup {
+.successPopup {
     position: fixed;
     top: 700px;
     right: 730px;
@@ -127,12 +127,12 @@ button:hover {
     z-index: 1000;
 }
 
-.success-popup-content p {
+.successPopupContent p {
     margin: 0;
     font-size: 14px;
 }
 
-.success-popup-content button {
+.successPopupContent button {
     margin-top: 10px;
     padding: 10px 20px;
     border: none;
@@ -143,6 +143,6 @@ button:hover {
     cursor: pointer;
 }
 
-.success-popup-content button:hover {
+.successPopupContent button:hover {
     background-color: #FFA726;
 }

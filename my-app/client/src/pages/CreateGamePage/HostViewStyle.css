@@ -7,38 +7,47 @@
     overflow: hidden;
     font-family: 'Comfortaa';
 }
-
 .host-view {
     background-color: #8ECae6;
-    padding: 130px;  
+    padding: 20px;
     text-align: center;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: flex-start;
-    gap: 20px;
+    justify-content: flex-start; /* Keep items aligned at the top */
+    gap: 20px; /* Add gap between items */
     font-size: 35px;
+    
 }
+
 
 .spacer {
     margin: 0;
     background-color: #FB8500;
     width: 100vw;
-    height: 40px;  
+    height: 80px;
 }
-
 .spacer2 {
     margin: 0;
     background-color: #FB8500;
     width: 100vw;
-    height: 40px; 
+    height: 80px;
     position: fixed;
     bottom: 0;
     left: 0;
 }
-
-.lobby-code input {
+/* .lobby-code input{
+    margin: 10px;
+    text-align: center;
+    border: none;
+    width: 400px;
+    box-sizing: border-box;
+    padding: 10px 20px;
+    font-size: 24px;
+    border-radius: 15px;
+} */
+.lobby-code input{
     margin: 10px;
     text-align: center;
     border: none;
@@ -48,20 +57,19 @@
     font-size: 24px;
     border-radius: 15px;
 }
-
 .set-time {
     position: absolute;
-    top: 130px;  
+    top: 185px;
     right: 200px;
     display: flex;
     flex-direction: column;
     align-items: center;
     margin: 0;
     padding: 0;
+    
 }
-
-.set-time input {
-    text-align: center;
+.set-time input{
+    text-align:center;
     border: none;
     width: 200px;
     margin: 10px;
@@ -70,13 +78,13 @@
     border-radius: 15px;
     background-color: #FFB703;
     font-size: 24px;
+    
 }
 
-.add-item-section {
+.add-item-section{
     margin: 0;
 }
-
-.add-item-section input, .add-item-section button {
+.add-item-section input, .add-item-section button{
     text-align: center;
     border: none;
     width: 200px;
@@ -85,24 +93,22 @@
     border-radius: 15px;
     font-size: 24px;
 }
-
-.add-item-section input {
+.add-item-section input{
     background-color: #D9D9D9;
     color: white;
     opacity: 1;
 }
 
-.add-item-section input::placeholder {
+.add-item-section input::placeholder{
     color: white;
     opacity: 1;
 }
-
-.add-item-section button {
+.add-item-section button{
     background-color: #FFB703;
     color: white;
 }
 
-.start-game-button {
+.start-game-button{
     text-align: center;
     border: none;
     width: 300px;
@@ -117,34 +123,30 @@
 button {
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
-
-button:hover {
-    background-color: #FFA726;
+button:hover{
+    background-color: #FFA726; 
     box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
     transform: translateY(-3px);
 }
 
-.item-carousel {
+.item-carousel{
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
     background-color: #D9D9D9;
-    padding: 2x;  
-    border-radius: 10px;
-    width: 100%; 
-    margin-top: 5px;
-    position: relative;
-    height: 70px;
+    padding: 15px;
+    border-radius: 20px;
+    width: 100%;
+    margin-top: 20px;
 }
 
 .item-display {
-    margin: 5px;  
+    margin: 0 20px;
     font-size: 24px;
     color: white;
-    height: min-content;
 }
 
-.arrow-button {
+.arrow-button{
     background-color: #FFB703;
     border: none;
     border-radius: 50%;
@@ -152,22 +154,18 @@ button:hover {
     cursor: pointer;
     font-size: 20px;
     color: white;
-    margin: 10px;
+    margin: 0 10px;
 }
 
 .delete-button {
     background-color: #FB8500;
     border: none;
     border-radius: 10px;
-    padding: 0px;  
-    height: 45px;
+    padding: 10px;
     cursor: pointer;
     font-size: 20px;
     color: white;
-    position: relative;
-    top: -35px; 
-    margin-left: 10px;
-    left: 0px;
+    margin-left: 20px;
 }
 
 .arrow-button:hover,
