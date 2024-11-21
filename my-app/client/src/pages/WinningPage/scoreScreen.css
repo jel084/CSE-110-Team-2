@@ -1,0 +1,157 @@
+@import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;700&display=swap');
+
+/* Reset default margins and paddings */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+    font-family: 'Comfortaa', sans-serif;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Time is up screen styling */
+.time-up-screen {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    background-color: #8ECAE6; /* Light blue */
+    color: #fff;
+    font-family: 'Comfortaa', sans-serif;
+    text-align: center;
+}
+
+.time-up-screen h1 {
+    font-size: 50px;
+    margin-bottom: 20px;
+}
+
+.time-up-screen .action-button {
+    font-size: 30px;
+    padding: 15px 30px;
+    background: #FFB703;
+    border: none;
+    border-radius: 10px;
+    color: #fff;
+    cursor: pointer;
+}
+
+.time-up-screen .action-button:hover {
+    background: #ce9300; /* Darker shade */
+}
+
+/* Main container for the scoreboard */
+.scoreboard {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+/* Header and footer styles */
+.scoreboard-header,
+.scoreboard-footer {
+    background-color: #FB8500; /* Orange */
+    color: #fff;
+    text-align: center;
+    padding: 20px;
+    position: fixed;
+    left: 0;
+    right: 0;
+    z-index: 1;
+    height: 100px;
+}
+
+.scoreboard-header {
+    top: 0;
+    font-size: 30px;
+    height: 110px;
+}
+
+.scoreboard-footer {
+    bottom: 0;
+    display: flex;
+    justify-content: space-around;
+    height: 90px;
+}
+
+/* Content container for scores with flex-grow to fill available space */
+.score-list {
+    flex: 1;
+    background-color: #8ECAE6; /* Light blue */
+    padding: 20px;
+    padding-top: 130px; /* Offset for fixed header */
+    padding-bottom: 110px; /* Offset for fixed footer */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-y: auto;
+}
+
+/* Score item styling */
+.score-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 80%;
+    padding: 10px 20px;
+    border-radius: 10px;
+    margin: 10px 0;
+    font-size: 40px;
+    color: #fff;
+}
+
+/* Colors for different positions */
+.position-1 {
+    background-color: #FFB703;
+}
+
+.position-2 {
+    background-color: #C0C0C0;
+}
+
+.position-3 {
+    background-color: #CD7F32;
+}
+
+/* Style for all positions beyond the top 3 */
+.score-item:not(.position-1):not(.position-2):not(.position-3) {
+    background-color: #219EBC;
+}
+
+/* Flex layout for score-item fields */
+.score-item .position {
+    font-weight: bold;
+    width: 50px;
+}
+
+.score-item .name {
+    flex: 1;
+    text-align: left;
+}
+
+.score-item .points {
+    width: 50px;
+    text-align: right;
+}
+
+/* Button styles */
+.action-button {
+    background: #FFB703;
+    color: #fff;
+    font-size: 30px;
+    font-family: "Comfortaa";
+    padding: 10px 20px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.action-button:hover {
+    background: #ce9300; /* Darker shade of the original color */
+}
