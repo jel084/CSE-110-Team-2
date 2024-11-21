@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { connectDB } from './db';
 
 export const createLobby = async (req: Request, res: Response) => {
-  const { lobbyName, scavengerItems, userId, pin } = req.body;
+  const { lobbyName, scavengerItems, userId, userName, pin } = req.body;
 
   if (!pin || !/^\d{4}$/.test(pin)) {
     return res.status(400).json({ error: 'A valid 4-digit PIN is required' });
@@ -16,15 +16,17 @@ export const createLobby = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Scavenger items must be an array of objects' });
     }
 
+    const pointsArray = [{ id: userId, name: userName, points: 0 }]; // Updated to include the player's name
+
     const result = await db.run(`
       INSERT INTO lobbies (lobbyName, host, players, scavengerItems, points, pin)
       VALUES (?, ?, ?, ?, ?, ?)
     `, [
       lobbyName,
       userId,
-      JSON.stringify([]),  // Initialize players as empty array
-      JSON.stringify(scavengerItems),  // Properly formatted scavenger items array
-      JSON.stringify([]),  // Initialize points as empty array
+      JSON.stringify([userId]),  // Initialize players with host
+      JSON.stringify(scavengerItems),
+      JSON.stringify(pointsArray),  // Initialize points including player name
       pin
     ]);
 
@@ -36,7 +38,7 @@ export const createLobby = async (req: Request, res: Response) => {
 };
 
 export const joinLobby = async (req: Request, res: Response) => {
-  const { lobbyId, userId, pin } = req.body;
+  const { lobbyId, userId, userName, pin } = req.body; // Added userName
 
   try {
     const db = await connectDB();
@@ -53,10 +55,14 @@ export const joinLobby = async (req: Request, res: Response) => {
     const players = JSON.parse(lobby.players || '[]');
     let pointsArray = JSON.parse(lobby.points || '[]');
 
+    // If the user is not in the lobby, add them
     if (!players.includes(userId)) {
       players.push(userId);
-      pointsArray.push({ id: userId, points: 0 });
+      
+      // Add player to the points array including their name
+      pointsArray.push({ id: userId, name: userName, points: 0 });
 
+      // Update the database with the new players list and points array
       await db.run(`
         UPDATE lobbies SET players = ?, points = ? WHERE id = ?
       `, [JSON.stringify(players), JSON.stringify(pointsArray), lobbyId]);

@@ -182,7 +182,7 @@ router.put('/lobbies/:lobbyId/players/:userId/items/:itemId/upload', upload.sing
   try {
     const db = await connectDB();
 
-    // Get the player's specific item
+    // Step 1: Get the player's specific item to validate it exists
     const playerItem = await db.get(
       `SELECT * FROM player_items WHERE lobby_id = ? AND player_id = ? AND item_id = ?`,
       [lobbyId, userId, itemId]
@@ -192,20 +192,40 @@ router.put('/lobbies/:lobbyId/players/:userId/items/:itemId/upload', upload.sing
       return res.status(404).json({ error: 'Player item not found' });
     }
 
-    // Update the item to mark it as found and add the image
+    // Step 2: Update the item to mark it as found and add the image
     const imageUrl = req.file ? `/uploads/${req.file.filename}` : '';
     await db.run(
       `UPDATE player_items SET found = ?, image = ? WHERE lobby_id = ? AND player_id = ? AND item_id = ?`,
       [true, imageUrl, lobbyId, userId, itemId]
     );
 
-    // Re-fetch the updated item after updating the database
+    // Step 3: Update the player's points in the lobbies table
+    // Retrieve lobby details to update points
+    const lobby = await db.get(`SELECT * FROM lobbies WHERE id = ?`, [lobbyId]);
+
+    if (!lobby) {
+      return res.status(404).json({ error: 'Lobby not found' });
+    }
+
+    // Parse the points array from the lobby record
+    let pointsArray = JSON.parse(lobby.points || '[]');
+
+    // Find the player in the points array
+    const playerIndex = pointsArray.findIndex((p: { id: string; points: number }) => p.id === userId);
+    if (playerIndex !== -1) {
+      // Increment the points (you may want to use some point increment logic here, e.g., 10 points per item)
+      pointsArray[playerIndex].points += 10; // Assuming each item is worth 10 points
+    }
+
+    // Step 4: Update the lobbies table with the new points array
+    await db.run(`UPDATE lobbies SET points = ? WHERE id = ?`, [JSON.stringify(pointsArray), lobbyId]);
+
+    // Step 5: Return the updated player item as a response
     const updatedPlayerItem = await db.get(
       `SELECT * FROM player_items WHERE lobby_id = ? AND player_id = ? AND item_id = ?`,
       [lobbyId, userId, itemId]
     );
 
-    // Return the updated item
     res.status(200).json({ message: 'Item marked successfully and image uploaded', item: updatedPlayerItem });
   } catch (error) {
     console.error('Error uploading image or marking item:', error);
@@ -256,6 +276,31 @@ router.post('/lobbies/:lobbyId/start', async (req, res) => {
   } catch (error) {
     console.error('Error starting lobby:', error);
     res.status(500).json({ error: 'Failed to start lobby' });
+  }
+});
+
+router.get('/lobbies/:lobbyId/score', async (req, res) => {
+  const { lobbyId } = req.params;
+
+  try {
+    const db = await connectDB();
+    const lobby = await db.get(`SELECT * FROM lobbies WHERE id = ?`, [lobbyId]);
+
+    if (!lobby) {
+      return res.status(404).json({ error: 'Lobby not found' });
+    }
+
+    let pointsArray = JSON.parse(lobby.points || '[]');
+
+    // Validate that pointsArray is properly formatted
+    if (!Array.isArray(pointsArray)) {
+      return res.status(500).json({ error: 'Invalid points data' });
+    }
+
+    res.status(200).json({ players: pointsArray });
+  } catch (error) {
+    console.error('Error retrieving lobby score:', error);
+    res.status(500).json({ error: 'Failed to retrieve lobby score' });
   }
 });
 
