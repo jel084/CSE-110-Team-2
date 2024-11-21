@@ -5,16 +5,19 @@ import PinPage from './pages/PinPage/PinPage';
 import ScavengeScreen from './pages/ScavengerPage/scavengeScreen';
 import LobbyPage from './pages/LobbyPage/LobbyPage';  // Import the LobbyPage
 import HomePage from './pages/HomePage/HomePage';
+import TimeUpPage from './pages/TimeUpPage/TimeUpPage';
+import ScoreScreen from './pages/WinningPage/scoreScreen';
 
 function App() {
   return (
-
       <Routes>
         <Route path="/" element={<HomePage />} /> 
         <Route path="/pin" element={<PinPage />} />
         <Route path="/creategame" element={<HostView />} />
         <Route path="/lobby/:lobbyId" element={<LobbyPage />} /> 
         <Route path="/scavenge/:lobbyId/:userId" element={<ScavengeScreen />} />
+        <Route path="/timeup" element={<TimeUpPage />} />
+        <Route path="/winners" element={<ScoreScreen />} />
       </Routes>
   );
 }
