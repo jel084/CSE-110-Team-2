@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { getItemsForPlayer } from './player-utils';
-import { Item } from './types';
+import { getItemsForPlayer } from '../../player-utils';
+import { Item } from '../../types/types'
 import './scavengeScreen.css';
 import axios from 'axios';
 
