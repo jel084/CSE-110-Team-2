@@ -17,4 +17,4 @@ jobs: # Defines the jobs that will run as part of this workflow
         run: npm install # Installs the dependencies
 
       - name: Unit Test
-        run: npm test # Runs your unit tests
+        run: cd my-app && npm test # Runs your unit tests
