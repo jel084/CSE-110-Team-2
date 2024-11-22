@@ -11,9 +11,19 @@ const ScoreScreen: React.FC = () => {
 
     const sortedPlayers = [...testPlayers].sort((a, b) => b.points - a.points);
 
-    const handleSave = () => {
-        setIsSaved(true); // Mark results as saved
-    };
+    const handleSaveResults = async () => {
+        const resultsText = sortedPlayers
+          .map((player) => `${player.name}: ${player.points}`)
+          .join("\n");
+        try {
+          await navigator.clipboard.writeText(resultsText);
+          console.log("Clipboard write successful"); // Debug log
+          setIsSaved(true); // Update state
+        } catch (error) {
+          console.error("Failed to copy results to clipboard", error);
+        }
+      };
+    
 
     const handleJoinNewGame = () => {
         navigate(ROUTES.PIN); // Navigate to the lobby page
@@ -42,7 +52,7 @@ const ScoreScreen: React.FC = () => {
                         </button>
                         <button
                             className={`action-button ${isSaved ? 'saved' : ''}`}
-                            onClick={handleSave}
+                            onClick={handleSaveResults}
                             disabled={isSaved}
                         >
                             {isSaved ? 'Saved!' : 'Save Results'}

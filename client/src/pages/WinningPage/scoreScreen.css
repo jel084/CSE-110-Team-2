@@ -161,6 +161,8 @@ html, body {
 
 .action-button:disabled {
     cursor: not-allowed; /* Disabled state cursor */
+    color: #fff;
+    background-color: #41BA00;
 }
 
 /* Saved button styles */
