@@ -14,7 +14,7 @@ jobs: # Defines the jobs that will run as part of this workflow
       - uses: actions/checkout@v3 # Check out the repository code
 
       - name: Install Dependencies
-        run: npm install # Installs the dependencies
+        run: cd my-app && npm install # Installs the dependencies
 
       - name: Unit Test
         run: cd my-app && npm test # Runs your unit tests
