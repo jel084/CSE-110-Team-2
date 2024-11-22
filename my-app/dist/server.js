@@ -9,7 +9,7 @@ const path_1 = __importDefault(require("path"));
 const routes_1 = __importDefault(require("./routes"));
 const db_table_1 = require("./db_table");
 const app = (0, express_1.default)();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 8080;
 app.use((0, cors_1.default)());
 app.use(express_1.default.json());
 // Add this line to serve static files from the uploads folder
