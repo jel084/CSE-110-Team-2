@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './HostViewStyle.css';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { Item } from '../../types/types';
 
 function HostView() {
     const [lobbyCode, setLobbyCode] = useState('');
