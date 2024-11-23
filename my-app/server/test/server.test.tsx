@@ -12,25 +12,22 @@ const PORT = process.env.PORT || 8080;
 
 beforeAll(async () => {
     db = await connectDB();
-    await initDatabase();
     server = await app.listen(PORT); // Start the server before tests
 });
 
 afterAll(async () => {
-    // Delete all created entries just in case not all tests run
-    await db.run(`
-      DELETE FROM lobbies WHERE (lobbyName = 'New Lobby 1' OR lobbyName = 'New Lobby 2');
-    `);
-
-    // Automatically delete database.sqlite if it was created right before testing
-    const result = await db.get('SELECT COUNT(*) AS count FROM lobbies');
-    if (result.count === 0)
-      fs.unlinkSync('database.sqlite');
-
+    fs.unlinkSync('database.sqlite'); // Automatically delete database.sqlite after all tests are done
     server.close(); // Stop the server after tests
 });
 
 describe('Lobby Endpoints', () => {
+  beforeEach(async () => {
+    await initDatabase();
+  });
+
+  afterEach(async () => {
+    await db.run(`DROP TABLE IF EXISTS lobbies`);
+  });
 
   test('GET /lobbies should show all lobbies', async () => {
     await db.run(`
@@ -63,10 +60,24 @@ describe('Lobby Endpoints', () => {
       pin: '5678',
       status: 'in-progress',
     });
+  });
 
-    await db.run(`
-      DELETE FROM lobbies WHERE (lobbyName = 'New Lobby 1' OR lobbyName = 'New Lobby 2');
-    `);
+  test('GET /lobbies invalid request', async () => {
+    await db.run(`DROP TABLE lobbies`);
+
+    // Perform the GET request to the /lobbies endpoint
+    try {
+      await axios.get(`http://localhost:${PORT}/api/lobbies`);
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        expect(error.response?.status).toBe(500);
+        expect(error.response?.data).toMatchObject({
+          error: 'Failed to retrieve lobbies',
+        });
+      } else {
+        throw error;
+      }
+    }
   });
 
   test('POST /create should add a new lobby to lobbies', async () => {
@@ -94,10 +105,6 @@ describe('Lobby Endpoints', () => {
         pin: '1234',
         status: 'waiting'
     });
-
-    await db.run(`
-      DELETE FROM lobbies WHERE (lobbyName = 'New Lobby 1');
-    `);
   });
 
   test('POST /join should add a player to the given lobby', async () => {
@@ -110,13 +117,13 @@ describe('Lobby Endpoints', () => {
 
     // Perform the POST request to the /join endpoint
     const res = await axios.post(`http://localhost:${PORT}/api/join`, {
-      lobbyId: 4,
+      lobbyId: 1,
       userId: 'Player 1',
       pin: '1234'
     });
 
     expect(res.status).toBe(200);
-    expect(res.data.message).toBe("User Player 1 joined lobby 4");
+    expect(res.data.message).toBe("User Player 1 joined lobby 1");
 
     const lobby_res = await axios.get(`http://localhost:${PORT}/api/lobbies`);
 
