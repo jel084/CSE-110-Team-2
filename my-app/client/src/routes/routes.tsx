@@ -1,6 +1,4 @@
 import { ROUTES } from "../constants/routes";
-import React from "react";
-import {testItems} from "../constants/constants";
 import { createBrowserRouter } from "react-router-dom";
 import HomePage from "../pages/HomePage/HomePage";
 import NotFoundPage from "../pages/ErrorPage/NotFoundPage";

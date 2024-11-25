@@ -33,7 +33,7 @@ describe("Test Pin Page Screen", () => {
 
     // create game in backend
     try {
-        const response = await axios.post('http://localhost:5000/api/create', {
+        const response = await axios.post('http://localhost:8080/api/create', {
             lobbyName: `Lobby-1234`,
             scavengerItems: [{ id: 1, name: "Triton Statue", points: 10, found: false }],
             userId: 'HostUser1',
@@ -71,7 +71,7 @@ describe("Test Pin Page Screen", () => {
 
     // create game in backend
     try {
-        const response = await axios.post('http://localhost:5000/api/create', {
+        const response = await axios.post('http://localhost:8080/api/create', {
             lobbyName: `Lobby-1234`,
             scavengerItems: [{ id: 1, name: "Triton Statue", points: 10, found: false }],
             userId: 'HostUser1',
