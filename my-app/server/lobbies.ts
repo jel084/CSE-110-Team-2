@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { connectDB } from './db';
 
 export const createLobby = async (req: Request, res: Response) => {
-  const { lobbyName, scavengerItems, userId, pin } = req.body;
+  const { lobbyName, scavengerItems, userId, gameTime, pin } = req.body;
 
   if (!pin || !/^\d{4}$/.test(pin)) {
     return res.status(400).json({ error: 'A valid 4-digit PIN is required' });
@@ -17,15 +17,16 @@ export const createLobby = async (req: Request, res: Response) => {
     }
 
     const result = await db.run(`
-      INSERT INTO lobbies (lobbyName, host, players, scavengerItems, points, pin)
-      VALUES (?, ?, ?, ?, ?, ?)
+      INSERT INTO lobbies (lobbyName, host, players, scavengerItems, points, pin, gameTime)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
     `, [
       lobbyName,
       userId,
       JSON.stringify([]),  // Initialize players as empty array
       JSON.stringify(scavengerItems),  // Properly formatted scavenger items array
       JSON.stringify([]),  // Initialize points as empty array
-      pin
+      pin,
+      gameTime
     ]);
 
     res.status(201).json({ lobbyId: result.lastID });

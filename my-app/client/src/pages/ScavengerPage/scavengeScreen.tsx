@@ -1,15 +1,79 @@
-import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useState, useEffect, useContext } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { getItemsForPlayer } from '../../player-utils';
 import { Item } from '../../types/types'
 import './scavengeScreen.css';
 import axios from 'axios';
+import { AppContext } from '../../context/AppContext';
 
 const ScavengeScreen: React.FC = () => {
   const { lobbyId, userId } = useParams<{ lobbyId: string; userId: string }>();
   const [items, setItems] = useState<Item[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [timeRemaining, setTimeRemaining] = useState(11110);
+  const navigate = useNavigate();
+
+
+// Fetch players from backend
+useEffect(() => {
+  const fetchTime = async () => {
+      if (lobbyId) {
+          try {
+              const response = await axios.get(`http://localhost:8080/api/lobbies/${lobbyId}/gameTime`);
+              console.log("Fetched time:", response.data);
+              setTimeRemaining(response.data.gameTime);
+          } catch (error) {
+              console.error('Error fetching players:', error);
+          }
+      }
+  };
+  fetchTime();
+}, [lobbyId]);
+
+useEffect(() => {
+  if (timeRemaining <= 0){
+    alert("Time's up!");
+    navigate(`/winners`);
+    return;
+  }
+
+  const interval = setInterval(() => {
+      setTimeRemaining(prev => {
+          if (prev <= 1) {
+              clearInterval(interval);
+              return 0;
+          }
+          return prev - 1;
+      });
+    setTime();
+  }, 1000);
+
+
+  const setTime = async() =>{
+    try {
+      console.log(timeRemaining);
+      const response = await axios.post(
+        `http://localhost:8080/api/lobbies/${lobbyId}/${timeRemaining}/setTime`);
+      console.log("Time set:", response.data);
+    } catch (error) {
+      console.error('Error setting time:', error);
+    }
+  }
+
+
+
+  return () => clearInterval(interval);
+}, [timeRemaining]);
+
+const formatTime = (totalSeconds: number) => {
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  return [hours, minutes, seconds]
+      .map(val => String(val).padStart(2, '0'))
+      .join(':');
+};
 
   useEffect(() => {
     if (lobbyId && userId) {
@@ -92,11 +156,7 @@ const ScavengeScreen: React.FC = () => {
         );
 
         if (response.status === 200) {
-          const updatedItems = [...items];
-          updatedItems[currentIndex].image = ''; 
-          updatedItems[currentIndex].found = false; 
-          setItems(updatedItems);
-          console.log('Image deleted successfully');
+          console.log("Image deleted successfully");
         }
       } catch (error) {
         console.error('Error deleting image:', error);
@@ -105,46 +165,85 @@ const ScavengeScreen: React.FC = () => {
     }
   };
 
+  const deleteImage = () => {
+    handleDeleteImage();
+    const updatedItems = [...items];
+    updatedItems[currentIndex].image = undefined;
+    updatedItems[currentIndex].found = false;
+    setItems(updatedItems);
+}
+const allItemsFound = items.every((item) => item.image);
   return (
     <>
-      <div className='spacer'>
+      <div className="scavenge-spacer">
         <h1>Capture Your Find</h1>
       </div>
-      <div className='scavenger-view'>
-        <header className='header'>
-          <section className={`item-list`}>
+      <div className="scavenger-view">
+        <header className="scavenge-header">
+          <section className={`scavenge-item-list`}>
             <p>Item List:</p>
-            <div className='item-container'>
-              {items.length > 0 ? (
-                <div className={`item-carousel ${items[currentIndex]?.found ? 'found' : ''}`}>
-                  <button className="arrow-button" onClick={prevItem}>&larr;</button>
-                  <span className="item-display">
-                  
+            <div className="scavenge-item-container">
+              {items.length > 0 && (
+                <div
+                  className={`scavenge-item-carousel ${
+                    items[currentIndex].found ? "found" : ""
+                  }`}
+                >
+                  <button className="scavenge-arrow-button" onClick={prevItem}>
+                    &larr;
+                  </button>
+                  <span className="scavenge-item-display">
                     {`Item #${currentIndex + 1}: ${items[currentIndex].name}`}
                   </span>
-                  <button className="arrow-button" onClick={nextItem}>&rarr;</button>
+                  <button className="scavenge-arrow-button" onClick={nextItem}>
+                    &rarr;
+                  </button>
                 </div>
-              ) : (
-                <p>{errorMessage || 'Loading items...'}</p>
               )}
             </div>
           </section>
-          <div className='image-container'>
+          <div className="scavenge-image-container">
             <label htmlFor="image">Upload Image</label>
-            <input type="file" name="image" id="image" accept="image/*" onChange={handleImageChange} />
+            <input
+              type="file"
+              name="image"
+              id="image"
+              accept="image/*"
+              onChange={handleImageChange}
+            />
           </div>
-          {items[currentIndex]?.found && (
-            <p className="found-text">Item found!</p>
-          )}
+          <button className="scavenge-delete-button" onClick={deleteImage}>
+            🗑️
+          </button>
+          <div className="scavenge-set-time">
+            <label>Time Remaining:</label>
+            <input type="text" value={formatTime(timeRemaining)} placeholder="hr:mm:ss" />
+          </div>
         </header>
-        <div className='image-preview'>
+        <div className="scavenge-image-preview">
           {items[currentIndex]?.image ? (
-            <img src={`http://localhost:8080${items[currentIndex].image}`} alt="Selected" />
-            
+            <img
+              src={`http://localhost:8080${items[currentIndex].image}`}
+              alt="Selected"
+            />
           ) : (
-            <p>{errorMessage || 'No image selected'}</p>
+            <p>{errorMessage || "No image selected"}</p>
           )}
         </div>
+        <div className="scavenge-foundText">
+          {items.length > 0 && items[currentIndex].found && (
+            <p className="scavenge-found-text">Item found!</p>
+          )}
+        </div>
+      </div>
+
+      <div className="scavenge-spacer2">
+        <button
+          className="scavenge-submit-items-button"
+          disabled={!allItemsFound}
+        >
+          Submit
+        </button>
       </div>
     </>
   );

@@ -1,14 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import './HostViewStyle.css';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { Item } from '../../types/types';
+import { AppContext } from '../../context/AppContext';
 
 function HostView() {
     const [lobbyCode, setLobbyCode] = useState('');
     const [timeInput, setTimeInput] = useState('00:00:00');
     const [timeRemaining, setTimeRemaining] = useState(0);
     const [newItem, setNewItem] = useState('');
-    const [items, setItems] = useState<{ id: number; name: string; points: number; found: boolean; }[]>([]);
+    const [items, setItems] = useState<Item[]>([]);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [hostName, setHostName] = useState('');
     const [successMessage, setSuccessMessage] = useState('');  // New state for success message
@@ -68,14 +70,14 @@ function HostView() {
                 lobbyName: `Lobby-${lobbyCode}`,
                 scavengerItems: items,
                 userId: hostName || 'HostUser1',
-                pin: lobbyCode
+                pin: lobbyCode,
+                gameTime: convertTimeToSeconds(timeInput)
             });
 
             if (response.status === 201) {
                 const { lobbyId } = response.data;
                 setSuccessMessage('Lobby created successfully!'); // Set the success message
                 setTimeout(() => setSuccessMessage(''), 8080); // Hide the success message after 5 seconds
-                navigate(`/lobby/${lobbyId}`);
             }
         } catch (error) {
             console.error('Error creating lobby:', error);
