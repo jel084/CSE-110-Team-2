@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import './HostViewStyle.css';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Item } from '../../types/types';
+import { AppContext } from '../../context/AppContext';
 
 function HostView() {
     const [lobbyCode, setLobbyCode] = useState('');
@@ -69,7 +70,8 @@ function HostView() {
                 lobbyName: `Lobby-${lobbyCode}`,
                 scavengerItems: items,
                 userId: hostName || 'HostUser1',
-                pin: lobbyCode
+                pin: lobbyCode,
+                gameTime: convertTimeToSeconds(timeInput)
             });
 
             if (response.status === 201) {

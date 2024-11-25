@@ -12,3 +12,8 @@ export type Player = {
     items: Item[];
 
 }
+
+export type Lobby ={
+    lobbyId: string;
+    gameTime: number;
+}

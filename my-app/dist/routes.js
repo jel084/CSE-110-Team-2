@@ -29,21 +29,22 @@ router.get('/lobbies', (req, res) => __awaiter(void 0, void 0, void 0, function*
     }
 }));
 router.post('/create', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { lobbyName, scavengerItems, userId, pin } = req.body;
+    const { lobbyName, scavengerItems, userId, gameTime, pin } = req.body;
     if (!userId) {
         return res.status(400).json({ error: 'Host userId is required' });
     }
     try {
         const db = yield (0, db_1.connectDB)();
         // Insert the new lobby
-        yield db.run(`INSERT INTO lobbies (lobbyName, host, players, scavengerItems, points, pin, status)
-      VALUES (?, ?, ?, ?, ?, ?, ?)`, [
+        yield db.run(`INSERT INTO lobbies (lobbyName, host, players, scavengerItems, points, pin, gameTime, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`, [
             lobbyName,
             userId,
             JSON.stringify([userId]),
             JSON.stringify(scavengerItems),
             JSON.stringify([{ id: userId, points: 0 }]),
             pin,
+            gameTime,
             'waiting'
         ]);
         // Retrieve the newly created lobby to get its ID

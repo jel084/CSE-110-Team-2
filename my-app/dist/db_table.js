@@ -23,6 +23,7 @@ const initDatabase = () => __awaiter(void 0, void 0, void 0, function* () {
       scavengerItems TEXT,
       points TEXT,
       pin TEXT NOT NULL,
+      gameTime INTEGER NOT NULL,
       status TEXT DEFAULT 'waiting'
     )
   `);

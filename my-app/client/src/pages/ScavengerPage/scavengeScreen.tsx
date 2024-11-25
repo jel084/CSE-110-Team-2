@@ -11,7 +11,39 @@ const ScavengeScreen: React.FC = () => {
   const [items, setItems] = useState<Item[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const { timer } = useContext(AppContext);
+  const [timeRemaining, setTimeRemaining] = useState(0);
+
+  let lobbyIndex: number = 0;
+
+
+useEffect(() => {
+  if (timeRemaining <= 0) return;
+
+  const interval = setInterval(() => {
+      setTimeRemaining(prev => {
+          if (prev <= 1) {
+              clearInterval(interval);
+              alert("Time's up!");
+              return 0;
+          }
+          return prev - 1;
+      });
+  }, 1000);
+
+
+  console.log("Seconds Remaining: ", timeRemaining);
+
+  return () => clearInterval(interval);
+}, [timeRemaining]);
+
+const formatTime = (totalSeconds: number) => {
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  return [hours, minutes, seconds]
+      .map(val => String(val).padStart(2, '0'))
+      .join(':');
+};
 
   useEffect(() => {
     if (lobbyId && userId) {
@@ -155,7 +187,7 @@ const allItemsFound = items.every((item) => item.image);
           </button>
           <div className="scavenge-set-time">
             <label>Time Remaining:</label>
-            <input type="text" value={timer} placeholder="hr:mm:ss" />
+            <input type="text" value={formatTime(timeRemaining)} placeholder="hr:mm:ss" />
           </div>
         </header>
         <div className="scavenge-image-preview">

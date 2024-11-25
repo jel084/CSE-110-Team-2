@@ -17,7 +17,7 @@ router.get('/lobbies', async (req, res) => {
 });
 
 router.post('/create', async (req, res) => {
-  const { lobbyName, scavengerItems, userId, pin } = req.body;
+  const { lobbyName, scavengerItems, userId, gameTime, pin } = req.body;
 
   if (!userId) {
     return res.status(400).json({ error: 'Host userId is required' });
@@ -28,8 +28,8 @@ router.post('/create', async (req, res) => {
 
     // Insert the new lobby
     await db.run(
-      `INSERT INTO lobbies (lobbyName, host, players, scavengerItems, points, pin, status)
-      VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO lobbies (lobbyName, host, players, scavengerItems, points, pin, gameTime, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         lobbyName,
         userId,
@@ -37,6 +37,7 @@ router.post('/create', async (req, res) => {
         JSON.stringify(scavengerItems),
         JSON.stringify([{ id: userId, points: 0 }]), // Add initial points for the host
         pin,
+        gameTime,
         'waiting'
       ]
     );

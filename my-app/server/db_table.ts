@@ -13,6 +13,7 @@ export const initDatabase = async () => {
       scavengerItems TEXT,
       points TEXT,
       pin TEXT NOT NULL,
+      gameTime INTEGER NOT NULL,
       status TEXT DEFAULT 'waiting'
     )
   `);
