@@ -7,7 +7,6 @@ import NotFoundPage from "../pages/ErrorPage/NotFoundPage";
 import PinPage from "../pages/PinPage/PinPage";
 import CreateGamePage from "../pages/CreateGamePage/HostView";
 import LobbyPage from "../pages/LobbyPage/LobbyPage";
-import TimeUpPage from "../pages/TimeUpPage/TimeUpPage";
 import WinningPage from "../pages/WinningPage/scoreScreen";
 import ScavengerPage from "../pages/ScavengerPage/scavengeScreen";
 
@@ -32,10 +31,6 @@ export const router = createBrowserRouter([
   {
     path: ROUTES.SCAVENGE,
     element: <ScavengerPage/>,
-  },
-  {
-    path: ROUTES.TIMEUP,
-    element: <TimeUpPage />,
   },
   {
     path: ROUTES.WINNERS,

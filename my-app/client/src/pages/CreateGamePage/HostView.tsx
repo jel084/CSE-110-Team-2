@@ -76,7 +76,6 @@ function HostView() {
                 const { lobbyId } = response.data;
                 setSuccessMessage('Lobby created successfully!'); // Set the success message
                 setTimeout(() => setSuccessMessage(''), 8080); // Hide the success message after 5 seconds
-                navigate(`/lobby/${lobbyId}`);
             }
         } catch (error) {
             console.error('Error creating lobby:', error);

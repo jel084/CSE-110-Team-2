@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import "./LobbyPage.css";
+import styles from "./LobbyPage.module.css";
 import axios from 'axios';
 
 export default function LobbyPage() {
-    const { lobbyId } = useParams<{ lobbyId: string }>();
+    const { lobbyId, userId } = useParams<{ lobbyId: string, userId: string }>();
     const [players, setPlayers] = useState<string[]>([]);
     const [timer, setTimer] = useState(15);
     const navigate = useNavigate();
@@ -30,10 +30,10 @@ export default function LobbyPage() {
             // Timer ended, update the backend game status
             const startGame = async () => {
                 try {
-                    if (lobbyId) {
+                    if (lobbyId && userId) {
                         await axios.post(`http://localhost:8080/api/lobbies/${lobbyId}/start`);
                         // Redirect each player to their respective scavenge screen
-                        navigate(`/scavenge/${lobbyId}/userId`);  // Replace "userId" dynamically
+                        navigate(`/scavenge/${lobbyId}/${userId}`);  // Replace "userId" dynamically
                     }
                 } catch (error) {
                     console.error('Error starting the game:', error);
@@ -56,16 +56,16 @@ export default function LobbyPage() {
         }
     }, [timer, navigate, lobbyId]);
 
-    return (
-        <div className="lobby-background">
-            <div className="lobby-spacer"></div>
-            <div className="lobby-header">
+     return (
+        <div className={styles.lobbyBackground}>
+            <div className={styles.lobbySpacer}></div>
+            <div className={styles.lobbyHeader}>
                 <h1>Players: {players.length}</h1>
                 <h1>Starts in: {timer}</h1>
             </div>
-            <div className="lobby-players-grid">
+            <div className={styles.lobbyPlayersGrid}>
                 {players.map((player, index) => (
-                    <div key={index} className="lobby-player-box" data-testid="player-box">
+                    <div key={index} className={styles.lobbyPlayerBox} data-testid="player-box">
                         {player}
                     </div>
                 ))}

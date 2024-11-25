@@ -48,7 +48,7 @@ function PinPage() {
 
         // Redirect to the lobby page using the correct lobby ID
         if (data.lobbyId) {
-          navigate(`/lobby/${data.lobbyId}`);
+          navigate(`/lobby/${data.lobbyId}/${userId}`);
         }
       } else {
         setShowError(true);
