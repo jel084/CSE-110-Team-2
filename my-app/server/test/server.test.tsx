@@ -50,6 +50,7 @@ describe('/lobbies tests', () => {
       scavengerItems: '[]',
       points: '[{"id":"Host 1","points":0}]',
       pin: '1234',
+      gameTime: 0,
       status: 'waiting',
     });
     expect(res.data[1]).toMatchObject({
@@ -59,6 +60,7 @@ describe('/lobbies tests', () => {
       scavengerItems: '[{"id":1,"name":"Triton Statue","points":10,"found":false}]',
       points: '[{"id":"Host 1","points":0},{"id":"Player 1","points":0}]',
       pin: '5678',
+      gameTime: 0,
       status: 'in-progress',
     });
   });
@@ -88,7 +90,8 @@ describe('/create tests', () => {
       lobbyName: 'New Lobby 1',
       scavengerItems: [{id: 1, name: "Triton Statue", points: 10, found: false}, {id: 2, name: "Sun God", points: 10, found: false}],
       userId: 'Host 1',
-      pin: '1234'
+      pin: '1234',
+      gameTime: 50
     });
 
     expect(res.status).toBe(201);
@@ -104,6 +107,7 @@ describe('/create tests', () => {
       scavengerItems: '[{"id":1,"name":"Triton Statue","points":10,"found":false},{"id":2,"name":"Sun God","points":10,"found":false}]',
       points: '[{"id":"Host 1","points":0}]',
       pin: '1234',
+      gameTime: 50,
       status: 'waiting'
     });
 
