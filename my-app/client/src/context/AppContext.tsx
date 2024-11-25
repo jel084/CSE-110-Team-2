@@ -1,5 +1,5 @@
 import { createContext, useState } from "react";
-import { Item, Lobby, Player } from "../types/types";
+import { Item, Player } from "../types/types";
 import { testItems } from "../constants/constants";
 
 interface AppContextType {
