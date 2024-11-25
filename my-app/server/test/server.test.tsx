@@ -638,9 +638,9 @@ describe('/start tests', () => {
   test('POST /start should change lobby status to started', async () => {
     // Create a lobby that will be started
     await db.run(`
-      INSERT INTO lobbies (lobbyName, host, players, scavengerItems, points, pin, status) VALUES
+      INSERT INTO lobbies (lobbyName, host, players, scavengerItems, points, pin, status, gameTime) VALUES
       ('New Lobby 1', 'Host 1', '["Host 1"]', '[{"id":1,"name":"Triton Statue","points":10,"found":false}]',
-      '[{"id":"Host 1","points":0}]', '1234', 'waiting')
+      '[{"id":"Host 1","points":0}]', '1234', 'waiting', 3600)
     `);
 
     // Perform the POST request to the appropriate /start endpoint
@@ -658,15 +658,16 @@ describe('/start tests', () => {
       scavengerItems: '[{"id":1,"name":"Triton Statue","points":10,"found":false}]',
       points: '[{"id":"Host 1","points":0}]',
       pin: '1234',
-      status: 'started'
+      status: 'started',
+      gameTime: 3600
     });
   });
 
   test('POST /start with invalid lobby id should return error', async () => {
     await db.run(`
-      INSERT INTO lobbies (lobbyName, host, players, scavengerItems, points, pin, status) VALUES
+      INSERT INTO lobbies (lobbyName, host, players, scavengerItems, points, pin, status, gameTime) VALUES
       ('New Lobby 1', 'Host 1', '["Host 1"]', '[{"id":1,"name":"Triton Statue","points":10,"found":false}]',
-      '[{"id":"Host 1","points":0}]', '1234', 'waiting')
+      '[{"id":"Host 1","points":0}]', '1234', 'waiting', 3600)
     `);
 
     try {
@@ -676,6 +677,27 @@ describe('/start tests', () => {
         expect(error.response?.status).toBe(404);
         expect(error.response?.data).toMatchObject({
           error: 'Lobby not found',
+        });
+      } else {
+        throw error;
+      }
+    }
+  });
+
+  test('POST /start with missing gameTime should return error', async () => {
+    await db.run(`
+      INSERT INTO lobbies (lobbyName, host, players, scavengerItems, points, pin, status) VALUES
+      ('New Lobby 1', 'Host 1', '["Host 1"]', '[{"id":1,"name":"Triton Statue","points":10,"found":false}]',
+      '[{"id":"Host 1","points":0}]', '1234', 'waiting')
+    `);
+
+    try {
+      await axios.post(`http://localhost:${PORT}/api/lobbies/1/start`);
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        expect(error.response?.status).toBe(400);
+        expect(error.response?.data).toMatchObject({
+          error: 'Game time is required to start the lobby',
         });
       } else {
         throw error;
