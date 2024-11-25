@@ -33,10 +33,10 @@ afterEach(async () => {
 describe('/lobbies tests', () => {
   test('GET /lobbies should show all lobbies', async () => {
     await db.run(`
-      INSERT INTO lobbies (lobbyName, host, players, scavengerItems, points, pin, status) VALUES
-      ('New Lobby 1', 'Host 1', '["Host 1"]', '[]', '[{"id":"Host 1","points":0}]', '1234', 'waiting'),
+      INSERT INTO lobbies (lobbyName, host, players, scavengerItems, points, pin, gameTime, status) VALUES
+      ('New Lobby 1', 'Host 1', '["Host 1"]', '[]', '[{"id":"Host 1","points":0}]', '1234', 21, 'waiting'),
       ('New Lobby 2', 'Host 2', '["Host 1","Player 1"]', '[{"id":1,"name":"Triton Statue","points":10,"found":false}]', 
-      '[{"id":"Host 1","points":0},{"id":"Player 1","points":0}]', '5678', 'in-progress')
+      '[{"id":"Host 1","points":0},{"id":"Player 1","points":0}]', '5678', 22, 'in-progress')
     `);
 
     // Perform the GET request to the /lobbies endpoint
@@ -50,7 +50,7 @@ describe('/lobbies tests', () => {
       scavengerItems: '[]',
       points: '[{"id":"Host 1","points":0}]',
       pin: '1234',
-      gameTime: 0,
+      gameTime: 21,
       status: 'waiting',
     });
     expect(res.data[1]).toMatchObject({
@@ -60,7 +60,7 @@ describe('/lobbies tests', () => {
       scavengerItems: '[{"id":1,"name":"Triton Statue","points":10,"found":false}]',
       points: '[{"id":"Host 1","points":0},{"id":"Player 1","points":0}]',
       pin: '5678',
-      gameTime: 0,
+      gameTime: 22,
       status: 'in-progress',
     });
   });
