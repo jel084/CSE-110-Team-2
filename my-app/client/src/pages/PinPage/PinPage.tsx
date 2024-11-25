@@ -33,7 +33,6 @@ function PinPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          lobbyId: 1,  // For now, let's assume the lobby ID is 1, dynamically set if needed
           userId: userId,
           pin: lobbyCode,
         }),

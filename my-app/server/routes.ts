@@ -65,11 +65,11 @@ router.post('/create', async (req, res) => {
 });
 
 router.post('/join', async (req, res) => {
-  const { lobbyId, userId, pin } = req.body;
+  const {userId, pin } = req.body;
   try {
     const db = await connectDB();
 
-    const lobby = await db.get(`SELECT * FROM lobbies WHERE id = ? AND pin = ?`, [lobbyId, pin]);
+    const lobby = await db.get(`SELECT * FROM lobbies WHERE pin = ?`, [pin]);
 
     if (!lobby) {
       return res.status(404).json({ error: 'Lobby not found or PIN is incorrect' });
@@ -77,6 +77,7 @@ router.post('/join', async (req, res) => {
 
     const players = JSON.parse(lobby.players || '[]');
     let pointsArray = JSON.parse(lobby.points || '[]');
+    const lobbyId = JSON.parse(lobby.id );
 
     if (!Array.isArray(pointsArray)) {
       pointsArray = [];
@@ -87,8 +88,8 @@ router.post('/join', async (req, res) => {
       pointsArray.push({ id: userId, points: 0 });
 
       await db.run(
-        `UPDATE lobbies SET players = ?, points = ? WHERE id = ?`,
-        [JSON.stringify(players), JSON.stringify(pointsArray), lobbyId]
+        `UPDATE lobbies SET players = ?, points = ? WHERE pin = ?`,
+        [JSON.stringify(players), JSON.stringify(pointsArray), pin]
       );
 
       // Insert items for the player into player_items
@@ -236,6 +237,52 @@ router.get('/lobbies/:lobbyId/players', async (req, res) => {
   } catch (error) {
     console.error('Error retrieving players:', error);
     res.status(500).json({ error: 'Failed to retrieve players' });
+  }
+});
+
+router.get('/lobbies/:lobbyId/gameTime', async (req, res) => {
+  const { lobbyId } = req.params;
+
+  try {
+    const db = await connectDB();
+    const lobby = await db.get(`SELECT * FROM lobbies WHERE id = ?`, [lobbyId]);
+
+    if (!lobby) {
+      return res.status(404).json({ error: 'Lobby not found' });
+    }
+
+    const gameTime = JSON.parse(lobby.gameTime || '0');
+
+    // Ensure players is an array of strings
+    if (!gameTime) {
+      return res.status(500).json({ error: 'Invalid game time data' });
+    }
+
+    res.status(200).json({ gameTime });
+  } catch (error) {
+    console.error('Error retrieving gameTime:', error);
+    res.status(500).json({ error: 'Failed to retrieve gameTime'});
+  }
+});
+
+router.post('/lobbies/:lobbyId/:timeRemaining/setTime', async (req, res) => {
+  const { lobbyId, timeRemaining } = req.params;
+
+  try {
+    const db = await connectDB();
+    const lobby = await db.get(`SELECT * FROM lobbies WHERE id = ?`, [lobbyId]);
+
+    if (!lobby) {
+      return res.status(404).json({ error: 'Lobby not found' });
+    }
+
+    await db.run(`UPDATE lobbies SET gameTime = ? WHERE id = ?`, [timeRemaining, lobbyId]);
+
+    res.status(200).json({ message: 'Game time updated successfully' });
+  } 
+  catch (error) {
+    console.error('Error updating gameTime:', error);
+    res.status(500).json({ error: 'Failed to update gameTime' });
   }
 });
 

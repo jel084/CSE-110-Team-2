@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { getItemsForPlayer } from '../../player-utils';
 import { Item } from '../../types/types'
 import './scavengeScreen.css';
@@ -11,27 +11,57 @@ const ScavengeScreen: React.FC = () => {
   const [items, setItems] = useState<Item[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [timeRemaining, setTimeRemaining] = useState(0);
+  const [timeRemaining, setTimeRemaining] = useState(11110);
+  const navigate = useNavigate();
 
-  let lobbyIndex: number = 0;
 
+// Fetch players from backend
+useEffect(() => {
+  const fetchTime = async () => {
+      if (lobbyId) {
+          try {
+              const response = await axios.get(`http://localhost:8080/api/lobbies/${lobbyId}/gameTime`);
+              console.log("Fetched time:", response.data);
+              setTimeRemaining(response.data.gameTime);
+          } catch (error) {
+              console.error('Error fetching players:', error);
+          }
+      }
+  };
+  fetchTime();
+}, [lobbyId]);
 
 useEffect(() => {
-  if (timeRemaining <= 0) return;
+  if (timeRemaining <= 0){
+    alert("Time's up!");
+    navigate(`/winners`);
+    return;
+  }
 
   const interval = setInterval(() => {
       setTimeRemaining(prev => {
           if (prev <= 1) {
               clearInterval(interval);
-              alert("Time's up!");
               return 0;
           }
           return prev - 1;
       });
+    setTime();
   }, 1000);
 
 
-  console.log("Seconds Remaining: ", timeRemaining);
+  const setTime = async() =>{
+    try {
+      console.log(timeRemaining);
+      const response = await axios.post(
+        `http://localhost:8080/api/lobbies/${lobbyId}/${timeRemaining}/setTime`);
+      console.log("Time set:", response.data);
+    } catch (error) {
+      console.error('Error setting time:', error);
+    }
+  }
+
+
 
   return () => clearInterval(interval);
 }, [timeRemaining]);
