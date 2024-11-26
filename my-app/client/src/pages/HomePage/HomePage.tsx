@@ -1,7 +1,15 @@
 import { Link } from "react-router-dom";
+import React, { useState } from "react";
 import "./HomePage.css";
+import questionIcon from "./icons_question.png";
 
 export default function HomePage() {
+  const [showRules, setShowRules] = useState(false);
+
+  const toggleRulesPopup = () => {
+    setShowRules((prev) => !prev);
+  };
+
   return (
     <div className="background-image">
       <div className="game-title">
@@ -15,6 +23,31 @@ export default function HomePage() {
           <button className="homepage-button">Join Game</button>
         </Link>
       </div>
+      {/* Question Button */}
+      <button className="question-button" onClick={toggleRulesPopup}>
+        <img src={questionIcon} alt="rule_icon" className="question-icon" />
+      </button>
+
+      {/* Rules Popup */}
+      {showRules && (
+        <div className="rules-popup">
+          <div className="popup-content">
+            <button className="close-button" onClick={toggleRulesPopup}>
+              &times;
+            </button>
+            <h2 className="rules-title">Game Rules</h2>
+            <p className="rules-text">
+              1. Players must complete tasks in a given time.
+              <br />
+              2. Teams must collect all required items to win.
+              <br />
+              3. Each task has a hint for the next step.
+              <br />
+              4. The first team to finish wins!
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
