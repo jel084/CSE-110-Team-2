@@ -5,8 +5,6 @@ import { testItems } from "../constants/constants";
 interface AppContextType {
   items: Item[];
   setItems: React.Dispatch<React.SetStateAction<Item[]>>;
-  timer: string;
-  setTime: React.Dispatch<React.SetStateAction<string>>;
   players: Player[];
   setPlayers: React.Dispatch<React.SetStateAction<Player[]>>;
   lobbyId: number | null; // Added lobbyId to track current lobby
@@ -17,8 +15,6 @@ interface AppContextType {
 const initialState: AppContextType = {
   items: testItems,
   setItems: () => {},
-  timer: "00:00:00",
-  setTime: () => {},
   players: [],
   setPlayers: () => {},
   lobbyId: null,
@@ -30,7 +26,6 @@ export const AppContext = createContext<AppContextType>(initialState);
 
 export const AppProvider = (props: any) => {
   const [items, setItems] = useState<Item[]>(initialState.items);
-  const [timer, setTime] = useState<string>(initialState.timer);
   const [players, setPlayers] = useState<Player[]>(initialState.players);
   const [lobbyId, setLobbyId] = useState<number | null>(initialState.lobbyId);
 
@@ -39,8 +34,6 @@ export const AppProvider = (props: any) => {
       value={{
         items,
         setItems,
-        timer,
-        setTime,
         players,
         setPlayers,
         lobbyId,

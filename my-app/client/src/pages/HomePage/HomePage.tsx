@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import React, { useState } from "react";
 import "./HomePage.css";
 
-import questionIcon from "./icons_question.png";
+// import questionIcon from "./icons_question.png";
 
 export default function HomePage() {
   const [showRules, setShowRules] = useState(false);
@@ -30,7 +30,12 @@ export default function HomePage() {
 
       {/* Question Button */}
       <button className="question-button" onClick={toggleRulesPopup}>
-        <img src={questionIcon} alt="rule_icon" className="question-icon" />
+        {/* <img src={questionIcon} alt="rule_icon" className="question-icon" /> */}
+        <img
+          src="./icons_question.png"
+          alt="rule_icon"
+          className="question-icon"
+        />
       </button>
 
       {/* Rules Popup */}

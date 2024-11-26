@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './PinPageStyle.css';
+import styles from './PinPageStyles.module.css';  
 
 function PinPage() {
   const [lobbyCode, setLobbyCode] = useState('');
@@ -33,7 +33,6 @@ function PinPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          lobbyId: 1,  // For now, let's assume the lobby ID is 1, dynamically set if needed
           userId: userId,
           pin: lobbyCode,
         }),
@@ -48,7 +47,7 @@ function PinPage() {
 
         // Redirect to the lobby page using the correct lobby ID
         if (data.lobbyId) {
-          navigate(`/lobby/${data.lobbyId}`);
+          navigate(`/lobby/${data.lobbyId}/${userId}`);
         }
       } else {
         setShowError(true);
@@ -75,13 +74,13 @@ function PinPage() {
           </div>
         )}
       </div>
-      <div className="pin-page">
-        <header className="header">
+      <div className={styles.pinPage}>
+        <header className={styles.header}>
           <h1>Enter Lobby Code</h1>
-          <div className="input-container">
+          <div className={styles.inputContainer}>
             <input
               type="text"
-              className="input-box"
+              className= {styles.inputBox}
               value={lobbyCode}
               onChange={handleLobbyCodeChange}
               placeholder="Lobby PIN"
@@ -89,22 +88,22 @@ function PinPage() {
             />
             <input
               type="text"
-              className="input-box"
+              className= {styles.inputBox}
               value={userId}
               onChange={handleUserIdChange}
               placeholder="Player Name"
             />
           </div>
         </header>
-        <button className="start-game-button" onClick={handleJoinGame}>
+        <button className= {styles.startGameButton} onClick={handleJoinGame}>
           Join Game
         </button>
       </div>
-      <div className="spacer2"></div>
+      <div className= {styles.spacer2}></div>
 
       {showError && (
-        <div className="error-popup">
-          <div className="error-popup-content">
+        <div className= {styles.errorPopup}>
+          <div className={styles.errorPopupContent}>
             <p>Error: Invalid Lobby Code or User ID</p>
             <button onClick={handleCloseError}>OK</button>
           </div>

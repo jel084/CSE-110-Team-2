@@ -1,10 +1,32 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom'; // Assuming react-router-dom is used
 import { testPlayers } from '../../constants/constants'; // Adjust the path as needed
 import './scoreScreen.css';
 
 const ScoreScreen: React.FC = () => {
     const [showScoreboard, setShowScoreboard] = useState(false); // State to toggle the view
+    const [isSaved, setIsSaved] = useState(false); // State to manage Save button
+    const navigate = useNavigate(); // React Router's navigation hook
+
     const sortedPlayers = [...testPlayers].sort((a, b) => b.points - a.points);
+
+    const handleSaveResults = async () => {
+        const resultsText = sortedPlayers
+          .map((player) => `${player.name}: ${player.points}`)
+          .join("\n");
+        try {
+          await navigator.clipboard.writeText(resultsText);
+          console.log("Clipboard write successful"); // Debug log
+          setIsSaved(true); // Update state
+        } catch (error) {
+          console.error("Failed to copy results to clipboard", error);
+        }
+      };
+    
+
+    const handleJoinNewGame = () => {
+        navigate(`/pin`); // Navigate to the lobby page
+    };
 
     return (
         <div className="scoreboard">
@@ -24,14 +46,22 @@ const ScoreScreen: React.FC = () => {
                         ))}
                     </div>
                     <div className="scoreboard-footer">
-                        <button className="action-button">Join New Game</button>
-                        <button className="action-button">Save Results</button>
+                        <button className="action-button" onClick={handleJoinNewGame}>
+                            Join New Game
+                        </button>
+                        <button
+                            className={`action-button ${isSaved ? 'saved' : ''}`}
+                            onClick={handleSaveResults}
+                            disabled={isSaved}
+                        >
+                            {isSaved ? 'Saved!' : 'Save Results'}
+                        </button>
                     </div>
                 </>
             ) : (
                 // Initial "Time is up!" view
                 <div className="time-up-screen">
-                    <h1>⏰ Time is up!</h1>
+                    <h1>⏰ Time is up! ⏰</h1>
                     <button
                         className="action-button"
                         onClick={() => setShowScoreboard(true)}
