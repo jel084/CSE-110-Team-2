@@ -12,7 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.joinLobby = exports.createLobby = void 0;
 const db_1 = require("./db");
 const createLobby = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { lobbyName, scavengerItems, userId, pin } = req.body;
+    const { lobbyName, scavengerItems, userId, gameTime, pin } = req.body;
     if (!pin || !/^\d{4}$/.test(pin)) {
         return res.status(400).json({ error: 'A valid 4-digit PIN is required' });
     }
@@ -23,15 +23,16 @@ const createLobby = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             return res.status(400).json({ error: 'Scavenger items must be an array of objects' });
         }
         const result = yield db.run(`
-      INSERT INTO lobbies (lobbyName, host, players, scavengerItems, points, pin)
-      VALUES (?, ?, ?, ?, ?, ?)
+      INSERT INTO lobbies (lobbyName, host, players, scavengerItems, points, pin, gameTime)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
     `, [
             lobbyName,
             userId,
             JSON.stringify([]),
             JSON.stringify(scavengerItems),
             JSON.stringify([]),
-            pin
+            pin,
+            gameTime
         ]);
         res.status(201).json({ lobbyId: result.lastID });
     }
