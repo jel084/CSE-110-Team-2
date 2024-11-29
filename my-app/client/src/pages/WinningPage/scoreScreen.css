@@ -14,38 +14,6 @@ html, body {
     flex-direction: column;
 }
 
-/* Time is up screen styling */
-.time-up-screen {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    height: 100%;
-    background-color: #8ECAE6; /* Light blue */
-    color: #fff;
-    font-family: 'Comfortaa', sans-serif;
-    text-align: center;
-}
-
-.time-up-screen h1 {
-    font-size: 50px;
-    margin-bottom: 20px;
-}
-
-.time-up-screen .action-button {
-    font-size: 30px;
-    padding: 15px 30px;
-    background: #FFB703;
-    border: none;
-    border-radius: 10px;
-    color: #023047;
-    cursor: pointer;
-}
-
-.time-up-screen .action-button:hover {
-    background: #ce9300; /* Darker shade */
-}
-
 /* Main container for the scoreboard */
 .scoreboard {
     display: flex;
@@ -80,17 +48,17 @@ html, body {
     height: 90px;
 }
 
-/* Content container for scores */
+/* Content container for scores with flex-grow to fill available space */
 .score-list {
     flex: 1;
     background-color: #8ECAE6; /* Light blue */
     padding: 20px;
     padding-top: 130px; /* Offset for fixed header */
     padding-bottom: 110px; /* Offset for fixed footer */
-    display: flex; /* Switch back to flex for alignment */
-    flex-direction: column; /* Stacks items vertically */
-    align-items: center; /* Centers items horizontally */
-    overflow-y: auto; /* Enables scrolling when content overflows */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-y: auto;
 }
 
 /* Score item styling */
@@ -99,22 +67,20 @@ html, body {
     justify-content: space-between;
     align-items: center;
     width: 80%;
-    padding: 15px 20px;
+    padding: 10px 20px;
     border-radius: 10px;
     margin: 10px 0;
     font-size: 40px;
     color: #fff;
-    min-height: 65px;
-    text-align: center; /* Ensures text alignment */
-}   
+}
 
 /* Colors for different positions */
 .position-1 {
-    background-color: #eca918;
+    background-color: #FFB703;
 }
 
 .position-2 {
-    background-color: #a6a8b0;
+    background-color: #C0C0C0;
 }
 
 .position-3 {
@@ -142,31 +108,18 @@ html, body {
     text-align: right;
 }
 
-/* Action button styles */
+/* Button styles */
 .action-button {
-    background-color: #FFB703; /* Original orange */
-    color: #023047;
-    border: none;
-    padding: 10px 20px;
+    background: #FFB703;
+    color: #fff;
     font-size: 30px;
-    cursor: pointer;
+    font-family: "Comfortaa";
+    padding: 10px 20px;
+    border: none;
     border-radius: 10px;
-    margin: 0 10px;
-    transition: background-color 0.3s ease;
+    cursor: pointer;
 }
 
-.action-button:hover:not(:disabled) {
-    background-color: #CE9300; /* Darker orange on hover */
-}
-
-.action-button:disabled {
-    cursor: not-allowed; /* Disabled state cursor */
-    color: #fff;
-    background-color: #41BA00;
-}
-
-/* Saved button styles */
-.action-button.saved {
-    background-color: #41BA00; /* Green color for Saved state */
-    color: #fff;
+.action-button:hover {
+    background: #ce9300; /* Darker shade of the original color */
 }
