@@ -25,11 +25,6 @@ beforeEach(async () => {
   await initDatabase();
 });
 
-afterEach(async () => {
-  await db.run(`DROP TABLE IF EXISTS lobbies`);
-  await db.run(`DROP TABLE IF EXISTS player_items`);
-});
-
 describe('/lobbies tests', () => {
   test('GET /lobbies should show all lobbies', async () => {
     await db.run(`
