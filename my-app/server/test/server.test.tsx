@@ -17,7 +17,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-    fs.unlinkSync('database.sqlite'); // Automatically delete database.sqlite after all tests are done
+    fs.unlinkSync('server/database.sqlite'); // Automatically delete database.sqlite after all tests are done
     server.close(); // Stop the server after tests
 });
 
@@ -34,9 +34,9 @@ describe('/lobbies tests', () => {
   test('GET /lobbies should show all lobbies', async () => {
     await db.run(`
       INSERT INTO lobbies (lobbyName, host, players, scavengerItems, points, pin, gameTime, status) VALUES
-      ('New Lobby 1', 'Host 1', '["Host 1"]', '[]', '[{"id":"Host 1","points":0}]', '1234', 21, 'waiting'),
-      ('New Lobby 2', 'Host 2', '["Host 1","Player 1"]', '[{"id":1,"name":"Triton Statue","points":10,"found":false}]', 
-      '[{"id":"Host 1","points":0},{"id":"Player 1","points":0}]', '5678', 22, 'in-progress')
+      ('New Lobby 1', 'Host 1', '[]', '[]', '[]', '1234', 21, 'waiting'),
+      ('New Lobby 2', 'Host 2', '["Player 1"]', '[{"id":1,"name":"Triton Statue","points":10,"found":false}]', 
+      '[{"id":"Player 1","points":0}]', '5678', 22, 'in-progress')
     `);
 
     // Perform the GET request to the /lobbies endpoint
@@ -46,9 +46,9 @@ describe('/lobbies tests', () => {
     expect(res.data[0]).toMatchObject({
       lobbyName: 'New Lobby 1',
       host: 'Host 1',
-      players: '["Host 1"]',
+      players: '[]',
       scavengerItems: '[]',
-      points: '[{"id":"Host 1","points":0}]',
+      points: '[]',
       pin: '1234',
       gameTime: 21,
       status: 'waiting',
@@ -56,9 +56,9 @@ describe('/lobbies tests', () => {
     expect(res.data[1]).toMatchObject({
       lobbyName: 'New Lobby 2',
       host: 'Host 2',
-      players: '["Host 1","Player 1"]',
+      players: '["Player 1"]',
       scavengerItems: '[{"id":1,"name":"Triton Statue","points":10,"found":false}]',
-      points: '[{"id":"Host 1","points":0},{"id":"Player 1","points":0}]',
+      points: '[{"id":"Player 1","points":0}]',
       pin: '5678',
       gameTime: 22,
       status: 'in-progress',
@@ -103,9 +103,9 @@ describe('/create tests', () => {
     expect(lobbies[0]).toMatchObject({
       lobbyName: 'New Lobby 1',
       host: 'Host 1',
-      players: '["Host 1"]',
+      players: '[]',
       scavengerItems: '[{"id":1,"name":"Triton Statue","points":10,"found":false},{"id":2,"name":"Sun God","points":10,"found":false}]',
-      points: '[{"id":"Host 1","points":0}]',
+      points: '[]',
       pin: '1234',
       gameTime: 50,
       status: 'waiting'
@@ -176,12 +176,8 @@ describe('/join tests', () => {
     // Create a lobby for the player to join
     await db.run(`
       INSERT INTO lobbies (lobbyName, host, players, scavengerItems, points, pin, gameTime, status) VALUES
-      ('New Lobby 1', 'Host 1', '["Host 1"]', '[{"id":1,"name":"Triton Statue","points":10,"found":false},{"id":2,"name":"Sun God","points":10,"found":false}]', 
-      '[{"id":"Host 1","points":0}]', '1234', 60, 'waiting')
-    `);
-    await db.run(`
-      INSERT INTO player_items VALUES
-      ('Host 1', 1, 1, 0, ''), ('Host 1', 1, 2, 0, '')
+      ('New Lobby 1', 'Host 1', '[]', '[{"id":1,"name":"Triton Statue","points":10,"found":false},{"id":2,"name":"Sun God","points":10,"found":false}]', 
+      '[]', '1234', 60, 'waiting')
     `);
 
     // Perform the POST request to the /join endpoint
@@ -200,9 +196,9 @@ describe('/join tests', () => {
     expect(lobbies[0]).toMatchObject({
       lobbyName: 'New Lobby 1',
       host: 'Host 1',
-      players: '["Host 1","Player 1"]',
+      players: '["Player 1"]',
       scavengerItems: '[{"id":1,"name":"Triton Statue","points":10,"found":false},{"id":2,"name":"Sun God","points":10,"found":false}]',
-      points: '[{"id":"Host 1","points":0},{"id":"Player 1","points":0}]',
+      points: '[{"id":"Player 1","points":0}]',
       pin: '1234',
       gameTime: 60,
       status: 'waiting'
@@ -210,29 +206,15 @@ describe('/join tests', () => {
 
     // Ensure the player_items table is updated
     const player_items = await db.all(`SELECT * FROM player_items`);
-    expect(player_items).toHaveLength(4);
+    expect(player_items).toHaveLength(2);
     expect(player_items[0]).toMatchObject({ 
-      player_id: 'Host 1', 
-      lobby_id: 1, 
-      item_id: 1, 
-      found: 0, 
-      image: '' 
-    });
-    expect(player_items[1]).toMatchObject({ 
-      player_id: 'Host 1', 
-      lobby_id: 1, 
-      item_id: 2, 
-      found: 0, 
-      image: '' 
-    });
-    expect(player_items[2]).toMatchObject({ 
       player_id: 'Player 1', 
       lobby_id: 1, 
       item_id: 1, 
       found: 0, 
       image: '' 
     });
-    expect(player_items[3]).toMatchObject({ 
+    expect(player_items[1]).toMatchObject({ 
       player_id: 'Player 1', 
       lobby_id: 1, 
       item_id: 2, 
@@ -263,22 +245,22 @@ describe('/join tests', () => {
   test('POST /join with player already in the lobby should not create new entry', async () => {
     await db.run(`
       INSERT INTO lobbies (lobbyName, host, players, scavengerItems, points, pin, gameTime, status) VALUES
-      ('New Lobby 1', 'Host 1', '["Host 1"]', '[{"id":1,"name":"Triton Statue","points":10,"found":false},{"id":2,"name":"Sun God","points":10,"found":false}]', 
-      '[{"id":"Host 1","points":0}]', '1234', 60, 'waiting')
+      ('New Lobby 1', 'Host 1', '["Player 1"]', '[{"id":1,"name":"Triton Statue","points":10,"found":false},{"id":2,"name":"Sun God","points":10,"found":false}]', 
+      '[{"id":"Player 1","points":0}]', '1234', 60, 'waiting')
     `);
     await db.run(`
       INSERT INTO player_items VALUES
-      ('Host 1', 1, 1, 0, ''), ('Host 1', 1, 2, 0, '')
+      ('Player 1', 1, 1, 0, ''), ('Player 1', 1, 2, 0, '')
     `);
   
     const res = await axios.post(`http://localhost:${PORT}/api/join`, {
       lobbyId: 1,
-      userId: 'Host 1',
+      userId: 'Player 1',
       pin: '1234',
     });
   
     expect(res.status).toBe(200);
-    expect(res.data.message).toBe("User Host 1 joined lobby 1");
+    expect(res.data.message).toBe("User Player 1 joined lobby 1");
   
     // Ensure the lobbies table is the same
     const lobbies = await db.all(`SELECT * FROM lobbies`);
@@ -286,9 +268,9 @@ describe('/join tests', () => {
     expect(lobbies[0]).toMatchObject({
       lobbyName: 'New Lobby 1',
       host: 'Host 1',
-      players: '["Host 1"]',
+      players: '["Player 1"]',
       scavengerItems: '[{"id":1,"name":"Triton Statue","points":10,"found":false},{"id":2,"name":"Sun God","points":10,"found":false}]',
-      points: '[{"id":"Host 1","points":0}]',
+      points: '[{"id":"Player 1","points":0}]',
       pin: '1234',
       gameTime: 60,
       status: 'waiting'
@@ -298,14 +280,14 @@ describe('/join tests', () => {
     const player_items = await db.all(`SELECT * FROM player_items`);
     expect(player_items).toHaveLength(2);
     expect(player_items[0]).toMatchObject({ 
-      player_id: 'Host 1', 
+      player_id: 'Player 1', 
       lobby_id: 1, 
       item_id: 1, 
       found: 0, 
       image: '' 
     });
     expect(player_items[1]).toMatchObject({ 
-      player_id: 'Host 1', 
+      player_id: 'Player 1', 
       lobby_id: 1, 
       item_id: 2, 
       found: 0, 
@@ -319,8 +301,8 @@ describe('/update-points tests', () => {
     // Create a lobby with players
     await db.run(`
       INSERT INTO lobbies (lobbyName, host, players, scavengerItems, points, pin, gameTime, status) VALUES
-      ('New Lobby 1', 'Host 1', '["Host 1","Player 1"]', '[{"id":1,"name":"Triton Statue","points":10,"found":false}]',
-      '[{"id":"Host 1","points":0},{"id":"Player 1","points":0}]', '1234', 60, 'waiting')
+      ('New Lobby 1', 'Host 1', '["Player 1"]', '[{"id":1,"name":"Triton Statue","points":10,"found":false}]',
+      '[{"id":"Player 1","points":0}]', '1234', 60, 'waiting')
     `);
 
     // Perform the POST request to the /update-points endpoint
@@ -338,9 +320,9 @@ describe('/update-points tests', () => {
     expect(lobbies[0]).toMatchObject({
       lobbyName: 'New Lobby 1',
       host: 'Host 1',
-      players: '["Host 1","Player 1"]',
+      players: '["Player 1"]',
       scavengerItems: '[{"id":1,"name":"Triton Statue","points":10,"found":false}]',
-      points: '[{"id":"Host 1","points":0},{"id":"Player 1","points":10}]',
+      points: '[{"id":"Player 1","points":10}]',
       pin: '1234',
       gameTime: 60,
       status: 'waiting'
@@ -350,8 +332,8 @@ describe('/update-points tests', () => {
   test('POST /update-points with invalid lobby id should return error', async () => {
     await db.run(`
       INSERT INTO lobbies (lobbyName, host, players, scavengerItems, points, pin, gameTime, status) VALUES
-      ('New Lobby 1', 'Host 1', '["Host 1","Player 1"]', '[{"id":1,"name":"Triton Statue","points":10,"found":false}]',
-      '[{"id":"Host 1","points":0},{"id":"Player 1","points":0}]', '1234', 60, 'waiting')
+      ('New Lobby 1', 'Host 1', '["Player 1"]', '[{"id":1,"name":"Triton Statue","points":10,"found":false}]',
+      '[{"id":"Player 1","points":0}]', '1234', 60, 'waiting')
     `);
 
     try {
@@ -375,8 +357,8 @@ describe('/update-points tests', () => {
   test('POST /update-points with invalid user id should return error', async () => {
     await db.run(`
       INSERT INTO lobbies (lobbyName, host, players, scavengerItems, points, pin, gameTime, status) VALUES
-      ('New Lobby 1', 'Host 1', '["Host 1","Player 1"]', '[{"id":1,"name":"Triton Statue","points":10,"found":false}]',
-      '[{"id":"Host 1","points":0},{"id":"Player 1","points":0}]', '1234', 60, 'waiting')
+      ('New Lobby 1', 'Host 1', '["Player 1"]', '[{"id":1,"name":"Triton Statue","points":10,"found":false}]',
+      '[{"id":"Player 1","points":0}]', '1234', 60, 'waiting')
     `);
 
     try {
@@ -400,8 +382,8 @@ describe('/update-points tests', () => {
   test('POST /update-points with invalid points should return error', async () => {
     await db.run(`
       INSERT INTO lobbies (lobbyName, host, players, scavengerItems, points, pin, gameTime, status) VALUES
-      ('New Lobby 1', 'Host 1', '["Host 1","Player 1"]', '[{"id":1,"name":"Triton Statue","points":10,"found":false}]',
-      '[{"id":"Host 1","points":0},{"id":"Player 1","points":0}]', '1234', 60, 'waiting')
+      ('New Lobby 1', 'Host 1', '["Player 1"]', '[{"id":1,"name":"Triton Statue","points":10,"found":false}]',
+      '[{"id":"Player 1","points":0}]', '1234', 60, 'waiting')
     `);
   
     try {
@@ -428,8 +410,8 @@ describe('/items tests', () => {
     // Create a lobby with items
     await db.run(`
       INSERT INTO lobbies (lobbyName, host, players, scavengerItems, points, pin, gameTime, status) VALUES
-      ('New Lobby 1', 'Host 1', '["Host 1"]', '[{"id":1,"name":"Triton Statue","points":10,"found":false},{"id":2,"name":"Sun God","points":10,"found":false}]',
-      '[{"id":"Host 1","points":0}]', '1234', 60, 'waiting')
+      ('New Lobby 1', 'Host 1', '[]', '[{"id":1,"name":"Triton Statue","points":10,"found":false},{"id":2,"name":"Sun God","points":10,"found":false}]',
+      '[]', '1234', 60, 'waiting')
     `);
 
     // Perform the GET request to the appropriate /items endpoint
@@ -445,7 +427,7 @@ describe('/items tests', () => {
   test('GET /items with empty scavengerItems should return empty array', async () => {
     await db.run(`
       INSERT INTO lobbies (lobbyName, host, players, scavengerItems, points, pin, gameTime, status) VALUES
-      ('New Lobby', 'Host 1', '["Host 1"]', '[]', '[{"id":"Host 1","points":0}]', '1234', 60, 'waiting')
+      ('New Lobby', 'Host 1', '[]', '[]', '[]', '1234', 60, 'waiting')
     `);
   
     const res = await axios.get(`http://localhost:${PORT}/api/lobbies/1/players/Host 1/items`);
@@ -456,8 +438,8 @@ describe('/items tests', () => {
   test('GET /items with invalid lobby id should return error', async () => {
     await db.run(`
       INSERT INTO lobbies (lobbyName, host, players, scavengerItems, points, pin, gameTime, status) VALUES
-      ('New Lobby 1', 'Host 1', '["Host 1"]', '[{"id":1,"name":"Triton Statue","points":10,"found":false},{"id":2,"name":"Sun God","points":10,"found":false}]',
-      '[{"id":"Host 1","points":0}]', '1234', 60, 'waiting')
+      ('New Lobby 1', 'Host 1', '[]', '[{"id":1,"name":"Triton Statue","points":10,"found":false},{"id":2,"name":"Sun God","points":10,"found":false}]',
+      '[]', '1234', 60, 'waiting')
     `);
 
     try {
@@ -477,7 +459,7 @@ describe('/items tests', () => {
   test('GET /items with invalid scavengerItems should return error', async () => {
     await db.run(`
       INSERT INTO lobbies (lobbyName, host, players, scavengerItems, points, pin, gameTime, status) VALUES
-      ('New Lobby', 'Host 1', '["Host 1"]', 'invalid data', '[{"id":"Host 1","points":0}]', '1234', 60, 'waiting')
+      ('New Lobby', 'Host 1', '[]', 'invalid data', '[]', '1234', 60, 'waiting')
     `);
   
     try {
@@ -500,12 +482,12 @@ describe('/upload tests', () => {
     // Create a lobby for a player to upload an image
     await db.run(`
       INSERT INTO lobbies (lobbyName, host, players, scavengerItems, points, pin, gameTime, status) VALUES
-      ('New Lobby 1', 'Host 1', '["Host 1","Player 1"]', '[{"id":1,"name":"Triton Statue","points":10,"found":false}]',
-      '[{"id":"Host 1","points":0},{"id":"Player 1","points":0}]', '1234', 60, 'waiting')
+      ('New Lobby 1', 'Host 1', '["Player 1"]', '[{"id":1,"name":"Triton Statue","points":10,"found":false}]',
+      '[{"id":"Player 1","points":0}]', '1234', 60, 'waiting')
     `);
     await db.run(`
       INSERT INTO player_items VALUES
-      ('Host 1', 1, 1, 0, ''), ('Player 1', 1, 1, 0, '')
+      ('Player 1', 1, 1, 0, '')
     `);
 
     // Read the contents of /uploads to get all images before new image is added
@@ -545,8 +527,8 @@ describe('/upload tests', () => {
   test('PUT /upload with invalid item id should return error', async () => {
     await db.run(`
       INSERT INTO lobbies (lobbyName, host, players, scavengerItems, points, pin, gameTime, status) VALUES
-      ('New Lobby 1', 'Host 1', '["Host 1","Player 1"]', '[{"id":1,"name":"Triton Statue","points":10,"found":false}]',
-      '[{"id":"Host 1","points":0},{"id":"Player 1","points":0}]', '1234', 60, 'waiting')
+      ('New Lobby 1', 'Host 1', '["Player 1"]', '[{"id":1,"name":"Triton Statue","points":10,"found":false}]',
+      '[{"id":"Player 1","points":0}]', '1234', 60, 'waiting')
     `);
     await db.run(`
       INSERT INTO player_items (player_id, lobby_id, item_id, found, image) VALUES
@@ -570,8 +552,8 @@ describe('/upload tests', () => {
   test('PUT /upload with no image should return error', async () => {
     await db.run(`
       INSERT INTO lobbies (lobbyName, host, players, scavengerItems, points, pin, gameTime, status) VALUES
-      ('New Lobby 1', 'Host 1', '["Host 1","Player 1"]', '[{"id":1,"name":"Triton Statue","points":10,"found":false}]',
-      '[{"id":"Host 1","points":0},{"id":"Player 1","points":0}]', '1234', 60, 'waiting')
+      ('New Lobby 1', 'Host 1', '["Player 1"]', '[{"id":1,"name":"Triton Statue","points":10,"found":false}]',
+      '[{"id":"Player 1","points":0}]', '1234', 60, 'waiting')
     `);
     await db.run(`
       INSERT INTO player_items (player_id, lobby_id, item_id, found, image) VALUES
@@ -598,22 +580,22 @@ describe('/players tests', () => {
     // Create a lobby with players
     await db.run(`
       INSERT INTO lobbies (lobbyName, host, players, scavengerItems, points, pin, gameTime, status) VALUES
-      ('New Lobby 1', 'Host 1', '["Host 1","Player 1"]', '[{"id":1,"name":"Triton Statue","points":10,"found":false}]',
-      '[{"id":"Host 1","points":0},{"id":"Player 1","points":0}]', '1234', 60, 'waiting')
+      ('New Lobby 1', 'Host 1', '["Player 1", "Player 2"]', '[{"id":1,"name":"Triton Statue","points":10,"found":false}]',
+      '[{"id":"Player 1","points":0},{"id":"Player 2","points":0}]', '1234', 60, 'waiting')
     `);
 
     // Perform the GET request to the appropriate /players endpoint
     const res = await axios.get(`http://localhost:${PORT}/api/lobbies/1/players`);
     expect(res.status).toBe(200);
     expect(res.data.players).toHaveLength(2);
-    expect(res.data.players).toMatchObject(["Host 1", "Player 1"]);
+    expect(res.data.players).toMatchObject(["Player 1", "Player 2"]);
   });
 
   test('GET /players with invalid lobby id should return error', async () => {
     await db.run(`
       INSERT INTO lobbies (lobbyName, host, players, scavengerItems, points, pin, gameTime, status) VALUES
-      ('New Lobby 1', 'Host 1', '["Host 1","Player 1"]', '[{"id":1,"name":"Triton Statue","points":10,"found":false}]',
-      '[{"id":"Host 1","points":0},{"id":"Player 1","points":0}]', '1234', 60, 'waiting')
+      ('New Lobby 1', 'Host 1', '["Player 1"]', '[{"id":1,"name":"Triton Statue","points":10,"found":false}]',
+      '[{"id":"Player 1","points":0}]', '1234', 60, 'waiting')
     `);
 
     try {
@@ -634,7 +616,7 @@ describe('/players tests', () => {
     await db.run(`
       INSERT INTO lobbies (lobbyName, host, players, scavengerItems, points, pin, gameTime, status) VALUES
       ('New Lobby', 'Host 1', 'invalid data', '[{"id":1,"name":"Triton Statue","points":10,"found":false}]', 
-      '[{"id":"Host 1","points":0}]', '1234', 60, 'waiting')
+      '[]', '1234', 60, 'waiting')
     `);
   
     try {
@@ -657,8 +639,8 @@ describe('/gameTime tests', () => {
     // Create a lobby with a time set
     await db.run(`
       INSERT INTO lobbies (lobbyName, host, players, scavengerItems, points, pin, gameTime, status) VALUES
-      ('New Lobby 1', 'Host 1', '["Host 1","Player 1"]', '[{"id":1,"name":"Triton Statue","points":10,"found":false}]',
-      '[{"id":"Host 1","points":0},{"id":"Player 1","points":0}]', '1234', 60, 'waiting')
+      ('New Lobby 1', 'Host 1', '["Player 1"]', '[{"id":1,"name":"Triton Statue","points":10,"found":false}]',
+      '[{"id":"Player 1","points":0}]', '1234', 60, 'waiting')
     `);
 
     // Perform the GET request to the appropriate /players endpoint
@@ -670,8 +652,8 @@ describe('/gameTime tests', () => {
   test('GET /gameTime with invalid lobby id should return error', async () => {
     await db.run(`
       INSERT INTO lobbies (lobbyName, host, players, scavengerItems, points, pin, gameTime, status) VALUES
-      ('New Lobby 1', 'Host 1', '["Host 1","Player 1"]', '[{"id":1,"name":"Triton Statue","points":10,"found":false}]',
-      '[{"id":"Host 1","points":0},{"id":"Player 1","points":0}]', '1234', 60, 'waiting')
+      ('New Lobby 1', 'Host 1', '["Player 1"]', '[{"id":1,"name":"Triton Statue","points":10,"found":false}]',
+      '[{"id":"Player 1","points":0}]', '1234', 60, 'waiting')
     `);
 
     try {
@@ -691,8 +673,8 @@ describe('/gameTime tests', () => {
   test('GET /gameTime with missing game time should return error', async () => {
     await db.run(`
       INSERT INTO lobbies (lobbyName, host, players, scavengerItems, points, pin, status) VALUES
-      ('New Lobby', 'Host 1', '["Host 1"]', '[{"id":1,"name":"Triton Statue","points":10,"found":false}]', 
-      '[{"id":"Host 1","points":0}]', '1234', 'waiting')
+      ('New Lobby', 'Host 1', '[]', '[{"id":1,"name":"Triton Statue","points":10,"found":false}]', 
+      '[]', '1234', 'waiting')
     `);
   
     try {
@@ -712,8 +694,8 @@ describe('/gameTime tests', () => {
   test('GET /gameTime with missing game time should return error', async () => {
     await db.run(`
       INSERT INTO lobbies (lobbyName, host, players, scavengerItems, points, pin, gameTime, status) VALUES
-      ('New Lobby', 'Host 1', '["Host 1"]', '[{"id":1,"name":"Triton Statue","points":10,"found":false}]', 
-      '[{"id":"Host 1","points":0}]', '1234', 'invalid data', 'waiting')
+      ('New Lobby', 'Host 1', '[]', '[{"id":1,"name":"Triton Statue","points":10,"found":false}]', 
+      '[]', '1234', 'invalid data', 'waiting')
     `);
   
     try {
@@ -736,8 +718,8 @@ describe('/setTime tests', () => {
     // Create a lobby with time set
     await db.run(`
       INSERT INTO lobbies (lobbyName, host, players, scavengerItems, points, pin, gameTime, status) VALUES
-      ('New Lobby 1', 'Host 1', '["Host 1","Player 1"]', '[{"id":1,"name":"Triton Statue","points":10,"found":false}]',
-      '[{"id":"Host 1","points":0},{"id":"Player 1","points":0}]', '1234', 60, 'waiting')
+      ('New Lobby 1', 'Host 1', '["Player 1"]', '[{"id":1,"name":"Triton Statue","points":10,"found":false}]',
+      '[{"id":"Player 1","points":0}]', '1234', 60, 'waiting')
     `);
 
     // Perform the POST request to the appropriate /setTime endpoint
@@ -751,9 +733,9 @@ describe('/setTime tests', () => {
     expect(lobbies[0]).toMatchObject({
       lobbyName: 'New Lobby 1',
       host: 'Host 1',
-      players: '["Host 1","Player 1"]',
+      players: '["Player 1"]',
       scavengerItems: '[{"id":1,"name":"Triton Statue","points":10,"found":false}]',
-      points: '[{"id":"Host 1","points":0},{"id":"Player 1","points":0}]',
+      points: '[{"id":"Player 1","points":0}]',
       pin: '1234',
       gameTime: 59,
       status: 'waiting'
@@ -763,8 +745,8 @@ describe('/setTime tests', () => {
   test('POST /setTime with invalid lobby id should return error', async () => {
     await db.run(`
       INSERT INTO lobbies (lobbyName, host, players, scavengerItems, points, pin, gameTime, status) VALUES
-      ('New Lobby 1', 'Host 1', '["Host 1","Player 1"]', '[{"id":1,"name":"Triton Statue","points":10,"found":false}]',
-      '[{"id":"Host 1","points":0},{"id":"Player 1","points":0}]', '1234', 60, 'waiting')
+      ('New Lobby 1', 'Host 1', '["Player 1"]', '[{"id":1,"name":"Triton Statue","points":10,"found":false}]',
+      '[{"id":"Player 1","points":0}]', '1234', 60, 'waiting')
     `);
 
     try {
@@ -784,8 +766,8 @@ describe('/setTime tests', () => {
   test('POST /setTime with invalid time should return error', async () => {
     await db.run(`
       INSERT INTO lobbies (lobbyName, host, players, scavengerItems, points, pin, gameTime, status) VALUES
-      ('New Lobby 1', 'Host 1', '["Host 1","Player 1"]', '[{"id":1,"name":"Triton Statue","points":10,"found":false}]',
-      '[{"id":"Host 1","points":0},{"id":"Player 1","points":0}]', '1234', 60, 'waiting')
+      ('New Lobby 1', 'Host 1', '["Player 1"]', '[{"id":1,"name":"Triton Statue","points":10,"found":false}]',
+      '[{"id":"Player 1","points":0}]', '1234', 60, 'waiting')
     `);
   
     try {
@@ -808,8 +790,8 @@ describe('/start tests', () => {
     // Create a lobby that will be started
     await db.run(`
       INSERT INTO lobbies (lobbyName, host, players, scavengerItems, points, pin, gameTime, status) VALUES
-      ('New Lobby 1', 'Host 1', '["Host 1"]', '[{"id":1,"name":"Triton Statue","points":10,"found":false}]',
-      '[{"id":"Host 1","points":0}]', '1234', 60, 'waiting')
+      ('New Lobby 1', 'Host 1', '["Player 1"]', '[{"id":1,"name":"Triton Statue","points":10,"found":false}]',
+      '[{"id":"Player 1","points":0}]', '1234', 60, 'waiting')
     `);
 
     // Perform the POST request to the appropriate /start endpoint
@@ -823,9 +805,9 @@ describe('/start tests', () => {
     expect(lobbies[0]).toMatchObject({
       lobbyName: 'New Lobby 1',
       host: 'Host 1',
-      players: '["Host 1"]',
+      players: '["Player 1"]',
       scavengerItems: '[{"id":1,"name":"Triton Statue","points":10,"found":false}]',
-      points: '[{"id":"Host 1","points":0}]',
+      points: '[{"id":"Player 1","points":0}]',
       pin: '1234',
       gameTime: 60,
       status: 'started'
@@ -835,8 +817,8 @@ describe('/start tests', () => {
   test('POST /start with invalid lobby id should return error', async () => {
     await db.run(`
       INSERT INTO lobbies (lobbyName, host, players, scavengerItems, points, pin, gameTime, status) VALUES
-      ('New Lobby 1', 'Host 1', '["Host 1"]', '[{"id":1,"name":"Triton Statue","points":10,"found":false}]',
-      '[{"id":"Host 1","points":0}]', '1234', 60, 'waiting')
+      ('New Lobby 1', 'Host 1', '[]', '[{"id":1,"name":"Triton Statue","points":10,"found":false}]',
+      '[]', '1234', 60, 'waiting')
     `);
 
     try {
