@@ -22,7 +22,7 @@ const connectDB = () => __awaiter(void 0, void 0, void 0, function* () {
         return dbInstance;
     }
     dbInstance = yield (0, sqlite_1.open)({
-        filename: './database.sqlite',
+        filename: './server/database.sqlite',
         driver: sqlite3_1.default.Database
     });
     return dbInstance;

@@ -12,27 +12,22 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.joinLobby = exports.createLobby = void 0;
 const db_1 = require("./db");
 const createLobby = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { lobbyName, scavengerItems, userId, gameTime, pin } = req.body;
+    const { lobbyName, scavengerItems, userId, userName, pin } = req.body;
     if (!pin || !/^\d{4}$/.test(pin)) {
         return res.status(400).json({ error: 'A valid 4-digit PIN is required' });
     }
     try {
         const db = yield (0, db_1.connectDB)();
-        // Ensure scavengerItems is an array of objects
-        if (!Array.isArray(scavengerItems) || !scavengerItems.every(item => typeof item === 'object')) {
-            return res.status(400).json({ error: 'Scavenger items must be an array of objects' });
-        }
+        const pointsArray = [{}]; // Updated to include the player's name
         const result = yield db.run(`
-      INSERT INTO lobbies (lobbyName, host, players, scavengerItems, points, pin, gameTime)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO lobbies (lobbyName, host, players, scavengerItems, points, pin)
+      VALUES (?, ?, ?, ?, ?, ?)
     `, [
             lobbyName,
-            userId,
             JSON.stringify([]),
             JSON.stringify(scavengerItems),
-            JSON.stringify([]),
-            pin,
-            gameTime
+            JSON.stringify(pointsArray),
+            pin
         ]);
         res.status(201).json({ lobbyId: result.lastID });
     }
@@ -43,7 +38,7 @@ const createLobby = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
 });
 exports.createLobby = createLobby;
 const joinLobby = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { lobbyId, userId, pin } = req.body;
+    const { lobbyId, userId, userName, pin } = req.body; // Added userName
     try {
         const db = yield (0, db_1.connectDB)();
         const lobby = yield db.get(`SELECT * FROM lobbies WHERE id = ?`, [lobbyId]);
@@ -55,9 +50,12 @@ const joinLobby = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         }
         const players = JSON.parse(lobby.players || '[]');
         let pointsArray = JSON.parse(lobby.points || '[]');
+        // If the user is not in the lobby, add them
         if (!players.includes(userId)) {
             players.push(userId);
-            pointsArray.push({ id: userId, points: 0 });
+            // Add player to the points array including their name
+            pointsArray.push({ id: userId, name: userName, points: 0 });
+            // Update the database with the new players list and points array
             yield db.run(`
         UPDATE lobbies SET players = ?, points = ? WHERE id = ?
       `, [JSON.stringify(players), JSON.stringify(pointsArray), lobbyId]);

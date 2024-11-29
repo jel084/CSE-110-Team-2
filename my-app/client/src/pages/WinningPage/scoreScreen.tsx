@@ -1,77 +1,78 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // Assuming react-router-dom is used
-import { testPlayers } from '../../constants/constants'; // Adjust the path as needed
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import './scoreScreen.css';
 
+interface Player {
+  id: string;
+  points: number;
+}
+
 const ScoreScreen: React.FC = () => {
-    const [showScoreboard, setShowScoreboard] = useState(false); // State to toggle the view
-    const [isSaved, setIsSaved] = useState(false); // State to manage Save button
-    const navigate = useNavigate(); // React Router's navigation hook
+  const [players, setPlayers] = useState<Player[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
-    const sortedPlayers = [...testPlayers].sort((a, b) => b.points - a.points);
+  // Get the lobbyId dynamically or use a hardcoded one for now
+  const lobbyId = '1';
 
-    const handleSaveResults = async () => {
-        const resultsText = sortedPlayers
-          .map((player) => `${player.name}: ${player.points}`)
-          .join("\n");
-        try {
-          await navigator.clipboard.writeText(resultsText);
-          console.log("Clipboard write successful"); // Debug log
-          setIsSaved(true); // Update state
-        } catch (error) {
-          console.error("Failed to copy results to clipboard", error);
+  useEffect(() => {
+    const fetchPlayers = async () => {
+      try {
+        const response = await axios.get(`http://localhost:8080/api/lobbies/${lobbyId}/score`);
+        
+        // Make sure the response contains the expected structure
+        if (response.data && Array.isArray(response.data.players)) {
+          setPlayers(response.data.players);
+        } else {
+          throw new Error('Unexpected response format');
         }
-      };
-    
 
-    const handleJoinNewGame = () => {
-        navigate(`/pin`); // Navigate to the lobby page
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching scores:', error);
+        setError('Failed to load player scores. Please try again later.');
+        setLoading(false);
+      }
     };
 
-    return (
-        <div className="scoreboard">
-            {showScoreboard ? (
-                // Scoreboard view
-                <>
-                    <div className="scoreboard-header">
-                        <h1>🎉 {sortedPlayers[0].name} got 1st place! 🎉</h1>
-                    </div>
-                    <div className="score-list">
-                        {sortedPlayers.map((player, index) => (
-                            <div key={player.name} className={`score-item position-${index + 1}`}>
-                                <span className="position">{index + 1}</span>
-                                <span className="name">{player.name}</span>
-                                <span className="points">{player.points}</span>
-                            </div>
-                        ))}
-                    </div>
-                    <div className="scoreboard-footer">
-                        <button className="action-button" onClick={handleJoinNewGame}>
-                            Join New Game
-                        </button>
-                        <button
-                            className={`action-button ${isSaved ? 'saved' : ''}`}
-                            onClick={handleSaveResults}
-                            disabled={isSaved}
-                        >
-                            {isSaved ? 'Saved!' : 'Save Results'}
-                        </button>
-                    </div>
-                </>
-            ) : (
-                // Initial "Time is up!" view
-                <div className="time-up-screen">
-                    <h1>⏰ Time is up! ⏰</h1>
-                    <button
-                        className="action-button"
-                        onClick={() => setShowScoreboard(true)}
-                    >
-                        View Results
-                    </button>
-                </div>
-            )}
-        </div>
-    );
+    fetchPlayers();
+  }, [lobbyId]);
+
+  if (loading) {
+    return <div>Loading scores...</div>;
+  }
+
+  if (error) {
+    return <div className="error-message">{error}</div>;
+  }
+
+  // Sort players by points in descending order
+  const sortedPlayers = [...players].sort((a, b) => b.points - a.points);
+
+  return (
+    <div className="scoreboard">
+      <div className="scoreboard-header">
+        {sortedPlayers.length > 0 ? (
+          <h1>🎉 {sortedPlayers[0].id} got 1st place! 🎉</h1>
+        ) : (
+          <h1>No players found</h1>
+        )}
+      </div>
+      <div className="score-list">
+        {sortedPlayers.map((player, index) => (
+          <div key={player.id} className={`score-item position-${index + 1}`}>
+            <span className="position">{index + 1}</span>
+            <span className="name">{player.id}</span>
+            <span className="points">{player.points}</span>
+          </div>
+        ))}
+      </div>
+      <div className="scoreboard-footer">
+        <button className="action-button">Join New Game</button>
+        <button className="action-button">Save Results</button>
+      </div>
+    </div>
+  );
 };
 
 export default ScoreScreen;

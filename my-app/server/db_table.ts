@@ -3,6 +3,11 @@ import { connectDB } from './db';
 export const initDatabase = async () => {
   const db = await connectDB();
 
+  await db.exec(`
+    DROP TABLE IF EXISTS lobbies;
+    DROP TABLE IF EXISTS player_items;
+  `);
+
   // Create lobbies table if not exists
   await db.exec(`
     CREATE TABLE IF NOT EXISTS lobbies (
