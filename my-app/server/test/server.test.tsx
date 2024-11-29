@@ -835,3 +835,57 @@ describe('/start tests', () => {
     }
   });
 });
+
+describe('/score tests', () => {
+  test('GET /score should return the scores of the given lobby', async () => {
+    // Insert a lobby with points
+    await db.run(`
+      INSERT INTO lobbies (lobbyName, host, players, scavengerItems, points, pin, gameTime, status) VALUES
+      ('New Lobby 1', 'Host 1', '["Player 1"]', '[{"id":1,"name":"Triton Statue","points":10,"found":false}]',
+      '[{"id":"Player 1","points":10}]', '1234', 60, 'started')
+    `);
+
+    // Perform the GET request to the appropriate /scores endpoint
+    const res = await axios.get(`http://localhost:${PORT}/api/lobbies/1/score`);
+    expect(res.status).toBe(200);
+    expect(res.data.players).toMatchObject([
+        { id: 'Player 1', points: 10 }
+    ]);
+  });
+
+  test('GET /score with invalid lobby id should return error', async () => {
+    try {
+      await axios.get(`http://localhost:${PORT}/api/lobbies/2/score`);
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        expect(error.response?.status).toBe(404);
+        expect(error.response?.data).toMatchObject({
+          error: 'Lobby not found',
+        });
+      } else {
+        throw error;
+      }
+    }
+  });
+
+  test('GET /score with invalid points should return error', async () => {
+    await db.run(`
+      INSERT INTO lobbies (lobbyName, host, players, scavengerItems, points, pin, gameTime, status) VALUES
+      ('New Lobby 1', 'Host 1', '["Player 1"]', '[{"id":1,"name":"Triton Statue","points":10,"found":false}]',
+      'invalid data', '1234', 60, 'started')
+    `);
+
+    try {
+      await axios.get(`http://localhost:${PORT}/api/lobbies/1/score`);
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        expect(error.response?.status).toBe(500);
+        expect(error.response?.data).toMatchObject({
+          error: 'Failed to retrieve lobby score',
+        });
+      } else {
+        throw error;
+      }
+    }
+  });
+});
