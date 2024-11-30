@@ -25,12 +25,7 @@ export default function HomePage() {
       </div>
       {/* Question Button */}
       <button className="question-button" onClick={toggleRulesPopup}>
-        {/* <img src={questionIcon} alt="rule_icon" className="question-icon" /> */}
-        <img
-          src="./icons_question.png"
-          alt="rule_icon"
-          className="question-icon"
-        />
+        <img src={questionIcon} alt="rule_icon" className="question-icon" />
       </button>
 
       {/* Rules Popup */}
