@@ -10,13 +10,22 @@ let db: Database;
 const fs = require('fs');
 const FormData = require('form-data');
 const PORT = process.env.PORT || 8080;
+const originalConsoleLog = console.log;
 
 beforeAll(async () => {
+    // Suppress message that appears every time database is initialized
+    console.log = (...args) => {
+      if (!args.includes('Database initialized with lobbies and player_items tables.')) {
+          originalConsoleLog.apply(console, args);
+      }
+    };
+
     db = await connectDB();
     server = await app.listen(PORT); // Start the server before tests
 });
 
 afterAll(async () => {
+    console.log = originalConsoleLog;
     fs.unlinkSync('server/database.sqlite'); // Automatically delete database.sqlite after all tests are done
     server.close(); // Stop the server after tests
 });
@@ -104,24 +113,6 @@ describe('/create tests', () => {
       pin: '1234',
       gameTime: 50,
       status: 'waiting'
-    });
-
-    // Ensure the player_items table is updated
-    const player_items = await db.all(`SELECT * FROM player_items`);
-    expect(player_items).toHaveLength(2);
-    expect(player_items[0]).toMatchObject({ 
-      player_id: 'Host 1', 
-      lobby_id: 1, 
-      item_id: 1, 
-      found: 0, 
-      image: '' 
-    });
-    expect(player_items[1]).toMatchObject({ 
-      player_id: 'Host 1', 
-      lobby_id: 1, 
-      item_id: 2, 
-      found: 0, 
-      image: '' 
     });
   });
 
@@ -401,21 +392,26 @@ describe('/update-points tests', () => {
 });
 
 describe('/items tests', () => {
-  test('GET /items should return items of the given lobby', async () => {
+  test('GET /items should return items of the player from the given lobby', async () => {
     // Create a lobby with items
     await db.run(`
       INSERT INTO lobbies (lobbyName, host, players, scavengerItems, points, pin, gameTime, status) VALUES
-      ('New Lobby 1', 'Host 1', '[]', '[{"id":1,"name":"Triton Statue","points":10,"found":false},{"id":2,"name":"Sun God","points":10,"found":false}]',
-      '[]', '1234', 60, 'waiting')
+      ('New Lobby 1', 'Host 1', '["Player 1", "Player 2"]', '[{"id":1,"name":"Triton Statue","points":10,"found":false},{"id":2,"name":"Sun God","points":10,"found":false}]',
+      '[{"id":"Player 1","points":0},{"id":"Player 2","points":10}]', '1234', 60, 'waiting')
+    `);
+    await db.run(`
+      INSERT INTO player_items VALUES
+      ('Player 1', 1, 1, 0, ''), ('Player 1', 1, 2, 0, ''),
+      ('Player 2', 1, 1, 0, ''), ('Player 2', 1, 2, 1, 'test.jpg')
     `);
 
     // Perform the GET request to the appropriate /items endpoint
-    const res = await axios.get(`http://localhost:${PORT}/api/lobbies/1/players/Host 1/items`);
+    const res = await axios.get(`http://localhost:${PORT}/api/lobbies/1/players/Player 2/items`);
     expect(res.status).toBe(200);
     expect(res.data).toHaveLength(2);
     expect(res.data).toMatchObject([
-      {id: 1, name: "Triton Statue", points: 10, found: false},
-      {id: 2, name: "Sun God", points: 10, found: false}
+      {id: 1, name: "Triton Statue", points: 10, found: 0, image: ''},
+      {id: 2, name: "Sun God", points: 10, found: 1, image: 'test.jpg'}
     ]);
   });
 

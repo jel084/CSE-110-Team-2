@@ -29,33 +29,27 @@ router.get('/lobbies', (req, res) => __awaiter(void 0, void 0, void 0, function*
     }
 }));
 router.post('/create', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { lobbyName, scavengerItems, userId, pin } = req.body;
+    const { lobbyName, scavengerItems, userId, gameTime, pin } = req.body;
     if (!userId) {
         return res.status(400).json({ error: 'Host userId is required' });
     }
     try {
         const db = yield (0, db_1.connectDB)();
         // Insert the new lobby
-        yield db.run(`INSERT INTO lobbies (lobbyName, host, players, scavengerItems, points, pin, status)
-      VALUES (?, ?, ?, ?, ?, ?, ?)`, [
+        yield db.run(`INSERT INTO lobbies (lobbyName, host, players, scavengerItems, points, pin, gameTime, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`, [
             lobbyName,
             userId,
             JSON.stringify([]),
             JSON.stringify(scavengerItems),
             JSON.stringify([]),
             pin,
+            gameTime,
             'waiting'
         ]);
         // Retrieve the newly created lobby to get its ID
         const newLobby = yield db.get(`SELECT * FROM lobbies WHERE host = ? ORDER BY id DESC LIMIT 1`, [userId]);
         const lobbyId = newLobby.id;
-        // Add scavenger items for the host into the `player_items` table
-        if (Array.isArray(scavengerItems) && scavengerItems.length > 0) {
-            for (let item of scavengerItems) {
-                yield db.run(`INSERT OR IGNORE INTO player_items (player_id, lobby_id, item_id, found, image)
-          VALUES (?, ?, ?, ?, ?)`, [userId, lobbyId, item.id, false, '']);
-            }
-        }
         res.status(201).json({ message: `Lobby '${lobbyName}' created by ${userId}`, lobbyId });
     }
     catch (error) {
@@ -130,6 +124,15 @@ router.get('/lobbies/:lobbyId/players/:userId/items', (req, res) => __awaiter(vo
         if (!Array.isArray(scavengerItems) || scavengerItems.length === 0) {
             return res.status(200).json({ items: [] });
         }
+        const playerItems = yield db.all(`SELECT * FROM player_items WHERE lobby_id = ? AND player_id = ?`, [lobbyId, userId]);
+        const playerItemsMap = playerItems.reduce((map, item) => {
+            map[item.item_id] = item;
+            return map;
+        }, {});
+        scavengerItems = scavengerItems.map((item) => {
+            var _a, _b, _c, _d;
+            return (Object.assign(Object.assign({}, item), { found: (_b = (_a = playerItemsMap[item.id]) === null || _a === void 0 ? void 0 : _a.found) !== null && _b !== void 0 ? _b : item.found, image: (_d = (_c = playerItemsMap[item.id]) === null || _c === void 0 ? void 0 : _c.image) !== null && _d !== void 0 ? _d : item.image }));
+        });
         res.status(200).json(scavengerItems);
     }
     catch (error) {

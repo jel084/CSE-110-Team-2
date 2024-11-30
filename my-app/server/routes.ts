@@ -46,17 +46,6 @@ router.post('/create', async (req, res) => {
     const newLobby = await db.get(`SELECT * FROM lobbies WHERE host = ? ORDER BY id DESC LIMIT 1`, [userId]);
     const lobbyId = newLobby.id;
 
-    // Add scavenger items for the host into the `player_items` table
-    if (Array.isArray(scavengerItems) && scavengerItems.length > 0) {
-      for (let item of scavengerItems) {
-        await db.run(
-          `INSERT OR IGNORE INTO player_items (player_id, lobby_id, item_id, found, image)
-          VALUES (?, ?, ?, ?, ?)`,
-          [userId, lobbyId, item.id, false, '']
-        );
-      }
-    }
-
     res.status(201).json({ message: `Lobby '${lobbyName}' created by ${userId}`, lobbyId });
   } catch (error) {
     console.error('Error creating lobby:', error);
@@ -156,6 +145,19 @@ router.get('/lobbies/:lobbyId/players/:userId/items', async (req, res) => {
     if (!Array.isArray(scavengerItems) || scavengerItems.length === 0) {
       return res.status(200).json({ items: [] });
     }
+
+    const playerItems = await db.all(`SELECT * FROM player_items WHERE lobby_id = ? AND player_id = ?`, [lobbyId, userId]);
+
+    const playerItemsMap = playerItems.reduce((map, item) => {
+      map[item.item_id] = item;
+      return map;
+    }, {});
+
+    scavengerItems = scavengerItems.map((item) => ({
+      ...item,
+      found: playerItemsMap[item.id]?.found ?? item.found,
+      image: playerItemsMap[item.id]?.image ?? item.image
+    }));
 
     res.status(200).json(scavengerItems);
   } catch (error) {
