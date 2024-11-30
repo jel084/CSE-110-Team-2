@@ -1,8 +1,7 @@
 import { Link } from "react-router-dom";
 import React, { useState } from "react";
 import "./HomePage.css";
-
-// import questionIcon from "./icons_question.png";
+import questionIcon from "./icons_question.png";
 
 export default function HomePage() {
   const [showRules, setShowRules] = useState(false);
@@ -13,12 +12,9 @@ export default function HomePage() {
 
   return (
     <div className="background-image">
-      {/* Game Title */}
       <div className="game-title">
         <h1 className="game-title-text">Scavenger Hunt</h1>
       </div>
-
-      {/* Home Button */}
       <div className="mainPage-button-container">
         <Link to="/creategame">
           <button className="homepage-button">Create Game</button>
@@ -27,7 +23,6 @@ export default function HomePage() {
           <button className="homepage-button">Join Game</button>
         </Link>
       </div>
-
       {/* Question Button */}
       <button className="question-button" onClick={toggleRulesPopup}>
         {/* <img src={questionIcon} alt="rule_icon" className="question-icon" /> */}
