@@ -146,34 +146,3 @@ button:hover {
 .successPopupContent button:hover {
     background-color: #FFA726;
 }
-
-.goBackButton {
-    position: absolute;
-    top: 12px;
-    left: 20px;
-    background-color: #FFB703;
-    border: none;
-    color: white;
-    font-size: 18px;
-    font-family: 'Comfortaa', sans-serif;
-    cursor: pointer;
-    padding: 10px 20px;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    gap: 8px; /* Space between icon and text */
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    text-decoration: none;
-    transition: background-color 0.3s, transform 0.2s;
-}
-
-.goBackButton:hover {
-    background-color: #FFA726;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
-}
-
-/* Optional: Adjust box-icon inside the button */
-.goBackButton box-icon {
-    display: inline-block;
-}

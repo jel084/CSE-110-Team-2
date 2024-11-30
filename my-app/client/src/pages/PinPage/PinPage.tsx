@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./PinPageStyles.module.css";
+import GoBackButton from "../../components/GoBackButton.tsx/GoBackButton";
 
 function PinPage() {
   const [lobbyCode, setLobbyCode] = useState("");
@@ -75,12 +76,8 @@ function PinPage() {
         )}
       </div>
       <div className={styles.pinPage}>
-        {/* Go Back Button */}
-        <button className={styles.goBackButton} onClick={() => navigate("/")}>
-          {/* &#8592; Go Back */}
-          {/* <box-icon name="chevron-left" color="white" size="md"></box-icon> */}
-          <box-icon name="home" color="white" size="md"></box-icon>
-        </button>
+        <GoBackButton />
+
         <header className={styles.header}>
           <h1>Enter Lobby Code</h1>
           <div className={styles.inputContainer}>
