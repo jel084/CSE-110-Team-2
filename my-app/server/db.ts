@@ -9,7 +9,7 @@ export const connectDB = async () => {
     return dbInstance;
   }
   dbInstance = await open({
-    filename: './database.sqlite',
+    filename: './server/database.sqlite',
     driver: sqlite3.Database
   });
   return dbInstance;

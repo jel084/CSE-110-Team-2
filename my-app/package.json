@@ -11,7 +11,7 @@
     "dev:server": "ts-node-dev --respawn --transpile-only src/server.ts",
     "dev:client": "cd client && cross-env PORT=3000 react-scripts start",
     "test:client": "cd client && react-scripts test --watchAll=false --transformIgnorePatterns \"node_modules/(?!axios)/\"",
-    "test:server": "jest --testMatch '**/server/test/*.test.tsx' --testEnvironment node --transformIgnorePatterns \"node_modules/(?!axios)/\"",
+    "test:server": "jest --testMatch '**/server/test/*.test.tsx' --verbose --runInBand --testEnvironment node --transformIgnorePatterns \"node_modules/(?!axios)/\"",
     "test": "npm run test:client && npm run test:server"
   },
   "dependencies": {
