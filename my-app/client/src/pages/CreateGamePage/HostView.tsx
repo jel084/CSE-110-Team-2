@@ -13,7 +13,7 @@ function HostView() {
     const [items, setItems] = useState<Item[]>([]);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [hostName, setHostName] = useState('');
-    const [successMessage, setSuccessMessage] = useState('');  // New state for success message
+    const [successMessage, setSuccessMessage] = useState('');  
     const navigate = useNavigate();
     
     const convertTimeToSeconds = (time: string) => {
@@ -59,25 +59,32 @@ function HostView() {
         setCurrentIndex((prevIndex) => (prevIndex === items.length - 1 ? 0 : prevIndex + 1));
     };
 
+    const isValidTimeFormat = (time: string) => {
+        const timeRegex = /^(\d{2}):(\d{2}):(\d{2})$/;
+        return timeRegex.test(time);
+    };
+
     const handleCreateLobby = async () => {
         if (!lobbyCode || items.length === 0) {
             alert('Please enter a lobby code and add at least one item.');
             return;
         }
-
+    
+        const gameTimeInSeconds = convertTimeToSeconds(timeInput);
+        console.log("gameTime in seconds:", gameTimeInSeconds);
+    
         try {
             const response = await axios.post('http://localhost:8080/api/create', {
                 lobbyName: `Lobby-${lobbyCode}`,
                 scavengerItems: items,
                 userId: hostName || 'HostUser1',
                 pin: lobbyCode,
-                gameTime: convertTimeToSeconds(timeInput)
+                gameTime: gameTimeInSeconds, 
             });
-
+    
             if (response.status === 201) {
-                const { lobbyId } = response.data;
-                setSuccessMessage('Lobby created successfully!'); // Set the success message
-                setTimeout(() => setSuccessMessage(''), 8080); // Hide the success message after 5 seconds
+                setSuccessMessage('Lobby created successfully!');
+                setTimeout(() => setSuccessMessage(''), 5000);
             }
         } catch (error) {
             console.error('Error creating lobby:', error);

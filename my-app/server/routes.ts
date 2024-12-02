@@ -2,6 +2,7 @@ import express from 'express';
 import { connectDB } from './db';
 import multer from 'multer';
 import path from 'path';
+import { createLobby } from './lobbies';
 
 const router = express.Router();
 
@@ -16,52 +17,7 @@ router.get('/lobbies', async (req, res) => {
   }
 });
 
-router.post('/create', async (req, res) => {
-  const { lobbyName, scavengerItems, userId, pin } = req.body;
-
-  if (!userId) {
-    return res.status(400).json({ error: 'Host userId is required' });
-  }
-
-  try {
-    const db = await connectDB();
-
-    // Insert the new lobby
-    await db.run(
-      `INSERT INTO lobbies (lobbyName, host, players, scavengerItems, points, pin, status)
-      VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [
-        lobbyName,
-        userId,
-        JSON.stringify([]), 
-        JSON.stringify(scavengerItems),
-        JSON.stringify([]), 
-        pin,
-        'waiting'
-      ]
-    );
-
-    // Retrieve the newly created lobby to get its ID
-    const newLobby = await db.get(`SELECT * FROM lobbies WHERE host = ? ORDER BY id DESC LIMIT 1`, [userId]);
-    const lobbyId = newLobby.id;
-
-    // Add scavenger items for the host into the `player_items` table
-    if (Array.isArray(scavengerItems) && scavengerItems.length > 0) {
-      for (let item of scavengerItems) {
-        await db.run(
-          `INSERT OR IGNORE INTO player_items (player_id, lobby_id, item_id, found, image)
-          VALUES (?, ?, ?, ?, ?)`,
-          [userId, lobbyId, item.id, false, '']
-        );
-      }
-    }
-
-    res.status(201).json({ message: `Lobby '${lobbyName}' created by ${userId}`, lobbyId });
-  } catch (error) {
-    console.error('Error creating lobby:', error);
-    res.status(500).json({ error: 'Failed to create lobby' });
-  }
-});
+router.post('/create', createLobby);
 
 router.post('/join', async (req, res) => {
   const { lobbyId, userId, pin } = req.body;
@@ -90,7 +46,6 @@ router.post('/join', async (req, res) => {
         [JSON.stringify(players), JSON.stringify(pointsArray), lobbyId]
       );
 
-      // Insert items for the player into player_items
       let scavengerItems = JSON.parse(lobby.scavengerItems || '[]');
       for (let item of scavengerItems) {
         await db.run(
@@ -226,6 +181,34 @@ router.put('/lobbies/:lobbyId/players/:userId/items/:itemId/upload', upload.sing
   }
 });
 
+// Delete image for player item
+router.delete('/lobbies/:lobbyId/players/:userId/items/:itemId/deleteImage', async (req, res) => {
+  const { lobbyId, userId, itemId } = req.params;
+
+  try {
+    const db = await connectDB();
+
+    const playerItem = await db.get(
+      `SELECT * FROM player_items WHERE lobby_id = ? AND player_id = ? AND item_id = ?`,
+      [lobbyId, userId, itemId]
+    );
+
+    if (!playerItem) {
+      return res.status(404).json({ error: 'Player item not found' });
+    }
+
+    await db.run(
+      `UPDATE player_items SET found = 0, image = '' WHERE lobby_id = ? AND player_id = ? AND item_id = ?`,
+      [lobbyId, userId, itemId]
+    );
+
+    res.status(200).json({ message: 'Image deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting image:', error);
+    res.status(500).json({ error: 'Failed to delete image' });
+  }
+});
+
 router.get('/lobbies/:lobbyId/players', async (req, res) => {
   const { lobbyId } = req.params;
 
@@ -254,24 +237,23 @@ router.get('/lobbies/:lobbyId/gameTime', async (req, res) => {
   const { lobbyId } = req.params;
 
   try {
-    const db = await connectDB();
-    const lobby = await db.get(`SELECT * FROM lobbies WHERE id = ?`, [lobbyId]);
+      const db = await connectDB();
+      const lobby = await db.get(`SELECT * FROM lobbies WHERE id = ?`, [lobbyId]);
 
-    if (!lobby) {
-      return res.status(404).json({ error: 'Lobby not found' });
-    }
+      if (!lobby) {
+          return res.status(404).json({ error: 'Lobby not found' });
+      }
 
-    const gameTime = JSON.parse(lobby.gameTime || '0');
+      const gameTime = lobby.gameTime;
 
-    // Ensure players is an array of strings
-    if (!gameTime) {
-      return res.status(500).json({ error: 'Invalid game time data' });
-    }
+      if (gameTime === undefined || gameTime === null) {
+          return res.status(500).json({ error: 'Invalid game time data' });
+      }
 
-    res.status(200).json({ gameTime });
+      res.status(200).json({ gameTime });
   } catch (error) {
-    console.error('Error retrieving gameTime:', error);
-    res.status(500).json({ error: 'Failed to retrieve gameTime'});
+      console.error('Error retrieving gameTime:', error);
+      res.status(500).json({ error: 'Failed to retrieve gameTime' });
   }
 });
 

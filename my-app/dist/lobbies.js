@@ -12,33 +12,38 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.joinLobby = exports.createLobby = void 0;
 const db_1 = require("./db");
 const createLobby = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { lobbyName, scavengerItems, userId, userName, pin } = req.body;
+    const { lobbyName, scavengerItems, userId, pin, gameTime } = req.body;
+    console.log('Creating lobby with gameTime:', gameTime);
     if (!pin || !/^\d{4}$/.test(pin)) {
         return res.status(400).json({ error: 'A valid 4-digit PIN is required' });
     }
     try {
         const db = yield (0, db_1.connectDB)();
-        const pointsArray = [{}]; // Updated to include the player's name
+        // Corrected order for inserting into lobbies
         const result = yield db.run(`
-      INSERT INTO lobbies (lobbyName, host, players, scavengerItems, points, pin)
-      VALUES (?, ?, ?, ?, ?, ?)
+      INSERT INTO lobbies (lobbyName, host, players, scavengerItems, points, pin, status, gameTime)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `, [
             lobbyName,
+            userId,
             JSON.stringify([]),
             JSON.stringify(scavengerItems),
-            JSON.stringify(pointsArray),
-            pin
+            JSON.stringify([]),
+            pin,
+            'waiting',
+            gameTime // Proper value for gameTime
         ]);
+        console.log('Insert successful, gameTime inserted:', gameTime);
         res.status(201).json({ lobbyId: result.lastID });
     }
     catch (error) {
-        console.error(error);
+        console.error('Error creating lobby:', error);
         res.status(500).json({ error: 'Failed to create lobby' });
     }
 });
 exports.createLobby = createLobby;
 const joinLobby = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { lobbyId, userId, userName, pin } = req.body; // Added userName
+    const { lobbyId, userId, userName, pin } = req.body;
     try {
         const db = yield (0, db_1.connectDB)();
         const lobby = yield db.get(`SELECT * FROM lobbies WHERE id = ?`, [lobbyId]);

@@ -27,8 +27,8 @@ const initDatabase = () => __awaiter(void 0, void 0, void 0, function* () {
       scavengerItems TEXT,
       points TEXT,
       pin TEXT NOT NULL,
-      gameTime INTEGER NOT NULL DEFAULT 0,
-      status TEXT DEFAULT 'waiting'
+      status TEXT DEFAULT 'waiting',
+      gameTime INTEGER NOT NULL
     )
   `);
     //Player scavenge item status 

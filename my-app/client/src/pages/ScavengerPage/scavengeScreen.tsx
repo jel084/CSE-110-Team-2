@@ -15,21 +15,24 @@ const ScavengeScreen: React.FC = () => {
   const navigate = useNavigate();
 
 
-// Fetch players from backend
-useEffect(() => {
-  const fetchTime = async () => {
-      if (lobbyId) {
-          try {
-              const response = await axios.get(`http://localhost:8080/api/lobbies/${lobbyId}/gameTime`);
-              console.log("Fetched time:", response.data);
-              setTimeRemaining(response.data.gameTime);
-          } catch (error) {
-              console.error('Error fetching players:', error);
-          }
-      }
-  };
-  fetchTime();
-}, [lobbyId]);
+  useEffect(() => {
+    const fetchTime = async () => {
+        if (lobbyId) {
+            try {
+                const response = await axios.get(`http://localhost:8080/api/lobbies/${lobbyId}/gameTime`);
+                if (response.data && response.data.gameTime !== undefined) {
+                  console.log("Fetched time:", response.data);
+                  setTimeRemaining(response.data.gameTime);
+                } else {
+                  console.error('Error: Invalid game time data received from server.');
+                }
+            } catch (error) {
+                console.error('Error fetching game time:', error);
+            }
+        }
+    };
+    fetchTime();
+  }, [lobbyId]);
 
 useEffect(() => {
   if (timeRemaining <= 0){
@@ -154,9 +157,15 @@ const formatTime = (totalSeconds: number) => {
         const response = await axios.delete(
           `http://localhost:8080/api/lobbies/${lobbyId}/players/${userId}/items/${items[currentIndex].id}/deleteImage`
         );
-
+  
         if (response.status === 200) {
           console.log("Image deleted successfully");
+  
+          // Update state to reflect that the image has been deleted
+          const updatedItems = [...items];
+          updatedItems[currentIndex].image = undefined;
+          updatedItems[currentIndex].found = false;
+          setItems(updatedItems);
         }
       } catch (error) {
         console.error('Error deleting image:', error);
