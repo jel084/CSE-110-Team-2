@@ -47,7 +47,6 @@ router.post('/join', (req, res) => __awaiter(void 0, void 0, void 0, function* (
             players.push(userId);
             pointsArray.push({ id: userId, points: 0 });
             yield db.run(`UPDATE lobbies SET players = ?, points = ? WHERE id = ?`, [JSON.stringify(players), JSON.stringify(pointsArray), lobbyId]);
-            // Insert items for the player into player_items
             let scavengerItems = JSON.parse(lobby.scavengerItems || '[]');
             for (let item of scavengerItems) {
                 yield db.run(`INSERT OR IGNORE INTO player_items (player_id, lobby_id, item_id, found, image)
@@ -160,6 +159,37 @@ router.delete('/lobbies/:lobbyId/players/:userId/items/:itemId/deleteImage', (re
     catch (error) {
         console.error('Error deleting image:', error);
         res.status(500).json({ error: 'Failed to delete image' });
+    }
+}));
+router.put('/lobbies/:lobbyId/players/:userId/items/markFound', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { lobbyId, userId } = req.params;
+    const { items } = req.body; // Expected to receive an array of item IDs to be marked as found
+    try {
+        const db = yield (0, db_1.connectDB)();
+        for (let itemId of items) {
+            yield db.run(`UPDATE player_items SET found = ? WHERE lobby_id = ? AND player_id = ? AND item_id = ?`, [true, lobbyId, userId, itemId]);
+        }
+        res.status(200).json({ message: 'Items marked as found successfully' });
+    }
+    catch (error) {
+        console.error('Error marking items as found:', error);
+        res.status(500).json({ error: 'Failed to mark items as found' });
+    }
+}));
+// Save final scores for the lobby
+router.post('/lobbies/:lobbyId/saveScores', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { lobbyId } = req.params;
+    const { players } = req.body;
+    try {
+        const db = yield (0, db_1.connectDB)();
+        for (let player of players) {
+            yield db.run(`INSERT INTO results (lobby_id, player_id, points) VALUES (?, ?, ?)`, [lobbyId, player.id, player.points]);
+        }
+        res.status(200).json({ message: 'Scores saved successfully' });
+    }
+    catch (error) {
+        console.error('Error saving scores:', error);
+        res.status(500).json({ error: 'Failed to save scores' });
     }
 }));
 router.get('/lobbies/:lobbyId/players', (req, res) => __awaiter(void 0, void 0, void 0, function* () {

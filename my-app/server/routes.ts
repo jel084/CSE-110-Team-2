@@ -209,6 +209,49 @@ router.delete('/lobbies/:lobbyId/players/:userId/items/:itemId/deleteImage', asy
   }
 });
 
+router.put('/lobbies/:lobbyId/players/:userId/items/markFound', async (req, res) => {
+  const { lobbyId, userId } = req.params;
+  const { items } = req.body; // Expected to receive an array of item IDs to be marked as found
+
+  try {
+    const db = await connectDB();
+
+    for (let itemId of items) {
+      await db.run(
+        `UPDATE player_items SET found = ? WHERE lobby_id = ? AND player_id = ? AND item_id = ?`,
+        [true, lobbyId, userId, itemId]
+      );
+    }
+
+    res.status(200).json({ message: 'Items marked as found successfully' });
+  } catch (error) {
+    console.error('Error marking items as found:', error);
+    res.status(500).json({ error: 'Failed to mark items as found' });
+  }
+});
+
+// Save final scores for the lobby
+router.post('/lobbies/:lobbyId/saveScores', async (req, res) => {
+  const { lobbyId } = req.params;
+  const { players } = req.body; 
+
+  try {
+    const db = await connectDB();
+
+    for (let player of players) {
+      await db.run(
+        `INSERT INTO results (lobby_id, player_id, points) VALUES (?, ?, ?)`,
+        [lobbyId, player.id, player.points]
+      );
+    }
+
+    res.status(200).json({ message: 'Scores saved successfully' });
+  } catch (error) {
+    console.error('Error saving scores:', error);
+    res.status(500).json({ error: 'Failed to save scores' });
+  }
+});
+
 router.get('/lobbies/:lobbyId/players', async (req, res) => {
   const { lobbyId } = req.params;
 
@@ -295,6 +338,26 @@ router.post('/lobbies/:lobbyId/start', async (req, res) => {
   } catch (error) {
     console.error('Error starting lobby:', error);
     res.status(500).json({ error: 'Failed to start lobby' });
+  }
+});
+
+router.post('/lobbies/:lobbyId/end', async (req, res) => {
+  const { lobbyId } = req.params;
+
+  try {
+    const db = await connectDB();
+    const lobby = await db.get(`SELECT * FROM lobbies WHERE id = ?`, [lobbyId]);
+
+    if (!lobby) {
+      return res.status(404).json({ error: 'Lobby not found' });
+    }
+
+    await db.run(`UPDATE lobbies SET status = ? WHERE id = ?`, ['ended', lobbyId]);
+
+    res.status(200).json({ message: `Lobby ${lobbyId} ended successfully` });
+  } catch (error) {
+    console.error('Error ending lobby:', error);
+    res.status(500).json({ error: 'Failed to end the lobby' });
   }
 });
 

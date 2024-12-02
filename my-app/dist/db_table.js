@@ -43,6 +43,16 @@ const initDatabase = () => __awaiter(void 0, void 0, void 0, function* () {
       FOREIGN KEY (lobby_id) REFERENCES lobbies(id)
     )
   `);
+    //Results Table
+    yield db.exec(`
+    CREATE TABLE IF NOT EXISTS results (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      lobby_id INTEGER NOT NULL,
+      player_id TEXT NOT NULL,
+      points INTEGER NOT NULL,
+      FOREIGN KEY (lobby_id) REFERENCES lobbies(id)
+    )
+  `);
     console.log('Database initialized with lobbies and player_items tables.');
 });
 exports.initDatabase = initDatabase;

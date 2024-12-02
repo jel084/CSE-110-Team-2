@@ -19,7 +19,6 @@ const createLobby = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     }
     try {
         const db = yield (0, db_1.connectDB)();
-        // Corrected order for inserting into lobbies
         const result = yield db.run(`
       INSERT INTO lobbies (lobbyName, host, players, scavengerItems, points, pin, status, gameTime)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
@@ -31,9 +30,8 @@ const createLobby = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             JSON.stringify([]),
             pin,
             'waiting',
-            gameTime // Proper value for gameTime
+            gameTime
         ]);
-        console.log('Insert successful, gameTime inserted:', gameTime);
         res.status(201).json({ lobbyId: result.lastID });
     }
     catch (error) {
@@ -55,12 +53,9 @@ const joinLobby = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         }
         const players = JSON.parse(lobby.players || '[]');
         let pointsArray = JSON.parse(lobby.points || '[]');
-        // If the user is not in the lobby, add them
         if (!players.includes(userId)) {
             players.push(userId);
-            // Add player to the points array including their name
             pointsArray.push({ id: userId, name: userName, points: 0 });
-            // Update the database with the new players list and points array
             yield db.run(`
         UPDATE lobbies SET players = ?, points = ? WHERE id = ?
       `, [JSON.stringify(players), JSON.stringify(pointsArray), lobbyId]);

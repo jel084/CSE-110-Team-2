@@ -36,5 +36,16 @@ export const initDatabase = async () => {
     )
   `);
 
+  //Results Table
+  await db.exec(`
+    CREATE TABLE IF NOT EXISTS results (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      lobby_id INTEGER NOT NULL,
+      player_id TEXT NOT NULL,
+      points INTEGER NOT NULL,
+      FOREIGN KEY (lobby_id) REFERENCES lobbies(id)
+    )
+  `);
+
   console.log('Database initialized with lobbies and player_items tables.');
 };
