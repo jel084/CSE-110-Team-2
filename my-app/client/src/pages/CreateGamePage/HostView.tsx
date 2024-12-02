@@ -4,7 +4,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { Item } from "../../types/types";
 import { AppContext } from "../../context/AppContext";
-import GoBackButton from "../../components/GoBackButton.tsx/GoBackButton";
+import GoBackButton from "../../components/GoBackButton/GoBackButton";
 
 function HostView() {
   const [lobbyCode, setLobbyCode] = useState("");

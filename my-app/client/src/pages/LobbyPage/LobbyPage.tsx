@@ -2,12 +2,21 @@ import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import styles from "./LobbyPage.module.css";
 import axios from 'axios';
+import GoBackButton from "../../components/GoBackButton/GoBackButton";
+import PopupWindow from "../../components/PopupWindow/PopupWindow";
 
 export default function LobbyPage() {
     const { lobbyId, userId } = useParams<{ lobbyId: string, userId: string }>();
     const [players, setPlayers] = useState<string[]>([]);
     const [timer, setTimer] = useState(15);
     const navigate = useNavigate();
+
+    // Popup window state
+    const [showPopup, setShowPopup] = useState(false);
+
+    const handleTogglePopup = () => {
+        setShowPopup((prev) => !prev);
+    };
 
     // Fetch players from backend
     useEffect(() => {

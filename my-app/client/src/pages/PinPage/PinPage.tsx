@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./PinPageStyles.module.css";
-import GoBackButton from "../../components/GoBackButton.tsx/GoBackButton";
+import GoBackButton from "../../components/GoBackButton/GoBackButton";
 
 function PinPage() {
   const [lobbyCode, setLobbyCode] = useState("");
