@@ -88,6 +88,33 @@ router.post('/join', (req, res) => __awaiter(void 0, void 0, void 0, function* (
         res.status(500).json({ error: 'Failed to join lobby' });
     }
 }));
+
+router.post('/lobbies/:lobbyId/:userId/leave', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { lobbyId, userId } = req.params;
+    try {
+        const db = yield (0, db_1.connectDB)();
+        const lobby = yield db.get(`SELECT * FROM lobbies WHERE id = ?`, [lobbyId]);
+        if (!lobby) {
+            return res.status(404).json({ error: 'Lobby not found' });
+        }
+        let players = JSON.parse(lobby.players || '[]');
+        let pointsArray = JSON.parse(lobby.points || '[]');
+        let itemsArray = JSON.parse(lobby.scavengerItems || '[]');
+        
+        players = players.filter((id) => id !== userId);
+        itemsArray = itemsArray.filter((i) => i.name !== userId);
+        pointsArray = pointsArray.filter((p) => p.id !== userId);
+        yield db.run(`UPDATE lobbies SET players = ?, points = ?, scavengerItems = ? WHERE id = ?`, [JSON.stringify(players), JSON.stringify(pointsArray), JSON.stringify(itemsArray), lobbyId]);
+        // Remove player's items from player_items
+        yield db.run(`DELETE FROM player_items WHERE player_id = ? AND lobby_id = ?`, [userId, lobbyId]);
+        res.status(200).json({ message: `User ${userId} left lobby ${lobbyId}` });
+    }
+    catch (error) {
+        console.error('Error leaving lobby:', error);
+        res.status(500).json({ error: 'Failed to leave lobby' });
+    }
+}));
+
 router.post('/update-points', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { lobbyId, userId, points } = req.body;
     try {
