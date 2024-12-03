@@ -7,20 +7,55 @@ import { AppContext } from "../../context/AppContext";
 import GoBackButton from "../../components/GoBackButton/GoBackButton";
 
 function HostView() {
-  const [lobbyCode, setLobbyCode] = useState("");
-  const [timeInput, setTimeInput] = useState("00:00:00");
-  const [timeRemaining, setTimeRemaining] = useState(0);
-  const [newItem, setNewItem] = useState("");
-  const [items, setItems] = useState<Item[]>([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [hostName, setHostName] = useState("");
-  const [successMessage, setSuccessMessage] = useState(""); // New state for success message
-  const navigate = useNavigate();
+    const [lobbyCode, setLobbyCode] = useState('');
+    const [timeInput, setTimeInput] = useState('');
+    const [timeRemaining, setTimeRemaining] = useState(0);
+    const [newItem, setNewItem] = useState('');
+    const [items, setItems] = useState<Item[]>([]);
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const [hostName, setHostName] = useState('');
+    const [successMessage, setSuccessMessage] = useState('');  // New state for success message
+    
+    const handleTimeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+      let value = e.target.value;
+    
+      // Remove all non-digit characters
+      value = value.replace(/\D/g, '');
+    
+      // Limit to 6 digits
+      value = value.substring(0, 6);
+    
+      // Insert colons at the appropriate positions
+      if (value.length <= 2) {
+        // Seconds only
+        value = value;
+      } else if (value.length <= 4) {
+        // Minutes and seconds
+        value = value.replace(/(\d{1,2})(\d{2})/, '$1:$2');
+      } else {
+        // Hours, minutes, and seconds
+        value = value.replace(/(\d{1,2})(\d{2})(\d{2})/, '$1:$2:$3');
+      }
+    
+      setTimeInput(value);
+    };
+    
+    const convertTimeToSeconds = (time: string) => {
+      const timeParts = time.split(':').reverse(); // Reverse to start from seconds
+      let seconds = 0;
 
-  const convertTimeToSeconds = (time: string) => {
-    const [hours, minutes, seconds] = time.split(":").map(Number);
-    return hours * 3600 + minutes * 60 + (seconds || 0);
-  };
+      if (timeParts[0]) {
+        seconds += parseInt(timeParts[0], 10);
+      }
+      if (timeParts[1]) {
+        seconds += parseInt(timeParts[1], 10) * 60;
+      }
+      if (timeParts[2]) {
+        seconds += parseInt(timeParts[2], 10) * 3600;
+      }
+
+      return seconds;
+    };
 
   const handleLobbyCode = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -147,7 +182,7 @@ function HostView() {
               type="text"
               value={timeInput}
               placeholder="hr:mm:ss"
-              onChange={(e) => setTimeInput(e.target.value)}
+              onChange={handleTimeInput}
             />
           </div>
           <div className="timer-display">
