@@ -16,6 +16,7 @@ const express_1 = __importDefault(require("express"));
 const db_1 = require("./db");
 const multer_1 = __importDefault(require("multer"));
 const path_1 = __importDefault(require("path"));
+const lobbies_1 = require("./lobbies");
 const router = express_1.default.Router();
 router.get('/lobbies', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -28,35 +29,7 @@ router.get('/lobbies', (req, res) => __awaiter(void 0, void 0, void 0, function*
         res.status(500).json({ error: 'Failed to retrieve lobbies' });
     }
 }));
-router.post('/create', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { lobbyName, scavengerItems, userId, gameTime, pin } = req.body;
-    if (!userId) {
-        return res.status(400).json({ error: 'Host userId is required' });
-    }
-    try {
-        const db = yield (0, db_1.connectDB)();
-        // Insert the new lobby
-        yield db.run(`INSERT INTO lobbies (lobbyName, host, players, scavengerItems, points, pin, gameTime, status)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`, [
-            lobbyName,
-            userId,
-            JSON.stringify([]),
-            JSON.stringify(scavengerItems),
-            JSON.stringify([]),
-            pin,
-            gameTime,
-            'waiting'
-        ]);
-        // Retrieve the newly created lobby to get its ID
-        const newLobby = yield db.get(`SELECT * FROM lobbies WHERE host = ? ORDER BY id DESC LIMIT 1`, [userId]);
-        const lobbyId = newLobby.id;
-        res.status(201).json({ message: `Lobby '${lobbyName}' created by ${userId}`, lobbyId });
-    }
-    catch (error) {
-        console.error('Error creating lobby:', error);
-        res.status(500).json({ error: 'Failed to create lobby' });
-    }
-}));
+router.post('/create', lobbies_1.createLobby);
 router.post('/join', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { lobbyId, userId, pin } = req.body;
     try {
@@ -74,7 +47,6 @@ router.post('/join', (req, res) => __awaiter(void 0, void 0, void 0, function* (
             players.push(userId);
             pointsArray.push({ id: userId, points: 0 });
             yield db.run(`UPDATE lobbies SET players = ?, points = ? WHERE id = ?`, [JSON.stringify(players), JSON.stringify(pointsArray), lobbyId]);
-            // Insert items for the player into player_items
             let scavengerItems = JSON.parse(lobby.scavengerItems || '[]');
             for (let item of scavengerItems) {
                 yield db.run(`INSERT OR IGNORE INTO player_items (player_id, lobby_id, item_id, found, image)
@@ -181,6 +153,54 @@ router.put('/lobbies/:lobbyId/players/:userId/items/:itemId/upload', upload.sing
         res.status(500).json({ error: 'Failed to upload image or mark item' });
     }
 }));
+// Delete image for player item
+router.delete('/lobbies/:lobbyId/players/:userId/items/:itemId/deleteImage', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { lobbyId, userId, itemId } = req.params;
+    try {
+        const db = yield (0, db_1.connectDB)();
+        const playerItem = yield db.get(`SELECT * FROM player_items WHERE lobby_id = ? AND player_id = ? AND item_id = ?`, [lobbyId, userId, itemId]);
+        if (!playerItem) {
+            return res.status(404).json({ error: 'Player item not found' });
+        }
+        yield db.run(`UPDATE player_items SET found = 0, image = '' WHERE lobby_id = ? AND player_id = ? AND item_id = ?`, [lobbyId, userId, itemId]);
+        res.status(200).json({ message: 'Image deleted successfully' });
+    }
+    catch (error) {
+        console.error('Error deleting image:', error);
+        res.status(500).json({ error: 'Failed to delete image' });
+    }
+}));
+router.put('/lobbies/:lobbyId/players/:userId/items/markFound', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { lobbyId, userId } = req.params;
+    const { items } = req.body; // Expected to receive an array of item IDs to be marked as found
+    try {
+        const db = yield (0, db_1.connectDB)();
+        for (let itemId of items) {
+            yield db.run(`UPDATE player_items SET found = ? WHERE lobby_id = ? AND player_id = ? AND item_id = ?`, [true, lobbyId, userId, itemId]);
+        }
+        res.status(200).json({ message: 'Items marked as found successfully' });
+    }
+    catch (error) {
+        console.error('Error marking items as found:', error);
+        res.status(500).json({ error: 'Failed to mark items as found' });
+    }
+}));
+// Save final scores for the lobby
+router.post('/lobbies/:lobbyId/saveScores', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { lobbyId } = req.params;
+    const { players } = req.body;
+    try {
+        const db = yield (0, db_1.connectDB)();
+        for (let player of players) {
+            yield db.run(`INSERT INTO results (lobby_id, player_id, points) VALUES (?, ?, ?)`, [lobbyId, player.id, player.points]);
+        }
+        res.status(200).json({ message: 'Scores saved successfully' });
+    }
+    catch (error) {
+        console.error('Error saving scores:', error);
+        res.status(500).json({ error: 'Failed to save scores' });
+    }
+}));
 router.get('/lobbies/:lobbyId/players', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { lobbyId } = req.params;
     try {
@@ -208,9 +228,8 @@ router.get('/lobbies/:lobbyId/gameTime', (req, res) => __awaiter(void 0, void 0,
         if (!lobby) {
             return res.status(404).json({ error: 'Lobby not found' });
         }
-        const gameTime = JSON.parse(lobby.gameTime || '0');
-        // Ensure players is an array of strings
-        if (!gameTime) {
+        const gameTime = lobby.gameTime;
+        if (gameTime === undefined || gameTime === null) {
             return res.status(500).json({ error: 'Invalid game time data' });
         }
         res.status(200).json({ gameTime });

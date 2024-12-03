@@ -11,6 +11,7 @@ const ScoreScreen: React.FC = () => {
   const [players, setPlayers] = useState<Player[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   // Get the lobbyId dynamically or use a hardcoded one for now
   const lobbyId = '1';
@@ -37,6 +38,19 @@ const ScoreScreen: React.FC = () => {
 
     fetchPlayers();
   }, [lobbyId]);
+
+  const handleSaveResults = async () => {
+    try {
+      await axios.post(`http://localhost:8080/api/lobbies/${lobbyId}/saveScores`, {
+        players
+      });
+      setSuccessMessage('Scores saved successfully!');
+      setTimeout(() => setSuccessMessage(null), 5000);
+    } catch (error) {
+      console.error('Error saving scores:', error);
+      setError('Failed to save scores. Please try again later.');
+    }
+  };
 
   if (loading) {
     return <div>Loading scores...</div>;
@@ -69,7 +83,10 @@ const ScoreScreen: React.FC = () => {
       </div>
       <div className="scoreboard-footer">
         <button className="action-button">Join New Game</button>
-        <button className="action-button">Save Results</button>
+        <button className="action-button" onClick={handleSaveResults}>
+          Save Results
+        </button>
+        {successMessage && <div className="success-message">{successMessage}</div>}
       </div>
     </div>
   );
