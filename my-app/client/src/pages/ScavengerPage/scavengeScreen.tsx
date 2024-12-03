@@ -75,7 +75,7 @@ const ScavengeScreen: React.FC = () => {
       } catch (error) {
         console.error('Error ending the game:', error);
       }
-      navigate(`/timeup`);
+      navigate(`/winners`);
     }
   };
 
@@ -184,7 +184,7 @@ const ScavengeScreen: React.FC = () => {
     if (lobbyId && userId) {
       try {
         for(const item of items) {
-          if (item.image !== undefined) {
+          if (item.image !== '') {
             try {
               await axios.delete(
                 `http://localhost:8080/api/lobbies/${lobbyId}/players/${userId}/items/${item.id}/deleteImage`
