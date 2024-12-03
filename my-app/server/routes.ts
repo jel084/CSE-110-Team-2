@@ -130,6 +130,31 @@ router.post('/update-points', async (req, res) => {
   }
 });
 
+router.post('/lobbies/:lobbyId/:userId/leave', async (req, res) => {
+  const { lobbyId, userId } = req.params;
+
+  try {
+    const db = await connectDB();
+    const lobby = await db.get(`SELECT * FROM lobbies WHERE id = ?`, [lobbyId]);
+
+    let players = JSON.parse(lobby.players || '[]');
+    let pointsArray = JSON.parse(lobby.points || '[]');
+    let itemsArray = JSON.parse(lobby.scavengerItems || '[]');
+    players = players.filter((name: string) => name !== userId);
+    itemsArray = itemsArray.filter((i: { name: string; }) => i.name !== userId);
+    pointsArray = pointsArray.filter((p: { id: string; }) => p.id !== userId);
+
+
+    await db.run(`UPDATE lobbies SET players = ?, points = ?, scavengerItems = ? WHERE id = ?`, [JSON.stringify(players), JSON.stringify(pointsArray), JSON.stringify(itemsArray), lobbyId]);
+      // Remove player's items from player_items
+    await db.run(`DELETE FROM player_items WHERE player_id = ? AND lobby_id = ?`, [userId, lobbyId]);
+    res.status(200).json({ message: `User ${userId} left lobby ${lobbyId}`, players });
+  } catch (error) {
+    console.error('Error leaving lobby:', error);
+    res.status(500).json({ error: 'Failed to leave lobby' });
+  }
+});
+
 router.get('/lobbies/:lobbyId/players/:userId/items', async (req, res) => {
   const { lobbyId, userId } = req.params;
 

@@ -31,6 +31,9 @@ const ScavengeScreen: React.FC = () => {
     };
     fetchTime();
   }, [lobbyId]);
+    };
+    fetchTime();
+  }, [lobbyId]);
 
   useEffect(() => {
     if (timeRemaining <= 0) {
@@ -47,6 +50,8 @@ const ScavengeScreen: React.FC = () => {
         }
         return prev - 1;
       });
+      setTime();
+    }, 1000);
       setTime();
     }, 1000);
 
@@ -94,11 +99,11 @@ const ScavengeScreen: React.FC = () => {
           if (Array.isArray(fetchedItems)) {
             setItems(fetchedItems);
           } else {
-            setErrorMessage('Failed to load items. Please try again.');
+            setErrorMessage("Failed to load items. Please try again.");
           }
         } catch (error) {
-          console.error('Error fetching items:', error);
-          setErrorMessage('Error loading items. Please try again.');
+          console.error("Error fetching items:", error);
+          setErrorMessage("Error loading items. Please try again.");
         }
       };
       fetchItems();
@@ -106,21 +111,28 @@ const ScavengeScreen: React.FC = () => {
   }, [lobbyId, userId]);
 
   const prevItem = () => {
-    setCurrentIndex((prevIndex) => (prevIndex === 0 ? items.length - 1 : prevIndex - 1));
+    setCurrentIndex((prevIndex) =>
+      prevIndex === 0 ? items.length - 1 : prevIndex - 1
+    );
   };
 
   const nextItem = () => {
-    setCurrentIndex((prevIndex) => (prevIndex === items.length - 1 ? 0 : prevIndex + 1));
+    setCurrentIndex((prevIndex) =>
+      prevIndex === items.length - 1 ? 0 : prevIndex + 1
+    );
   };
 
-  const handleImageChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = event.target.files?.[0];
     if (file && lobbyId && userId && items[currentIndex]) {
-      const validImageTypes = ['image/jpeg', 'image/png'];
+      const validImageTypes = ["image/jpeg", "image/png"];
       if (!validImageTypes.includes(file.type)) {
-        setErrorMessage('Invalid file type. Please select jpg or png.');
+        setErrorMessage("Invalid file type. Please select jpg or png.");
         return;
       }
+
 
       try {
         const formData = new FormData();
@@ -134,10 +146,11 @@ const ScavengeScreen: React.FC = () => {
           formData,
           {
             headers: {
-              'Content-Type': 'multipart/form-data',
+              "Content-Type": "multipart/form-data",
             },
           }
         );
+
 
         console.log(response); // Log response to verify the format
         if (response.status === 200 && response.data && response.data.item) {
@@ -148,11 +161,13 @@ const ScavengeScreen: React.FC = () => {
           setErrorMessage(null);
           console.log('Item image uploaded successfully');
         } else {
-          setErrorMessage('Failed to upload image. Unexpected response format.');
+          setErrorMessage(
+            "Failed to upload image. Unexpected response format."
+          );
         }
       } catch (error) {
-        console.error('Error uploading image:', error);
-        setErrorMessage('Failed to upload image. Please try again.');
+        console.error("Error uploading image:", error);
+        setErrorMessage("Failed to upload image. Please try again.");
       }
     }
   };
@@ -171,8 +186,8 @@ const ScavengeScreen: React.FC = () => {
           setItems(updatedItems);
         }
       } catch (error) {
-        console.error('Error deleting image:', error);
-        setErrorMessage('Failed to delete image. Please try again.');
+        console.error("Error deleting image:", error);
+        setErrorMessage("Failed to delete image. Please try again.");
       }
     }
   };
@@ -181,6 +196,15 @@ const ScavengeScreen: React.FC = () => {
 
   return (
     <>
+      <GoBackButton
+        popupConfig={{
+          title: "Quit Game",
+          message:
+            "Are you sure you want to quit the game?  You will be removed from the game.",
+          showConfirmButtons: true,
+          onConfirm: returnToHome,
+        }}
+      />
       <div className="scavenge-spacer">
         <h1>Capture Your Find</h1>
       </div>
@@ -213,7 +237,11 @@ const ScavengeScreen: React.FC = () => {
           </button>
           <div className="scavenge-set-time">
             <label>Time Remaining:</label>
-            <input type="text" value={formatTime(timeRemaining)} placeholder="hr:mm:ss" />
+            <input
+              type="text"
+              value={formatTime(timeRemaining)}
+              placeholder="hr:mm:ss"
+            />
           </div>
         </header>
         <div className="scavenge-image-preview">
