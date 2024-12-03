@@ -1,5 +1,6 @@
 /* Popup Overlay */
-.popup-overlay {
+
+ .popup-overlay {
     position: fixed;
     top: 0;
     left: 0;
@@ -50,4 +51,38 @@
     height: 50px;
     border-radius: 25px;
   }
+
+  .popup-actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+  
+  .confirm-button {
+    background-color: #28a745;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .confirm-button:hover {
+    background-color: #218838;
+  }
+  
+  .cancel-button {
+    background-color: #dc3545;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .cancel-button:hover {
+    background-color: #c82333;
+  }
+  
   

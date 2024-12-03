@@ -1,27 +1,55 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import PopupWindow from "../PopupWindow/PopupWindow";
 import "./GoBackButton.css";
 
 interface GoBackButtonProps {
   to?: string; // Optional prop to specify the target route (defaults to '/')
-  onClick?: () => void; // Optional custom click handler
+  popupConfig?: {
+    title: string;
+    message: string;
+    showConfirmButtons: boolean;
+    onConfirm?: () => void;
+  };
 }
 
-const GoBackButton: React.FC<GoBackButtonProps> = ({ to = "/", onClick }) => {
+const GoBackButton: React.FC<GoBackButtonProps> = ({
+  to = "/",
+  popupConfig,
+}) => {
   const navigate = useNavigate();
+  const [showPopup, setShowPopup] = useState(false);
 
-  const handleClick = () => {
-    if (onClick) {
-      onClick(); // Trigger the custom click handler if provided
+  const handleTogglePopup = () => setShowPopup((prev) => !prev);
+
+  const handleConfirm = () => {
+    setShowPopup(false);
+    if (popupConfig?.onConfirm) {
+      popupConfig.onConfirm();
     } else {
-      navigate(to); // Otherwise, navigate to the specified route
+      navigate(to);
     }
   };
 
   return (
-    <button className="goBackButton" onClick={handleClick}>
-      <box-icon name="home" color="white" size="md"></box-icon>
-    </button>
+    <>
+      <button
+        className="goBackButton"
+        onClick={popupConfig ? handleTogglePopup : () => navigate(to)}
+      >
+        <box-icon name="home" color="white" size="md"></box-icon>
+      </button>
+
+      {showPopup && popupConfig && (
+        <PopupWindow
+          title={popupConfig.title}
+          message={popupConfig.message}
+          onClose={handleTogglePopup}
+          onConfirm={handleConfirm}
+          showConfirmButtons={popupConfig.showConfirmButtons}
+        />
+      )}
+    </>
   );
 };
 
