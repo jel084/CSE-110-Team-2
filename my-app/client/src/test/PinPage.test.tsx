@@ -64,10 +64,10 @@ describe("Test Pin Page Screen", () => {
     fireEvent.change(playerInput, { target: { value: "Player 1" } });
     fireEvent.click(joinButton);
     await waitFor(() => {
-        const errorMessage = screen.getByText("Error: Invalid Lobby Code or User ID");
-        const okButton = screen.getByText("OK");
+        const errorMessage = screen.getByText("Error: Invalid Lobby Code or Name");
+        const exitButton = screen.getByText("×");
         expect(errorMessage).toBeInTheDocument();
-        expect(okButton).toBeInTheDocument();
+        expect(exitButton).toBeInTheDocument();
       });
   });
 });
