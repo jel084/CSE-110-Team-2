@@ -9,7 +9,7 @@
 
 .pinPage {
     background-color: #8ECae6;
-    padding: 130px;
+    padding: 5vh;
     text-align: center;
     min-height: 100vh;
     display: flex;
@@ -23,7 +23,7 @@
 .spacer, .spacer2 {
     margin: 0;
     background-color: #FB8500;
-    width: 100vw;
+    width: 100%;
     height: 80px;
     position: fixed;
     left: 0;
@@ -41,7 +41,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 15px;
+    gap: 3vh;
 }
 
 .inputContainer {
@@ -65,13 +65,21 @@
 .startGameButton {
     text-align: center;
     border: none;
-    width: 300px;
-    margin: 50px 0;  
-    padding: 15px 20px;
+    width: 50vh;
+    margin: 5vh 0;
+    padding: 3vh 20px;
     border-radius: 15px;
     font-size: 35px;
     background-color: #FFB703;
     color: white;
+    transition: all 0.3s ease-in-out; 
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); 
+}
+
+.startGameButton:hover {
+    background-color: #FFA726; 
+    transform: translateY(-5px); 
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2); 
 }
 
 button {

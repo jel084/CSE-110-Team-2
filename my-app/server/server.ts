@@ -10,6 +10,8 @@ const PORT = process.env.PORT || 8080;
 app.use(cors());
 app.use(express.json());
 
+app.use('/api', apiRoutes);
+
 // Add this line to serve static files from the uploads folder
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
@@ -19,7 +21,7 @@ initDatabase().then(() => {
   console.error('Error creating database:', error);
 });
 
-app.use('/api', apiRoutes);
+
 
 app.use(express.static(path.join(__dirname, '../client/build')));
 

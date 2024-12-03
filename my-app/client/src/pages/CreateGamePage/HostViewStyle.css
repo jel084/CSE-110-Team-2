@@ -37,16 +37,7 @@
     bottom: 0;
     left: 0;
 }
-/* .lobby-code input{
-    margin: 10px;
-    text-align: center;
-    border: none;
-    width: 400px;
-    box-sizing: border-box;
-    padding: 10px 20px;
-    font-size: 24px;
-    border-radius: 15px;
-} */
+
 .lobby-code input{
     margin: 10px;
     text-align: center;
@@ -57,28 +48,40 @@
     font-size: 24px;
     border-radius: 15px;
 }
+
+
 .set-time {
-    position: absolute;
-    top: 185px;
-    right: 200px;
+    position: fixed;
+    top: 20vh; 
+    right: 5vw;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    margin: 0;
-    padding: 0;
-    
+    align-items: flex-start; 
+    background-color: rgba(255, 183, 3, 0.9); 
+    padding: 3vh; 
+    border-radius: 15px;
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2); 
+    transition: all 0.3s ease-in-out;
 }
-.set-time input{
-    text-align:center;
+
+.set-time:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 20px rgba(0, 0, 0, 0.3);
+}
+
+.set-time input {
+    text-align: center;
     border: none;
     width: 200px;
-    margin: 10px;
-    box-sizing: border-box;
+    margin: 10px 0; 
     padding: 10px 20px;
     border-radius: 15px;
-    background-color: #FFB703;
+    background-color: #FB8500;
     font-size: 24px;
-    
+    color: white;
+    outline: none; 
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s ease;
 }
 
 .add-item-section{
@@ -118,6 +121,14 @@
     font-size: 35px;
     background-color: #FFB703;
     color: white;
+    transition: all 0.3s ease-in-out;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); 
+}
+
+.start-game-button:hover {
+    background-color: #FFA726;
+    transform: translateY(-5px);
+    box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
 }
 
 button {

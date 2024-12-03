@@ -34,6 +34,7 @@ function PinPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          lobbyId: 1,
           userId: userId,
           pin: lobbyCode,
         }),
