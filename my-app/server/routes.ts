@@ -1,6 +1,7 @@
 import express from 'express';
 import { connectDB } from './db';
 import multer from 'multer';
+import fs from 'fs';
 import path from 'path';
 import { createLobby } from './lobbies';
 
@@ -206,9 +207,17 @@ router.delete('/lobbies/:lobbyId/players/:userId/items/:itemId/deleteImage', asy
       [lobbyId, userId, itemId]
     );
 
-    if (!playerItem) {
-      return res.status(404).json({ error: 'Player item not found' });
-    }
+    const imagePath = path.join(__dirname, '..', playerItem.image)
+
+    fs.unlink(imagePath, (err) => {
+      if (err) {
+        console.error('Error deleting image file:', err);
+        return res.status(500).json({ error: 'Failed to delete image file' });
+      }
+      if (!playerItem) {
+        return res.status(404).json({ error: 'Player item not found' });
+      }
+    }); 
 
     await db.run(
       `UPDATE player_items SET found = 0, image = '' WHERE lobby_id = ? AND player_id = ? AND item_id = ?`,
