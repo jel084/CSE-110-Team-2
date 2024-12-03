@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { getItemsForPlayer } from '../../player-utils';
-import { Item } from '../../types/types';
-import './scavengeScreen.css';
-import axios from 'axios';
-import { AppContext } from '../../context/AppContext';
+import React, { useState, useEffect, useContext } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { getItemsForPlayer } from "../../player-utils";
+import { Item } from "../../types/types";
+import "./scavengeScreen.css";
+import axios from "axios";
+import { AppContext } from "../../context/AppContext";
+import GoBackButton from "../../components/GoBackButton/GoBackButton";
 
 const ScavengeScreen: React.FC = () => {
   const { lobbyId, userId } = useParams<{ lobbyId: string; userId: string }>();
@@ -14,19 +15,18 @@ const ScavengeScreen: React.FC = () => {
   const [timeRemaining, setTimeRemaining] = useState(11110);
   const navigate = useNavigate();
 
+  // Fetch players from backend
   useEffect(() => {
     const fetchTime = async () => {
       if (lobbyId) {
         try {
-          const response = await axios.get(`http://localhost:8080/api/lobbies/${lobbyId}/gameTime`);
-          if (response.data && response.data.gameTime !== undefined) {
-            console.log('Fetched time:', response.data);
-            setTimeRemaining(response.data.gameTime);
-          } else {
-            console.error('Error: Invalid game time data received from server.');
-          }
+          const response = await axios.get(
+            `http://localhost:8080/api/lobbies/${lobbyId}/gameTime`
+          );
+          console.log("Fetched time:", response.data);
+          setTimeRemaining(response.data.gameTime);
         } catch (error) {
-          console.error('Error fetching game time:', error);
+          console.error("Error fetching players:", error);
         }
       }
     };
@@ -57,9 +57,9 @@ const ScavengeScreen: React.FC = () => {
         const response = await axios.post(
           `http://localhost:8080/api/lobbies/${lobbyId}/${timeRemaining}/setTime`
         );
-        console.log('Time set:', response.data);
+        console.log("Time set:", response.data);
       } catch (error) {
-        console.error('Error setting time:', error);
+        console.error("Error setting time:", error);
       }
     };
 
@@ -83,23 +83,28 @@ const ScavengeScreen: React.FC = () => {
     const hours = Math.floor(totalSeconds / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
     const seconds = totalSeconds % 60;
-    return [hours, minutes, seconds].map((val) => String(val).padStart(2, '0')).join(':');
+    return [hours, minutes, seconds]
+      .map((val) => String(val).padStart(2, "0"))
+      .join(":");
   };
 
   useEffect(() => {
     if (lobbyId && userId) {
       const fetchItems = async () => {
         try {
-          const fetchedItems = await getItemsForPlayer(parseInt(lobbyId), userId);
-          console.log('Fetched items:', fetchedItems);
+          const fetchedItems = await getItemsForPlayer(
+            parseInt(lobbyId),
+            userId
+          );
+          console.log("Fetched items:", fetchedItems);
           if (Array.isArray(fetchedItems)) {
             setItems(fetchedItems);
           } else {
-            setErrorMessage('Failed to load items. Please try again.');
+            setErrorMessage("Failed to load items. Please try again.");
           }
         } catch (error) {
-          console.error('Error fetching items:', error);
-          setErrorMessage('Error loading items. Please try again.');
+          console.error("Error fetching items:", error);
+          setErrorMessage("Error loading items. Please try again.");
         }
       };
       fetchItems();
@@ -107,35 +112,41 @@ const ScavengeScreen: React.FC = () => {
   }, [lobbyId, userId]);
 
   const prevItem = () => {
-    setCurrentIndex((prevIndex) => (prevIndex === 0 ? items.length - 1 : prevIndex - 1));
+    setCurrentIndex((prevIndex) =>
+      prevIndex === 0 ? items.length - 1 : prevIndex - 1
+    );
   };
 
   const nextItem = () => {
-    setCurrentIndex((prevIndex) => (prevIndex === items.length - 1 ? 0 : prevIndex + 1));
+    setCurrentIndex((prevIndex) =>
+      prevIndex === items.length - 1 ? 0 : prevIndex + 1
+    );
   };
 
-  const handleImageChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = event.target.files?.[0];
     if (file && lobbyId && userId && items[currentIndex]) {
-      const validImageTypes = ['image/jpeg', 'image/png'];
+      const validImageTypes = ["image/jpeg", "image/png"];
       if (!validImageTypes.includes(file.type)) {
-        setErrorMessage('Invalid file type. Please select jpg or png.');
+        setErrorMessage("Invalid file type. Please select jpg or png.");
         return;
       }
 
       try {
         const formData = new FormData();
-        formData.append('image', file);
-        formData.append('lobbyId', lobbyId);
-        formData.append('userId', userId);
-        formData.append('itemId', items[currentIndex].id.toString());
+        formData.append("image", file);
+        formData.append("lobbyId", lobbyId);
+        formData.append("userId", userId);
+        formData.append("itemId", items[currentIndex].id.toString());
 
         const response = await axios.put(
           `http://localhost:8080/api/lobbies/${lobbyId}/players/${userId}/items/${items[currentIndex].id}/upload`,
           formData,
           {
             headers: {
-              'Content-Type': 'multipart/form-data',
+              "Content-Type": "multipart/form-data",
             },
           }
         );
@@ -149,11 +160,13 @@ const ScavengeScreen: React.FC = () => {
           setErrorMessage(null);
           console.log('Item image uploaded successfully');
         } else {
-          setErrorMessage('Failed to upload image. Unexpected response format.');
+          setErrorMessage(
+            "Failed to upload image. Unexpected response format."
+          );
         }
       } catch (error) {
-        console.error('Error uploading image:', error);
-        setErrorMessage('Failed to upload image. Please try again.');
+        console.error("Error uploading image:", error);
+        setErrorMessage("Failed to upload image. Please try again.");
       }
     }
   };
@@ -172,16 +185,45 @@ const ScavengeScreen: React.FC = () => {
           setItems(updatedItems);
         }
       } catch (error) {
-        console.error('Error deleting image:', error);
-        setErrorMessage('Failed to delete image. Please try again.');
+        console.error("Error deleting image:", error);
+        setErrorMessage("Failed to delete image. Please try again.");
       }
     }
   };
 
+  const deleteImage = () => {
+    handleDeleteImage();
+    const updatedItems = [...items];
+    updatedItems[currentIndex].image = undefined;
+    updatedItems[currentIndex].found = false;
+    setItems(updatedItems);
+  };
   const allItemsFound = items.every((item) => item.image);
 
+  const returnToHome = async () => {
+    if (lobbyId && userId) {
+      try {
+        const response = await axios.post(
+          `http://localhost:8080/api/lobbies/${lobbyId}/${userId}/leave`
+        );
+        console.log("Left lobby:", response.data);
+        navigate("/");
+      } catch (error) {
+        console.error("Error fetching players:", error);
+      }
+    }
+  };
   return (
     <>
+      <GoBackButton
+        popupConfig={{
+          title: "Quit Game",
+          message:
+            "Are you sure you want to quit the game?  You will be removed from the game.",
+          showConfirmButtons: true,
+          onConfirm: returnToHome,
+        }}
+      />
       <div className="scavenge-spacer">
         <h1>Capture Your Find</h1>
       </div>
@@ -214,7 +256,11 @@ const ScavengeScreen: React.FC = () => {
           </button>
           <div className="scavenge-set-time">
             <label>Time Remaining:</label>
-            <input type="text" value={formatTime(timeRemaining)} placeholder="hr:mm:ss" />
+            <input
+              type="text"
+              value={formatTime(timeRemaining)}
+              placeholder="hr:mm:ss"
+            />
           </div>
         </header>
         <div className="scavenge-image-preview">
