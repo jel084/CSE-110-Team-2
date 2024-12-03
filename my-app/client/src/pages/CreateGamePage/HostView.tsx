@@ -189,7 +189,7 @@ function HostView() {
               type="text"
               value={timeInput}
               placeholder="hr:mm:ss"
-              onChange={(e) => setTimeInput(e.target.value)}
+              onChange={handleTimeInput}
             />
           </div>
           <div className="timer-display">

@@ -36,6 +36,31 @@ describe("Test Host View Screen", () => {
     const startButton = screen.getByText("Start Game");
     expect(startButton).toBeInTheDocument();
   });
+  
+  test('only allows integers and limits input to 4 character', () => {
+    render(
+      <BrowserRouter>
+        <HostView />
+      </BrowserRouter>
+    );
+
+    const lobbyInput = screen.getByRole('textbox', { name: /lobby code/i });
+    // Test entering valid numbers
+    fireEvent.change(lobbyInput, { target: { value: '1234' } });
+    expect(lobbyInput).toHaveValue('1234');
+  
+    // Test entering more than 4 characters
+    fireEvent.change(lobbyInput, { target: { value: '12345' } });
+    expect(lobbyInput).toHaveValue('1234'); // Should still be 4 characters
+  
+    // Test entering non-numeric characters
+    fireEvent.change(lobbyInput, { target: { value: 'a' } });
+    expect(lobbyInput).toHaveValue('1234'); // Non-numeric characters are ignored
+  
+    // Test entering more than 4 characters
+    fireEvent.change(lobbyInput, { target: { value: '12345' } });
+    expect(lobbyInput).toHaveValue('1234');
+  });
 
   test("creates game with one item", () => {
     render(
