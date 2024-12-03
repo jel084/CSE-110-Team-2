@@ -1,6 +1,7 @@
 import express from 'express';
 import { connectDB } from './db';
 import multer from 'multer';
+import fs from 'fs';
 import path from 'path';
 
 const router = express.Router();
@@ -54,11 +55,11 @@ router.post('/create', async (req, res) => {
 });
 
 router.post('/join', async (req, res) => {
-  const { lobbyId, userId, pin } = req.body;
+  const {userId, pin } = req.body;
   try {
     const db = await connectDB();
 
-    const lobby = await db.get(`SELECT * FROM lobbies WHERE id = ? AND pin = ?`, [lobbyId, pin]);
+    const lobby = await db.get(`SELECT * FROM lobbies WHERE pin = ?`, [pin]);
 
     if (!lobby) {
       return res.status(404).json({ error: 'Lobby not found or PIN is incorrect' });
@@ -66,6 +67,7 @@ router.post('/join', async (req, res) => {
 
     const players = JSON.parse(lobby.players || '[]');
     let pointsArray = JSON.parse(lobby.points || '[]');
+    const lobbyId = JSON.parse(lobby.id );
 
     if (!Array.isArray(pointsArray)) {
       pointsArray = [];
@@ -76,8 +78,8 @@ router.post('/join', async (req, res) => {
       pointsArray.push({ id: userId, points: 0 });
 
       await db.run(
-        `UPDATE lobbies SET players = ?, points = ? WHERE id = ?`,
-        [JSON.stringify(players), JSON.stringify(pointsArray), lobbyId]
+        `UPDATE lobbies SET players = ?, points = ? WHERE pin = ?`,
+        [JSON.stringify(players), JSON.stringify(pointsArray), pin]
       );
 
       // Insert items for the player into player_items
@@ -95,6 +97,26 @@ router.post('/join', async (req, res) => {
   } catch (error) {
     console.error('Error joining lobby:', error);
     res.status(500).json({ error: 'Failed to join lobby' });
+  }
+});
+
+router.post('/lobbies/:lobbyId/end', async (req, res) => {
+  const { lobbyId } = req.params;
+
+  try {
+    const db = await connectDB();
+    const lobby = await db.get(`SELECT * FROM lobbies WHERE id = ?`, [lobbyId]);
+
+    if (!lobby) {
+      return res.status(404).json({ error: 'Lobby not found' });
+    }
+
+    await db.run(`UPDATE lobbies SET status = ? WHERE id = ?`, ['ended', lobbyId]);
+
+    res.status(200).json({ message: `Lobby ${lobbyId} ended successfully` });
+  } catch (error) {
+    console.error('Error ending lobby:', error);
+    res.status(500).json({ error: 'Failed to end the lobby' });
   }
 });
 
@@ -251,6 +273,53 @@ router.put('/lobbies/:lobbyId/players/:userId/items/:itemId/upload', upload.sing
   } catch (error) {
     console.error('Error uploading image or marking item:', error);
     res.status(500).json({ error: 'Failed to upload image or mark item' });
+  }
+});
+
+router.delete('/lobbies/:lobbyId/players/:userId/items/:itemId/deleteImage', async (req, res) => {
+  const { lobbyId, userId, itemId } = req.params;
+
+  try {
+    const db = await connectDB();
+
+    const playerItem = await db.get(
+      `SELECT * FROM player_items WHERE lobby_id = ? AND player_id = ? AND item_id = ?`,
+      [lobbyId, userId, itemId]
+    );
+
+    const imagePath = path.join(__dirname, '..', playerItem.image)
+
+    fs.unlink(imagePath, (err) => {
+      if (err) {
+        console.error('Error deleting image file:', err);
+        return res.status(500).json({ error: 'Failed to delete image file' });
+      }
+      if (!playerItem) {
+        return res.status(404).json({ error: 'Player item not found' });
+      }
+    }); 
+
+    //  Update the player's points in the lobbies table
+
+    const lobby = await db.get(`SELECT * FROM lobbies WHERE id = ?`, [lobbyId]);
+    let pointsArray = JSON.parse(lobby.points || '[]');
+    const itemPoints = 10;
+
+    for(const entry of pointsArray) {
+      if (entry.id === userId) {
+        entry.points -= itemPoints;
+      }
+    }
+
+    await db.run(`UPDATE lobbies SET points = ? WHERE id = ?`, [JSON.stringify(pointsArray), lobbyId]);
+    await db.run(`UPDATE player_items SET found = 0, image = '' WHERE lobby_id = ? AND player_id = ? AND item_id = ?`,
+      [lobbyId, userId, itemId]
+    );
+
+    res.status(200).json({ message: 'Image deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting image:', error);
+    res.status(500).json({ error: 'Failed to delete image' });
   }
 });
 
