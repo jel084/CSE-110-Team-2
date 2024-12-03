@@ -38,7 +38,12 @@ describe("Test Host View Screen", () => {
   });
   
   test('only allows integers and limits input to 4 character', () => {
-    render(<HostView />);
+    render(
+      <BrowserRouter>
+        <HostView />
+      </BrowserRouter>
+    );
+
     const lobbyInput = screen.getByRole('textbox', { name: /lobby code/i });
     // Test entering valid numbers
     fireEvent.change(lobbyInput, { target: { value: '1234' } });
