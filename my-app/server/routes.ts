@@ -128,14 +128,13 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage: storage });
 
-// mark item as found
+// Image upload
 router.put('/lobbies/:lobbyId/players/:userId/items/:itemId/upload', upload.single('image'), async (req, res) => {
   const { lobbyId, userId, itemId } = req.params;
 
   try {
     const db = await connectDB();
 
- 
     const playerItem = await db.get(
       `SELECT * FROM player_items WHERE lobby_id = ? AND player_id = ? AND item_id = ?`,
       [lobbyId, userId, itemId]
@@ -150,24 +149,6 @@ router.put('/lobbies/:lobbyId/players/:userId/items/:itemId/upload', upload.sing
       `UPDATE player_items SET found = ?, image = ? WHERE lobby_id = ? AND player_id = ? AND item_id = ?`,
       [true, imageUrl, lobbyId, userId, itemId]
     );
-
-    //  Update the player's points in the lobbies table
-    const lobby = await db.get(`SELECT * FROM lobbies WHERE id = ?`, [lobbyId]);
-
-    if (!lobby) {
-      return res.status(404).json({ error: 'Lobby not found' });
-    }
-
-    // Parse the points array from the lobby record
-    let pointsArray = JSON.parse(lobby.points || '[]');
-
-    // Find the player in the points array
-    const playerIndex = pointsArray.findIndex((p: { id: string; points: number }) => p.id === userId);
-    if (playerIndex !== -1) {
- 
-      pointsArray[playerIndex].points += 10;
-    }
-    await db.run(`UPDATE lobbies SET points = ? WHERE id = ?`, [JSON.stringify(pointsArray), lobbyId]);
 
     const updatedPlayerItem = await db.get(
       `SELECT * FROM player_items WHERE lobby_id = ? AND player_id = ? AND item_id = ?`,
@@ -211,7 +192,7 @@ router.delete('/lobbies/:lobbyId/players/:userId/items/:itemId/deleteImage', asy
 
 router.put('/lobbies/:lobbyId/players/:userId/items/markFound', async (req, res) => {
   const { lobbyId, userId } = req.params;
-  const { items } = req.body; // Expected to receive an array of item IDs to be marked as found
+  const { items } = req.body; 
 
   try {
     const db = await connectDB();
@@ -382,6 +363,63 @@ router.get('/lobbies/:lobbyId/score', async (req, res) => {
   } catch (error) {
     console.error('Error retrieving lobby score:', error);
     res.status(500).json({ error: 'Failed to retrieve lobby score' });
+  }
+});
+
+router.get('/lobbies/pin/:pin', async (req, res) => {
+  const { pin } = req.params;
+
+  try {
+    const db = await connectDB();
+    const lobby = await db.get(`SELECT id FROM lobbies WHERE pin = ?`, [pin]);
+
+    if (!lobby) {
+      return res.status(404).json({ error: 'Lobby with the given PIN does not exist' });
+    }
+
+    res.status(200).json({ lobbyId: lobby.id });
+  } catch (error) {
+    console.error('Error fetching lobby ID from PIN:', error);
+    res.status(500).json({ error: 'Failed to retrieve lobby ID' });
+  }
+});
+
+router.post('/lobbies/:lobbyId/players/:userId/submit', async (req, res) => {
+  const { lobbyId, userId } = req.params;
+
+  try {
+    const db = await connectDB();
+    const lobby = await db.get(`SELECT * FROM lobbies WHERE id = ?`, [lobbyId]);
+
+    if (!lobby) {
+      return res.status(404).json({ error: 'Lobby not found' });
+    }
+    const playerItems = await db.all(
+      `SELECT * FROM player_items WHERE lobby_id = ? AND player_id = ? AND found = ?`,
+      [lobbyId, userId, true]
+    );
+
+    if (!playerItems || playerItems.length === 0) {
+      return res.status(400).json({ error: 'No items have been marked as found for this player' });
+    }
+
+    const pointsEarned = playerItems.length * 10;
+
+    let pointsArray = JSON.parse(lobby.points || '[]');
+    const playerIndex = pointsArray.findIndex((p: { id: string; points: number }) => p.id === userId);
+
+    if (playerIndex !== -1) {
+      pointsArray[playerIndex].points += pointsEarned;
+    } else {
+      pointsArray.push({ id: userId, points: pointsEarned });
+    }
+
+    await db.run(`UPDATE lobbies SET points = ? WHERE id = ?`, [JSON.stringify(pointsArray), lobbyId]);
+
+    res.status(200).json({ message: 'Items submitted and points updated successfully' });
+  } catch (error) {
+    console.error('Error submitting items:', error);
+    res.status(500).json({ error: 'Failed to submit items' });
   }
 });
 

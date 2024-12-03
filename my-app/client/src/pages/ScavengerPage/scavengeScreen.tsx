@@ -1,10 +1,9 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getItemsForPlayer } from '../../player-utils';
 import { Item } from '../../types/types';
 import './scavengeScreen.css';
 import axios from 'axios';
-import { AppContext } from '../../context/AppContext';
 
 const ScavengeScreen: React.FC = () => {
   const { lobbyId, userId } = useParams<{ lobbyId: string; userId: string }>();
@@ -140,7 +139,7 @@ const ScavengeScreen: React.FC = () => {
           }
         );
 
-        console.log(response); // Log response to verify the format
+        console.log(response); 
         if (response.status === 200 && response.data && response.data.item) {
           const updatedItem = response.data.item;
           const updatedItems = [...items];
@@ -174,6 +173,18 @@ const ScavengeScreen: React.FC = () => {
       } catch (error) {
         console.error('Error deleting image:', error);
         setErrorMessage('Failed to delete image. Please try again.');
+      }
+    }
+  };
+
+  const handleSubmitItems = async () => {
+    if (lobbyId && userId) {
+      try {
+        const response = await axios.post(`http://localhost:8080/api/lobbies/${lobbyId}/players/${userId}/submit`);
+        console.log('Items submitted successfully:', response.data);
+      } catch (error) {
+        console.error('Error submitting items:', error);
+        setErrorMessage('Failed to submit items. Please try again.');
       }
     }
   };
@@ -226,7 +237,7 @@ const ScavengeScreen: React.FC = () => {
         </div>
       </div>
       <div className="scavenge-spacer2">
-        <button className="scavenge-submit-items-button" disabled={!allItemsFound}>
+        <button className="scavenge-submit-items-button" disabled={!allItemsFound} onClick={handleSubmitItems}>
           Submit
         </button>
       </div>

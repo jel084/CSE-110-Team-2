@@ -27,32 +27,45 @@ function PinPage() {
     }
 
     try {
-      const response = await fetch('http://localhost:8080/api/join', {
+
+      const lobbyResponse = await fetch(`http://localhost:8080/api/lobbies/pin/${lobbyCode}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!lobbyResponse.ok) {
+        throw new Error('Lobby not found with the given PIN');
+      }
+
+      const lobbyData = await lobbyResponse.json();
+      const lobbyId = lobbyData.lobbyId;
+
+     const joinResponse = await fetch('http://localhost:8080/api/join', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          lobbyId: 1,
+          lobbyId: lobbyId,
           userId: userId,
           pin: lobbyCode,
         }),
       });
 
-      const data = await response.json();
+      const joinData = await joinResponse.json();
 
-      if (response.ok) {
+      if (joinResponse.ok) {
         setShowError(false);
-        setLobbyId(data.lobbyId);  // Set the lobbyId from the backend response
         setShowSuccess(true);
 
-        // Redirect to the lobby page using the correct lobby ID
-        if (data.lobbyId) {
-          navigate(`/lobby/${data.lobbyId}/${userId}`);
+        if (joinData.lobbyId) {
+          navigate(`/lobby/${joinData.lobbyId}/${userId}`);
         }
       } else {
         setShowError(true);
-        console.error(data.error);
+        console.error(joinData.error);
       }
     } catch (error) {
       setShowError(true);
