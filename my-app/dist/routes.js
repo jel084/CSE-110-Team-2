@@ -90,6 +90,22 @@ router.post('/join', (req, res) => __awaiter(void 0, void 0, void 0, function* (
         res.status(500).json({ error: 'Failed to join lobby' });
     }
 }));
+router.post('/lobbies/:lobbyId/end', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { lobbyId } = req.params;
+    try {
+        const db = yield (0, db_1.connectDB)();
+        const lobby = yield db.get(`SELECT * FROM lobbies WHERE id = ?`, [lobbyId]);
+        if (!lobby) {
+            return res.status(404).json({ error: 'Lobby not found' });
+        }
+        yield db.run(`UPDATE lobbies SET status = ? WHERE id = ?`, ['ended', lobbyId]);
+        res.status(200).json({ message: `Lobby ${lobbyId} ended successfully` });
+    }
+    catch (error) {
+        console.error('Error ending lobby:', error);
+        res.status(500).json({ error: 'Failed to end the lobby' });
+    }
+}));
 router.post('/update-points', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { lobbyId, userId, points } = req.body;
     try {
@@ -219,6 +235,16 @@ router.delete('/lobbies/:lobbyId/players/:userId/items/:itemId/deleteImage', (re
                 return res.status(404).json({ error: 'Player item not found' });
             }
         });
+        //  Update the player's points in the lobbies table
+        const lobby = yield db.get(`SELECT * FROM lobbies WHERE id = ?`, [lobbyId]);
+        let pointsArray = JSON.parse(lobby.points || '[]');
+        const itemPoints = 10;
+        for (const entry of pointsArray) {
+            if (entry.id === userId) {
+                entry.points -= itemPoints;
+            }
+        }
+        yield db.run(`UPDATE lobbies SET points = ? WHERE id = ?`, [JSON.stringify(pointsArray), lobbyId]);
         yield db.run(`UPDATE player_items SET found = 0, image = '' WHERE lobby_id = ? AND player_id = ? AND item_id = ?`, [lobbyId, userId, itemId]);
         res.status(200).json({ message: 'Image deleted successfully' });
     }
