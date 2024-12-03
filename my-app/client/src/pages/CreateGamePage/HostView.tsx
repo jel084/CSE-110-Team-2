@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect } from "react";
 import "./HostViewStyle.css";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { Item } from "../../types/types";
-import { AppContext } from "../../context/AppContext";
 import GoBackButton from "../../components/GoBackButton/GoBackButton";
+import InvalidInputPopup from "../../components/InvalidInput/InvalidInput"; 
 
 function HostView() {
   const [lobbyCode, setLobbyCode] = useState("");
@@ -14,7 +14,9 @@ function HostView() {
   const [items, setItems] = useState<Item[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [hostName, setHostName] = useState("");
-  const [successMessage, setSuccessMessage] = useState(""); // New state for success message
+  const [successMessage, setSuccessMessage] = useState(""); // State for success message
+  const [showInvalidPopup, setShowInvalidPopup] = useState(false); // State to toggle invalid popup
+  const [invalidMessage, setInvalidMessage] = useState(""); // State for invalid input message
   const navigate = useNavigate();
 
   const convertTimeToSeconds = (time: string) => {
@@ -65,8 +67,9 @@ function HostView() {
   };
 
   const handleCreateLobby = async () => {
-    if (!lobbyCode || items.length === 0) {
-      alert("Please enter a lobby code and add at least one item.");
+    if (!lobbyCode || items.length === 0 || !timeInput || convertTimeToSeconds(timeInput) === 0) {
+      setInvalidMessage("Please enter a valid lobby code, add at least one item, and set a valid time.");
+      setShowInvalidPopup(true);
       return;
     }
 
@@ -81,12 +84,13 @@ function HostView() {
 
       if (response.status === 201) {
         const { lobbyId } = response.data;
-        setSuccessMessage("Lobby created successfully!"); // Set the success message
-        setTimeout(() => setSuccessMessage(""), 8080); // Hide the success message after 5 seconds
+        setSuccessMessage("Lobby created successfully!");
+        setTimeout(() => setSuccessMessage(""), 8080);
       }
     } catch (error) {
       console.error("Error creating lobby:", error);
-      alert("Failed to create lobby");
+      setInvalidMessage("Failed to create lobby. Please try again.");
+      setShowInvalidPopup(true);
     }
   };
 
@@ -201,6 +205,12 @@ function HostView() {
           Start Game
         </button>
       </div>
+      {showInvalidPopup && (
+        <InvalidInputPopup
+          message={invalidMessage}
+          onClose={() => setShowInvalidPopup(false)}
+        />
+      )}
       <div className="spacer2"></div>
     </>
   );
