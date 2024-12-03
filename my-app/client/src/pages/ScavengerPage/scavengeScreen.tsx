@@ -184,6 +184,20 @@ const ScavengeScreen: React.FC = () => {
     setItems(updatedItems);
   };
   const allItemsFound = items.every((item) => item.image);
+
+  const returnToHome = async () => {
+    if (lobbyId && userId) {
+      try {
+        const response = await axios.post(
+          `http://localhost:8080/api/lobbies/${lobbyId}/${userId}/leave`
+        );
+        console.log("Left lobby:", response.data);
+        navigate("/");
+      } catch (error) {
+        console.error("Error fetching players:", error);
+      }
+    }
+  };
   return (
     <>
       <GoBackButton
@@ -192,7 +206,7 @@ const ScavengeScreen: React.FC = () => {
           message:
             "Are you sure you want to quit the game?  You will be removed from the game.",
           showConfirmButtons: true,
-          onConfirm: () => navigate("/"),
+          onConfirm: returnToHome,
         }}
       />
       <div className="scavenge-spacer">

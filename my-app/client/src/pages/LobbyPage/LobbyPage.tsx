@@ -64,6 +64,20 @@ export default function LobbyPage() {
     }
   }, [timer, navigate, lobbyId]);
 
+  const returnToHome = async () => {
+    if (lobbyId && userId) {
+      try {
+        const response = await axios.post(
+          `http://localhost:8080/api/lobbies/${lobbyId}/${userId}/leave`
+        );
+        console.log("Left lobby:", response.data);
+        navigate("/");
+      } catch (error) {
+        console.error("Error fetching players:", error);
+      }
+    }
+  };
+
   return (
     <div className={styles.lobbyBackground}>
       <GoBackButton
@@ -72,7 +86,7 @@ export default function LobbyPage() {
           message:
             "Are you sure you want to leave the lobby? You will be removed from the lobby",
           showConfirmButtons: true,
-          onConfirm: () => navigate("/"),
+          onConfirm: returnToHome,
         }}
       />
       <div className={styles.lobbySpacer}></div>
