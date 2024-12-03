@@ -6,4 +6,5 @@ export const ROUTES = {
     SCAVENGE: "/scavenge/:lobbyId/:userId",
     TIMEUP: "/timeup",
     WINNERS: "/winners",
+    CHECKOFF: "/checkoff/:lobbyId"
 };
