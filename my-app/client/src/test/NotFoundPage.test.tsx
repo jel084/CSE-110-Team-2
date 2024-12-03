@@ -30,21 +30,19 @@ describe("Test Error Page Screen", () => {
         </MemoryRouter>
     );
 
-    setTimeout(() => {
-      const errorTitle = screen.getByText("404 Not Found");
-      const goBackButton = screen.getByText("Go back to home page");
-      expect(errorTitle).toBeInTheDocument();
-      expect(goBackButton).toBeInTheDocument();
-      fireEvent.click(goBackButton);
+    const errorTitle = screen.getByText("404 Not Found");
+    const goBackButton = screen.getByText("Go back to home page");
+    expect(errorTitle).toBeInTheDocument();
+    expect(goBackButton).toBeInTheDocument();
+    fireEvent.click(goBackButton);
 
-      const homeTitle = screen.getByText("Scavenger Hunt");
-      const createButton = screen.getByText("Create Game");
-      const joinButton = screen.getByText("Join Game");
-      const rulesButton = screen.getByAltText("rule_icon");
-      expect(homeTitle).toBeInTheDocument();
-      expect(createButton).toBeInTheDocument();
-      expect(joinButton).toBeInTheDocument();
-      expect(rulesButton).toBeInTheDocument();
-    }, 1000);
+    const homeTitle = screen.getByText("Scavenger Hunt");
+    const createButton = screen.getByText("Create Game");
+    const joinButton = screen.getByText("Join Game");
+    const rulesButton = screen.getByAltText("rule_icon");
+    expect(homeTitle).toBeInTheDocument();
+    expect(createButton).toBeInTheDocument();
+    expect(joinButton).toBeInTheDocument();
+    expect(rulesButton).toBeInTheDocument();
   });
 });

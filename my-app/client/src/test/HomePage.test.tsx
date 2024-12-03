@@ -4,7 +4,7 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import HomePage from "../pages/HomePage/HomePage";
 import HostView from '../pages/CreateGamePage/HostView';
 import PinPage from '../pages/PinPage/PinPage';
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, MemoryRouter } from "react-router-dom";
 
 describe("Test Home Page Screen", () => {
   test("renders page", () => {
@@ -27,48 +27,44 @@ describe("Test Home Page Screen", () => {
 
   test("redirects to create page when create button is clicked", () => {
     render(
-        <BrowserRouter>
+        <MemoryRouter initialEntries={["/"]}>
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/creategame" element={<HostView />} />
           </Routes>
-        </BrowserRouter>
+        </MemoryRouter>
     );
 
-    setTimeout(() => {
-      const createButton = screen.getByText("Create Game");
-      expect(createButton).toBeInTheDocument();
-      fireEvent.click(createButton);
+    const createButton = screen.getByText("Create Game");
+    expect(createButton).toBeInTheDocument();
+    fireEvent.click(createButton);
 
-      const lobbyTitle = screen.getByText("Lobby Code");
-      const lobbyInput = screen.getByPlaceholderText("XXXX");
-      expect(lobbyTitle).toBeInTheDocument();
-      expect(lobbyInput).toBeInTheDocument();
-    }, 1000);
+    const lobbyTitle = screen.getByText("Lobby Code");
+    const lobbyInput = screen.getByPlaceholderText("XXXX");
+    expect(lobbyTitle).toBeInTheDocument();
+    expect(lobbyInput).toBeInTheDocument();
   });
 
   test("redirects to pin page when join button is clicked", () => {
     render(
-        <BrowserRouter>
+        <MemoryRouter initialEntries={["/"]}>
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/pin" element={<PinPage />} />
           </Routes>
-        </BrowserRouter>
+        </MemoryRouter>
     );
 
-    setTimeout(() => {
-      const joinButton = screen.getByText("Join Game");
-      expect(joinButton).toBeInTheDocument();
-      fireEvent.click(joinButton);
+    const joinButton = screen.getByText("Join Game");
+    expect(joinButton).toBeInTheDocument();
+    fireEvent.click(joinButton);
 
-      const pinTitle = screen.getByText("Enter Lobby Code");
-      const pinInput = screen.getByPlaceholderText("Lobby PIN");
-      const playerInput = screen.getByPlaceholderText("Player Name");
-      expect(pinTitle).toBeInTheDocument();
-      expect(pinInput).toBeInTheDocument();
-      expect(playerInput).toBeInTheDocument();
-    }, 1000);
+    const pinTitle = screen.getByText("Enter Lobby Code");
+    const pinInput = screen.getByPlaceholderText("Lobby PIN");
+    const playerInput = screen.getByPlaceholderText("Player Name");
+    expect(pinTitle).toBeInTheDocument();
+    expect(pinInput).toBeInTheDocument();
+    expect(playerInput).toBeInTheDocument();
   });
 
   test('displays rules popup when question button is clicked', () => {

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import './scoreScreen.css';
+import { useNavigate } from 'react-router-dom';
 
 interface Player {
   id: string;
@@ -12,6 +13,7 @@ const ScoreScreen: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   // Get the lobbyId dynamically or use a hardcoded one for now
   const lobbyId = '1';
@@ -63,6 +65,10 @@ const ScoreScreen: React.FC = () => {
   // Sort players by points in descending order
   const sortedPlayers = [...players].sort((a, b) => b.points - a.points);
 
+  const handleJoinNewGame = () => {
+    navigate(`/pin`); // Navigate to the lobby page
+};
+
   return (
     <div className="scoreboard">
       <div className="scoreboard-header">
@@ -82,7 +88,7 @@ const ScoreScreen: React.FC = () => {
         ))}
       </div>
       <div className="scoreboard-footer">
-        <button className="action-button">Join New Game</button>
+        <button className="action-button" onClick={handleJoinNewGame}>Join New Game</button>
         <button className="action-button" onClick={handleSaveResults}>
           Save Results
         </button>
