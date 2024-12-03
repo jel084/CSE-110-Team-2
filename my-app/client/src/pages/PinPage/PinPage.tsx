@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./PinPageStyles.module.css";
 import GoBackButton from "../../components/GoBackButton/GoBackButton";
-import InvalidInputPopup from "../../components/InvalidInput/InvalidInput"; // Import the InvalidInputPopup component
+import PopupWindow from "../../components/PopupWindow/PopupWindow";
 
 function PinPage() {
   const [lobbyCode, setLobbyCode] = useState("");
@@ -66,6 +66,10 @@ function PinPage() {
     setShowError(false);
   };
 
+  const toggleRulesPopup = () => {
+    setShowError((prev) => !prev);
+  };
+
   return (
     <>
       <div className="spacer">
@@ -107,10 +111,13 @@ function PinPage() {
       <div className={styles.spacer2}></div>
 
       {showError && (
-        <InvalidInputPopup
-          message="Error: Invalid Lobby Code or Name"
-          onClose={handleCloseError}
-        />
+        <PopupWindow
+        title="Invalid Input"
+        message={
+          "Error: Invalid Lobby Code or Name"
+        }
+        onClose={toggleRulesPopup}
+      />
       )}
     </>
   );

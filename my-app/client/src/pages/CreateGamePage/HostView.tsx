@@ -4,7 +4,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { Item } from "../../types/types";
 import GoBackButton from "../../components/GoBackButton/GoBackButton";
-import InvalidInputPopup from "../../components/InvalidInput/InvalidInput"; 
+import PopupWindow from "../../components/PopupWindow/PopupWindow";
 
 function HostView() {
   const [lobbyCode, setLobbyCode] = useState("");
@@ -123,6 +123,9 @@ function HostView() {
       .map((val) => String(val).padStart(2, "0"))
       .join(":");
   };
+  const toggleRulesPopup = () => {
+    setShowInvalidPopup((prev) => !prev);
+  };
 
   return (
     <>
@@ -206,9 +209,12 @@ function HostView() {
         </button>
       </div>
       {showInvalidPopup && (
-        <InvalidInputPopup
-          message={invalidMessage}
-          onClose={() => setShowInvalidPopup(false)}
+        <PopupWindow
+          title="Invalid Input"
+          message={
+            "Please enter a valid lobby code, add at least one item, and set a valid time!"
+          }
+          onClose={toggleRulesPopup}
         />
       )}
       <div className="spacer2"></div>
