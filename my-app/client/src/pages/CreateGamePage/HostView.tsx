@@ -3,18 +3,16 @@ import './HostViewStyle.css';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Item } from '../../types/types';
-import { AppContext } from '../../context/AppContext';
 
 function HostView() {
     const [lobbyCode, setLobbyCode] = useState('');
-    const [timeInput, setTimeInput] = useState('00:00:00');
+    const [timeInput, setTimeInput] = useState('');
     const [timeRemaining, setTimeRemaining] = useState(0);
     const [newItem, setNewItem] = useState('');
     const [items, setItems] = useState<Item[]>([]);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [hostName, setHostName] = useState('');
     const [successMessage, setSuccessMessage] = useState('');  // New state for success message
-    const navigate = useNavigate();
     
     const convertTimeToSeconds = (time: string) => {
         const [hours, minutes, seconds] = time.split(':').map(Number);

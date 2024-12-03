@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const db_1 = require("./db");
 const multer_1 = __importDefault(require("multer"));
+const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
 const router = express_1.default.Router();
 router.get('/lobbies', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -179,6 +180,29 @@ router.put('/lobbies/:lobbyId/players/:userId/items/:itemId/upload', upload.sing
     catch (error) {
         console.error('Error uploading image or marking item:', error);
         res.status(500).json({ error: 'Failed to upload image or mark item' });
+    }
+}));
+router.delete('/lobbies/:lobbyId/players/:userId/items/:itemId/deleteImage', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { lobbyId, userId, itemId } = req.params;
+    try {
+        const db = yield (0, db_1.connectDB)();
+        const playerItem = yield db.get(`SELECT * FROM player_items WHERE lobby_id = ? AND player_id = ? AND item_id = ?`, [lobbyId, userId, itemId]);
+        const imagePath = path_1.default.join(__dirname, '..', playerItem.image);
+        fs_1.default.unlink(imagePath, (err) => {
+            if (err) {
+                console.error('Error deleting image file:', err);
+                return res.status(500).json({ error: 'Failed to delete image file' });
+            }
+            if (!playerItem) {
+                return res.status(404).json({ error: 'Player item not found' });
+            }
+        });
+        yield db.run(`UPDATE player_items SET found = 0, image = '' WHERE lobby_id = ? AND player_id = ? AND item_id = ?`, [lobbyId, userId, itemId]);
+        res.status(200).json({ message: 'Image deleted successfully' });
+    }
+    catch (error) {
+        console.error('Error deleting image:', error);
+        res.status(500).json({ error: 'Failed to delete image' });
     }
 }));
 router.get('/lobbies/:lobbyId/players', (req, res) => __awaiter(void 0, void 0, void 0, function* () {

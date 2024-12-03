@@ -1,6 +1,7 @@
 import express from 'express';
 import { connectDB } from './db';
 import multer from 'multer';
+import fs from 'fs';
 import path from 'path';
 
 const router = express.Router();
@@ -226,6 +227,42 @@ router.put('/lobbies/:lobbyId/players/:userId/items/:itemId/upload', upload.sing
   } catch (error) {
     console.error('Error uploading image or marking item:', error);
     res.status(500).json({ error: 'Failed to upload image or mark item' });
+  }
+});
+
+router.delete('/lobbies/:lobbyId/players/:userId/items/:itemId/deleteImage', async (req, res) => {
+  const { lobbyId, userId, itemId } = req.params;
+
+  try {
+    const db = await connectDB();
+
+    const playerItem = await db.get(
+      `SELECT * FROM player_items WHERE lobby_id = ? AND player_id = ? AND item_id = ?`,
+      [lobbyId, userId, itemId]
+    );
+
+    const imagePath = path.join(__dirname, '..', playerItem.image)
+
+    fs.unlink(imagePath, (err) => {
+      if (err) {
+        console.error('Error deleting image file:', err);
+        return res.status(500).json({ error: 'Failed to delete image file' });
+      }
+      if (!playerItem) {
+        return res.status(404).json({ error: 'Player item not found' });
+      }
+    }); 
+
+
+    await db.run(
+      `UPDATE player_items SET found = 0, image = '' WHERE lobby_id = ? AND player_id = ? AND item_id = ?`,
+      [lobbyId, userId, itemId]
+    );
+
+    res.status(200).json({ message: 'Image deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting image:', error);
+    res.status(500).json({ error: 'Failed to delete image' });
   }
 });
 
