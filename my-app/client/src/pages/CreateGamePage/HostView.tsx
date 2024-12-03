@@ -8,7 +8,7 @@ import GoBackButton from "../../components/GoBackButton/GoBackButton";
 
 function HostView() {
     const [lobbyCode, setLobbyCode] = useState('');
-    const [timeInput, setTimeInput] = useState('');
+    const [timeInput, setTimeInput] = useState('00:00:00');
     const [timeRemaining, setTimeRemaining] = useState(0);
     const [newItem, setNewItem] = useState('');
     const [items, setItems] = useState<Item[]>([]);
