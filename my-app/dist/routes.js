@@ -59,22 +59,23 @@ router.post('/create', (req, res) => __awaiter(void 0, void 0, void 0, function*
     }
 }));
 router.post('/join', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { lobbyId, userId, pin } = req.body;
+    const { userId, pin } = req.body;
     try {
         const db = yield (0, db_1.connectDB)();
-        const lobby = yield db.get(`SELECT * FROM lobbies WHERE id = ? AND pin = ?`, [lobbyId, pin]);
+        const lobby = yield db.get(`SELECT * FROM lobbies WHERE pin = ?`, [pin]);
         if (!lobby) {
             return res.status(404).json({ error: 'Lobby not found or PIN is incorrect' });
         }
         const players = JSON.parse(lobby.players || '[]');
         let pointsArray = JSON.parse(lobby.points || '[]');
+        const lobbyId = JSON.parse(lobby.id);
         if (!Array.isArray(pointsArray)) {
             pointsArray = [];
         }
         if (!players.includes(userId)) {
             players.push(userId);
             pointsArray.push({ id: userId, points: 0 });
-            yield db.run(`UPDATE lobbies SET players = ?, points = ? WHERE id = ?`, [JSON.stringify(players), JSON.stringify(pointsArray), lobbyId]);
+            yield db.run(`UPDATE lobbies SET players = ?, points = ? WHERE pin = ?`, [JSON.stringify(players), JSON.stringify(pointsArray), pin]);
             // Insert items for the player into player_items
             let scavengerItems = JSON.parse(lobby.scavengerItems || '[]');
             for (let item of scavengerItems) {

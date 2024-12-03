@@ -55,11 +55,11 @@ router.post('/create', async (req, res) => {
 });
 
 router.post('/join', async (req, res) => {
-  const { lobbyId, userId, pin } = req.body;
+  const {userId, pin } = req.body;
   try {
     const db = await connectDB();
 
-    const lobby = await db.get(`SELECT * FROM lobbies WHERE id = ? AND pin = ?`, [lobbyId, pin]);
+    const lobby = await db.get(`SELECT * FROM lobbies WHERE pin = ?`, [pin]);
 
     if (!lobby) {
       return res.status(404).json({ error: 'Lobby not found or PIN is incorrect' });
@@ -67,6 +67,7 @@ router.post('/join', async (req, res) => {
 
     const players = JSON.parse(lobby.players || '[]');
     let pointsArray = JSON.parse(lobby.points || '[]');
+    const lobbyId = JSON.parse(lobby.id );
 
     if (!Array.isArray(pointsArray)) {
       pointsArray = [];
@@ -77,8 +78,8 @@ router.post('/join', async (req, res) => {
       pointsArray.push({ id: userId, points: 0 });
 
       await db.run(
-        `UPDATE lobbies SET players = ?, points = ? WHERE id = ?`,
-        [JSON.stringify(players), JSON.stringify(pointsArray), lobbyId]
+        `UPDATE lobbies SET players = ?, points = ? WHERE pin = ?`,
+        [JSON.stringify(players), JSON.stringify(pointsArray), pin]
       );
 
       // Insert items for the player into player_items
