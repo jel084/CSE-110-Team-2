@@ -1,6 +1,6 @@
 import '@testing-library/jest-dom/jest-globals';
 import '@testing-library/jest-dom';
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import LobbyPage from "../pages/LobbyPage/LobbyPage";
 import ScavengeScreen from '../pages/ScavengerPage/scavengeScreen';
 import { BrowserRouter, Routes, Route } from "react-router-dom";
