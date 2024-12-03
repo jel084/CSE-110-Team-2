@@ -8,10 +8,40 @@
 }
 
 html, body {
+    margin: 0;
+    padding: 0;
     height: 100%;
-    font-family: 'Comfortaa', sans-serif;
+}
+
+.time-up-screen {
     display: flex;
     flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh; /* Ensures the full viewport is covered */
+    background-color: #8ECAE6; /* Light blue */
+    color: #fff;
+    font-family: 'Comfortaa', sans-serif;
+    text-align: center;
+}
+
+.time-up-screen h1 {
+    font-size: 50px;
+    margin-bottom: 20px;
+}
+
+.time-up-screen .action-button {
+    font-size: 30px;
+    padding: 15px 30px;
+    background: #FFB703;
+    border: none;
+    border-radius: 10px;
+    color: #023047;
+    cursor: pointer;
+}
+
+.time-up-screen .action-button:hover {
+    background: #ce9300; /* Darker shade */
 }
 
 /* Main container for the scoreboard */
