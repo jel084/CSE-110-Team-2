@@ -1,61 +1,63 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect } from "react";
 import "./HostViewStyle.css";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { Item } from "../../types/types";
-import { AppContext } from "../../context/AppContext";
 import GoBackButton from "../../components/GoBackButton/GoBackButton";
+import PopupWindow from "../../components/PopupWindow/PopupWindow";
 
 function HostView() {
-    const [lobbyCode, setLobbyCode] = useState('');
-    const [timeInput, setTimeInput] = useState('');
-    const [timeRemaining, setTimeRemaining] = useState(0);
-    const [newItem, setNewItem] = useState('');
-    const [items, setItems] = useState<Item[]>([]);
-    const [currentIndex, setCurrentIndex] = useState(0);
-    const [hostName, setHostName] = useState('');
-    const [successMessage, setSuccessMessage] = useState('');  // New state for success message
-    
-    const handleTimeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-      let value = e.target.value;
-    
-      // Remove all non-digit characters
-      value = value.replace(/\D/g, '');
-    
-      // Limit to 6 digits
-      value = value.substring(0, 6);
-    
-      // Insert colons at the appropriate positions
-      if (value.length <= 2) {
-        // Seconds only
-        value = value;
-      } else if (value.length <= 4) {
-        // Minutes and seconds
-        value = value.replace(/(\d{1,2})(\d{2})/, '$1:$2');
-      } else {
-        // Hours, minutes, and seconds
-        value = value.replace(/(\d{1,2})(\d{2})(\d{2})/, '$1:$2:$3');
-      }
-    
-      setTimeInput(value);
-    };
-    
-    const convertTimeToSeconds = (time: string) => {
-      const timeParts = time.split(':').reverse(); // Reverse to start from seconds
-      let seconds = 0;
+  const [lobbyCode, setLobbyCode] = useState('');
+  const [timeInput, setTimeInput] = useState('');
+  const [timeRemaining, setTimeRemaining] = useState(0);
+  const [newItem, setNewItem] = useState('');
+  const [items, setItems] = useState<Item[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [hostName, setHostName] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+  const [showInvalidPopup, setShowInvalidPopup] = useState(false);
+  const [invalidMessage, setInvalidMessage] = useState("");
+  
+  const handleTimeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value;
+  
+    // Remove all non-digit characters
+    value = value.replace(/\D/g, '');
+  
+    // Limit to 6 digits
+    value = value.substring(0, 6);
+  
+    // Insert colons at the appropriate positions
+    if (value.length <= 2) {
+      // Seconds only
+      value = value;
+    } else if (value.length <= 4) {
+      // Minutes and seconds
+      value = value.replace(/(\d{1,2})(\d{2})/, '$1:$2');
+    } else {
+      // Hours, minutes, and seconds
+      value = value.replace(/(\d{1,2})(\d{2})(\d{2})/, '$1:$2:$3');
+    }
+  
+    setTimeInput(value);
+  };
+  
+  const convertTimeToSeconds = (time: string) => {
+    const timeParts = time.split(':').reverse(); // Reverse to start from seconds
+    let seconds = 0;
 
-      if (timeParts[0]) {
-        seconds += parseInt(timeParts[0], 10);
-      }
-      if (timeParts[1]) {
-        seconds += parseInt(timeParts[1], 10) * 60;
-      }
-      if (timeParts[2]) {
-        seconds += parseInt(timeParts[2], 10) * 3600;
-      }
+    if (timeParts[0]) {
+      seconds += parseInt(timeParts[0], 10);
+    }
+    if (timeParts[1]) {
+      seconds += parseInt(timeParts[1], 10) * 60;
+    }
+    if (timeParts[2]) {
+      seconds += parseInt(timeParts[2], 10) * 3600;
+    }
 
-      return seconds;
-    };
+    return seconds;
+  };
 
   const handleLobbyCode = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -100,8 +102,9 @@ function HostView() {
   };
 
   const handleCreateLobby = async () => {
-    if (!lobbyCode || items.length === 0) {
-      alert("Please enter a lobby code and add at least one item.");
+    if (!lobbyCode || items.length === 0 || !timeInput || convertTimeToSeconds(timeInput) === 0) {
+      setInvalidMessage("Please enter a valid lobby code, add at least one item, and set a valid time.");
+      setShowInvalidPopup(true);
       return;
     }
 
@@ -116,12 +119,13 @@ function HostView() {
 
       if (response.status === 201) {
         const { lobbyId } = response.data;
-        setSuccessMessage("Lobby created successfully!"); // Set the success message
-        setTimeout(() => setSuccessMessage(""), 8080); // Hide the success message after 5 seconds
+        setSuccessMessage("Lobby created successfully!");
+        setTimeout(() => setSuccessMessage(""), 8080);
       }
     } catch (error) {
       console.error("Error creating lobby:", error);
-      alert("Failed to create lobby");
+      setInvalidMessage("Failed to create lobby. Please try again.");
+      setShowInvalidPopup(true);
     }
   };
 
@@ -153,6 +157,9 @@ function HostView() {
     return [hours, minutes, seconds]
       .map((val) => String(val).padStart(2, "0"))
       .join(":");
+  };
+  const toggleRulesPopup = () => {
+    setShowInvalidPopup((prev) => !prev);
   };
 
   return (
@@ -236,6 +243,15 @@ function HostView() {
           Start Game
         </button>
       </div>
+      {showInvalidPopup && (
+        <PopupWindow
+          title="Invalid Input"
+          message={
+            "Please enter a valid lobby code, add at least one item, and set a valid time!"
+          }
+          onClose={toggleRulesPopup}
+        />
+      )}
       <div className="spacer2"></div>
     </>
   );
