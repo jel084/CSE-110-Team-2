@@ -34,10 +34,10 @@ export default function HomePage() {
         <PopupWindow
           title="Game Rules"
           message={
-            "1. Players must complete tasks in a given time.\n" +
-            "2. Teams must collect all required items to win.\n" +
-            "3. Each task has a hint for the next step.\n" +
-            "4. The first team to finish wins!"
+            "1. Players must find items host assigned.\n" +
+            "2. Players must upload image of item once found.\n" +
+            "3. Each item found is worth 10 points.\n" +
+            "4. The player with the most points wins!"
           }
           onClose={toggleRulesPopup}
         />
