@@ -1,128 +1,146 @@
 import '@testing-library/jest-dom/jest-globals';
 import '@testing-library/jest-dom';
-import { render, screen } from "@testing-library/react";
+import path from "path";
+import fs from "fs";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import ScavengeScreen from '../pages/ScavengerPage/scavengeScreen';
-import TimeUpPage from '../pages/TimeUpPage/TimeUpPage';
-import { BrowserRouter, Routes, Route, MemoryRouter } from "react-router-dom";
+import { Routes, Route, MemoryRouter } from "react-router-dom";
 import axios from 'axios';
 
+jest.mock('axios');
 describe("Test Scavenge Page Screen", () => {
   test("renders page", async () => {
-    // Create a lobby
-    try {
-        const response = await axios.post('http://localhost:8080/api/create', {
-            lobbyName: `Lobby-1234`,
-            scavengerItems: [{ id: 1, name: "Triton Statue", points: 10, found: false }],
-            userId: 'HostUser1',
-            pin: `1234`,
-            gameTime: 60
-        });
-
-        if (response.status === 201) {
-            console.log('Lobby created successfully!');
-        }
-    } catch (error) {
-        console.error('Error creating lobby:', error);
-    }
-
-    // Add player to the lobby
-    try {
-        const response = await fetch('http://localhost:8080/api/join', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              lobbyId: 1,
-              userId: 'Player 1',
-              pin: 1234,
-            }),
-        });
-
-        if (response.status === 201) {
-            console.log('Lobby created successfully!');
-        }
-    } catch (error) {
-        console.error('Error creating lobby:', error);
-    }
+    (axios.get as jest.Mock)
+      .mockResolvedValueOnce({
+        data: { gameTime: 60 },
+      })
+      .mockResolvedValueOnce({
+        data: [
+          { id: 1, name: "Triton Statue", points: 10, found: false },
+          { id: 2, name: "Sun God", points: 10, found: false },
+        ]
+      });
 
     render(
-        <MemoryRouter initialEntries={['/scavenge/1/Player 1']}>
-          <Routes>
-            <Route path="/scavenge/1/Player 1" element={<ScavengeScreen />} />
-          </Routes>
-        </MemoryRouter>
+      <MemoryRouter initialEntries={['/scavenge/1/Player 1']}>
+        <Routes>
+          <Route path="/scavenge/:lobbyId/:userId" element={<ScavengeScreen />} />
+        </Routes>
+      </MemoryRouter>
     );
 
-    jest.useFakeTimers();
     // check if page renders
-    const scavengeTitle = screen.getByText("Capture Your Find");
-    const itemListTitle = screen.getByText("Item List:");
-    const timerTitle = screen.getByText("Time Remaining:");
-    // const timer = screen.getByText('00:00:59');
-    expect(scavengeTitle).toBeInTheDocument();
-    expect(itemListTitle).toBeInTheDocument();
-    expect(timerTitle).toBeInTheDocument();
-    // expect(timer).toBeInTheDocument();
+    await waitFor(() => {
+      const scavengeTitle = screen.getByText("Capture Your Find");
+      const itemListTitle = screen.getByText("Item List:");
+      const timerTitle = screen.getByText("Time Remaining:");
+      const timer = screen.getByPlaceholderText("hr:mm:ss");
+      const firstItem = screen.getByText("Item #1: Triton Statue");
+      const leftArrowButton = screen.getByText('←');
+      const rightArrowButton = screen.getByText('→');
+      const deleteButton = screen.getByText("🗑️");
+      const imageTitle = screen.getByText("Upload Image");
+      const imageField = screen.getByText("No image selected");
+      const submitButton = screen.getByText("Submit");
 
-    // check if timer goes down
-    setTimeout(() => {
-        const timer = screen.getByText('00:00:59');
-        expect(timer).toBeInTheDocument();
-    }, 1000);
-    jest.useRealTimers();
+      expect(scavengeTitle).toBeInTheDocument();
+      expect(itemListTitle).toBeInTheDocument();
+      expect(timerTitle).toBeInTheDocument();
+      expect(timer).toBeInTheDocument();
+      expect(firstItem).toBeInTheDocument();
+      expect(leftArrowButton).toBeInTheDocument();
+      expect(rightArrowButton).toBeInTheDocument();
+      expect(deleteButton).toBeInTheDocument();
+      expect(imageTitle).toBeInTheDocument();
+      expect(imageField).toBeInTheDocument();
+      expect(submitButton).toBeInTheDocument();
+    });
   });
 
-//   test("redirects to scavenger when timer reaches 0", async () => {
-//     // Create a lobby for players to join
-//     try {
-//         const response = await axios.post('http://localhost:8080/api/create', {
-//             lobbyName: `Lobby-1234`,
-//             scavengerItems: [{ id: 1, name: "Triton Statue", points: 10, found: false }],
-//             userId: 'HostUser1',
-//             pin: `1234`
-//         });
+  test("uploads an image", async () => {
+    (axios.get as jest.Mock)
+      .mockResolvedValueOnce({
+        data: { gameTime: 60 },
+      })
+      .mockResolvedValueOnce({
+        data: [
+          { id: 1, name: "Triton Statue", points: 10, found: false },
+          { id: 2, name: "Sun God", points: 10, found: false },
+        ]
+      });
 
-//         if (response.status === 201) {
-//             console.log('Lobby created successfully!');
-//         }
-//     } catch (error) {
-//         console.error('Error creating lobby:', error);
-//     }
+    (axios.put as jest.Mock).mockResolvedValueOnce({ status: 200, 
+      data: { 
+        item: {id: 1, name: "Triton Statue", points: 10, found: true, image: '/uploads/test.jpg'} 
+      } 
+    });
 
-//     // Add players to the lobby
-//     try {
-//         const response = await fetch('http://localhost:8080/api/join', {
-//             method: 'POST',
-//             headers: {
-//               'Content-Type': 'application/json',
-//             },
-//             body: JSON.stringify({
-//               lobbyId: 1,
-//               userId: 'Player 1',
-//               pin: 1234,
-//             }),
-//         });
+    render(
+      <MemoryRouter initialEntries={['/scavenge/1/Player 1']}>
+        <Routes>
+          <Route path="/scavenge/:lobbyId/:userId" element={<ScavengeScreen />} />
+        </Routes>
+      </MemoryRouter>
+    );
 
-//         if (response.status === 201) {
-//             console.log('Lobby created successfully!');
-//         }
-//     } catch (error) {
-//         console.error('Error creating lobby:', error);
-//     }
+    await waitFor(() => {
+      const fileInput = screen.getByTestId("file-input") as HTMLInputElement;
+      const fileContent = fs.readFileSync(path.resolve(__dirname, "../../public/bg_img.jpg"));
+      const file = new File([fileContent], "test.jpg", { type: "image/jpeg" });
+      fireEvent.change(fileInput, { target: { files: [file] } });
 
-//     render(
-//         <BrowserRouter>
-//           <Routes>
-//             <Route path="/lobby/1/Player 1" element={<TimeUpPage />} />
-//             <Route path="/scavenge/1/Player 1" element={<ScavengeScreen />} />
-//           </Routes>
-//         </BrowserRouter>
-//     );
+      expect(fileInput.files?.[0]).toBe(file);
+      expect(fileInput.files?.[0].name).toBe("test.jpg");
+      expect(fileInput.files).toHaveLength(1);
+    });
+  });
 
-//     setTimeout(() => {
-//         const scavengeTitle = screen.getByText("Capture Your Find");
-//         expect(scavengeTitle).toBeInTheDocument();
-//     }, 15000);
-//   });
+  test("deletes an image", async () => {
+    (axios.get as jest.Mock)
+      .mockResolvedValueOnce({
+        data: { gameTime: 60 },
+      })
+      .mockResolvedValueOnce({
+        data: [
+          { id: 1, name: "Triton Statue", points: 10, found: false },
+          { id: 2, name: "Sun God", points: 10, found: false },
+        ]
+      });
+
+    (axios.put as jest.Mock).mockResolvedValueOnce({ status: 200, 
+      data: { 
+        item: {id: 1, name: "Triton Statue", points: 10, found: true, image: '/uploads/test.jpg'} 
+      } 
+    });
+
+    (axios.delete as jest.Mock).mockResolvedValueOnce({ status: 200, 
+      data: { 
+        message: "Image deleted successfully"
+      } 
+    });
+
+    render(
+      <MemoryRouter initialEntries={['/scavenge/1/Player 1']}>
+        <Routes>
+          <Route path="/scavenge/:lobbyId/:userId" element={<ScavengeScreen />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    await waitFor(() => {
+      const fileInput = screen.getByTestId("file-input") as HTMLInputElement;
+      const fileContent = fs.readFileSync(path.resolve(__dirname, "../../public/bg_img.jpg"));
+      const file = new File([fileContent], "test.jpg", { type: "image/jpeg" });
+      fireEvent.change(fileInput, { target: { files: [file] } });
+
+      expect(fileInput.files?.[0]).toBe(file);
+      expect(fileInput.files?.[0].name).toBe("test.jpg");
+      expect(fileInput.files).toHaveLength(1);
+
+      const deleteButton = screen.getByText("🗑️");
+      fireEvent.click(deleteButton);
+      const imageField = screen.getByText("No image selected");
+      expect(imageField).toBeInTheDocument();
+    });
+  });
 });
