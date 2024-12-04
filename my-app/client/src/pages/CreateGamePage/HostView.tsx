@@ -7,43 +7,46 @@ import GoBackButton from "../../components/GoBackButton/GoBackButton";
 import PopupWindow from "../../components/PopupWindow/PopupWindow";
 
 function HostView() {
-  const [lobbyCode, setLobbyCode] = useState('');
-  const [timeInput, setTimeInput] = useState('');
+  const [lobbyCode, setLobbyCode] = useState("");
+  const [timeInput, setTimeInput] = useState("");
   const [timeRemaining, setTimeRemaining] = useState(0);
-  const [newItem, setNewItem] = useState('');
+  const [newItem, setNewItem] = useState("");
   const [items, setItems] = useState<Item[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [hostName, setHostName] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
+  const [hostName, setHostName] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
   const [showInvalidPopup, setShowInvalidPopup] = useState(false);
   const [invalidMessage, setInvalidMessage] = useState("");
-  
+  const [isCheckoffEnabled, setIsCheckoffEnabled] = useState(false);
+
+  const navigate = useNavigate();
+
   const handleTimeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     let value = e.target.value;
-  
+
     // Remove all non-digit characters
-    value = value.replace(/\D/g, '');
-  
+    value = value.replace(/\D/g, "");
+
     // Limit to 6 digits
     value = value.substring(0, 6);
-  
+
     // Insert colons at the appropriate positions
     if (value.length <= 2) {
       // Seconds only
       value = value;
     } else if (value.length <= 4) {
       // Minutes and seconds
-      value = value.replace(/(\d{1,2})(\d{2})/, '$1:$2');
+      value = value.replace(/(\d{1,2})(\d{2})/, "$1:$2");
     } else {
       // Hours, minutes, and seconds
-      value = value.replace(/(\d{1,2})(\d{2})(\d{2})/, '$1:$2:$3');
+      value = value.replace(/(\d{1,2})(\d{2})(\d{2})/, "$1:$2:$3");
     }
-  
+
     setTimeInput(value);
   };
-  
+
   const convertTimeToSeconds = (time: string) => {
-    const timeParts = time.split(':').reverse(); // Reverse to start from seconds
+    const timeParts = time.split(":").reverse(); // Reverse to start from seconds
     let seconds = 0;
 
     if (timeParts[0]) {
@@ -120,6 +123,7 @@ function HostView() {
       if (response.status === 201) {
         const { lobbyId } = response.data;
         setSuccessMessage("Lobby created successfully!");
+        setIsCheckoffEnabled(true); // Enable the checkoff button
         setTimeout(() => setSuccessMessage(""), 8080);
       }
     } catch (error) {
@@ -158,6 +162,7 @@ function HostView() {
       .map((val) => String(val).padStart(2, "0"))
       .join(":");
   };
+
   const toggleRulesPopup = () => {
     setShowInvalidPopup((prev) => !prev);
   };
@@ -233,15 +238,24 @@ function HostView() {
             </div>
           )}
         </section>
-        <button
-          className="start-game-button"
-          onClick={() => {
-            handleCreateLobby();
-            startTimer();
-          }}
-        >
-          Start Game
-        </button>
+        <div className="button-group">
+          <button
+            className="start-game-button"
+            onClick={() => {
+              handleCreateLobby();
+              startTimer();
+            }}
+          >
+            Start Game
+          </button>
+          <button
+            className={`checkoff-button ${isCheckoffEnabled ? "" : "disabled"}`}
+            onClick={() => isCheckoffEnabled && navigate("/checkoff/{lobbyId}")}
+            disabled={!isCheckoffEnabled}
+          >
+            Checkoff Page
+          </button>
+        </div>
       </div>
       {showInvalidPopup && (
         <PopupWindow
