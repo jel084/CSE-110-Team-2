@@ -32,22 +32,24 @@ router.get('/lobbies', (req, res) => __awaiter(void 0, void 0, void 0, function*
 }));
 router.post('/create', lobbies_1.createLobby);
 router.post('/join', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { lobbyId, userId, pin } = req.body;
+    const { userId, pin } = req.body;
     try {
         const db = yield (0, db_1.connectDB)();
-        const lobby = yield db.get(`SELECT * FROM lobbies WHERE id = ? AND pin = ?`, [lobbyId, pin]);
+        const lobby = yield db.get(`SELECT * FROM lobbies WHERE pin = ?`, [pin]);
         if (!lobby) {
             return res.status(404).json({ error: 'Lobby not found or PIN is incorrect' });
         }
         const players = JSON.parse(lobby.players || '[]');
         let pointsArray = JSON.parse(lobby.points || '[]');
+        const lobbyId = JSON.parse(lobby.id);
         if (!Array.isArray(pointsArray)) {
             pointsArray = [];
         }
         if (!players.includes(userId)) {
             players.push(userId);
             pointsArray.push({ id: userId, points: 0 });
-            yield db.run(`UPDATE lobbies SET players = ?, points = ? WHERE id = ?`, [JSON.stringify(players), JSON.stringify(pointsArray), lobbyId]);
+            yield db.run(`UPDATE lobbies SET players = ?, points = ? WHERE pin = ?`, [JSON.stringify(players), JSON.stringify(pointsArray), pin]);
+            // Insert items for the player into player_items
             let scavengerItems = JSON.parse(lobby.scavengerItems || '[]');
             for (let item of scavengerItems) {
                 yield db.run(`INSERT OR IGNORE INTO player_items (player_id, lobby_id, item_id, found, image)
@@ -59,6 +61,22 @@ router.post('/join', (req, res) => __awaiter(void 0, void 0, void 0, function* (
     catch (error) {
         console.error('Error joining lobby:', error);
         res.status(500).json({ error: 'Failed to join lobby' });
+    }
+}));
+router.post('/lobbies/:lobbyId/end', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { lobbyId } = req.params;
+    try {
+        const db = yield (0, db_1.connectDB)();
+        const lobby = yield db.get(`SELECT * FROM lobbies WHERE id = ?`, [lobbyId]);
+        if (!lobby) {
+            return res.status(404).json({ error: 'Lobby not found' });
+        }
+        yield db.run(`UPDATE lobbies SET status = ? WHERE id = ?`, ['ended', lobbyId]);
+        res.status(200).json({ message: `Lobby ${lobbyId} ended successfully` });
+    }
+    catch (error) {
+        console.error('Error ending lobby:', error);
+        res.status(500).json({ error: 'Failed to end the lobby' });
     }
 }));
 router.post('/update-points', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -175,7 +193,6 @@ router.put('/lobbies/:lobbyId/players/:userId/items/:itemId/upload', upload.sing
         res.status(500).json({ error: 'Failed to upload image or mark item' });
     }
 }));
-// Delete image for player item
 router.delete('/lobbies/:lobbyId/players/:userId/items/:itemId/deleteImage', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { lobbyId, userId, itemId } = req.params;
     try {
@@ -191,43 +208,22 @@ router.delete('/lobbies/:lobbyId/players/:userId/items/:itemId/deleteImage', (re
                 return res.status(404).json({ error: 'Player item not found' });
             }
         });
+        //  Update the player's points in the lobbies table
+        const lobby = yield db.get(`SELECT * FROM lobbies WHERE id = ?`, [lobbyId]);
+        let pointsArray = JSON.parse(lobby.points || '[]');
+        const itemPoints = 10;
+        for (const entry of pointsArray) {
+            if (entry.id === userId) {
+                entry.points -= itemPoints;
+            }
+        }
+        yield db.run(`UPDATE lobbies SET points = ? WHERE id = ?`, [JSON.stringify(pointsArray), lobbyId]);
         yield db.run(`UPDATE player_items SET found = 0, image = '' WHERE lobby_id = ? AND player_id = ? AND item_id = ?`, [lobbyId, userId, itemId]);
         res.status(200).json({ message: 'Image deleted successfully' });
     }
     catch (error) {
         console.error('Error deleting image:', error);
         res.status(500).json({ error: 'Failed to delete image' });
-    }
-}));
-router.put('/lobbies/:lobbyId/players/:userId/items/markFound', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { lobbyId, userId } = req.params;
-    const { items } = req.body; // Expected to receive an array of item IDs to be marked as found
-    try {
-        const db = yield (0, db_1.connectDB)();
-        for (let itemId of items) {
-            yield db.run(`UPDATE player_items SET found = ? WHERE lobby_id = ? AND player_id = ? AND item_id = ?`, [true, lobbyId, userId, itemId]);
-        }
-        res.status(200).json({ message: 'Items marked as found successfully' });
-    }
-    catch (error) {
-        console.error('Error marking items as found:', error);
-        res.status(500).json({ error: 'Failed to mark items as found' });
-    }
-}));
-// Save final scores for the lobby
-router.post('/lobbies/:lobbyId/saveScores', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { lobbyId } = req.params;
-    const { players } = req.body;
-    try {
-        const db = yield (0, db_1.connectDB)();
-        for (let player of players) {
-            yield db.run(`INSERT INTO results (lobby_id, player_id, points) VALUES (?, ?, ?)`, [lobbyId, player.id, player.points]);
-        }
-        res.status(200).json({ message: 'Scores saved successfully' });
-    }
-    catch (error) {
-        console.error('Error saving scores:', error);
-        res.status(500).json({ error: 'Failed to save scores' });
     }
 }));
 router.get('/lobbies/:lobbyId/players', (req, res) => __awaiter(void 0, void 0, void 0, function* () {

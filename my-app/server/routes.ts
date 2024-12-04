@@ -21,11 +21,11 @@ router.get('/lobbies', async (req, res) => {
 router.post('/create', createLobby);
 
 router.post('/join', async (req, res) => {
-  const { lobbyId, userId, pin } = req.body;
+  const {userId, pin } = req.body;
   try {
     const db = await connectDB();
 
-    const lobby = await db.get(`SELECT * FROM lobbies WHERE id = ? AND pin = ?`, [lobbyId, pin]);
+    const lobby = await db.get(`SELECT * FROM lobbies WHERE pin = ?`, [pin]);
 
     if (!lobby) {
       return res.status(404).json({ error: 'Lobby not found or PIN is incorrect' });
@@ -33,6 +33,7 @@ router.post('/join', async (req, res) => {
 
     const players = JSON.parse(lobby.players || '[]');
     let pointsArray = JSON.parse(lobby.points || '[]');
+    const lobbyId = JSON.parse(lobby.id );
 
     if (!Array.isArray(pointsArray)) {
       pointsArray = [];
@@ -43,8 +44,8 @@ router.post('/join', async (req, res) => {
       pointsArray.push({ id: userId, points: 0 });
 
       await db.run(
-        `UPDATE lobbies SET players = ?, points = ? WHERE id = ?`,
-        [JSON.stringify(players), JSON.stringify(pointsArray), lobbyId]
+        `UPDATE lobbies SET players = ?, points = ? WHERE pin = ?`,
+        [JSON.stringify(players), JSON.stringify(pointsArray), pin]
       );
 
       let scavengerItems = JSON.parse(lobby.scavengerItems || '[]');
@@ -61,6 +62,26 @@ router.post('/join', async (req, res) => {
   } catch (error) {
     console.error('Error joining lobby:', error);
     res.status(500).json({ error: 'Failed to join lobby' });
+  }
+});
+
+router.post('/lobbies/:lobbyId/end', async (req, res) => {
+  const { lobbyId } = req.params;
+
+  try {
+    const db = await connectDB();
+    const lobby = await db.get(`SELECT * FROM lobbies WHERE id = ?`, [lobbyId]);
+
+    if (!lobby) {
+      return res.status(404).json({ error: 'Lobby not found' });
+    }
+
+    await db.run(`UPDATE lobbies SET status = ? WHERE id = ?`, ['ended', lobbyId]);
+
+    res.status(200).json({ message: `Lobby ${lobbyId} ended successfully` });
+  } catch (error) {
+    console.error('Error ending lobby:', error);
+    res.status(500).json({ error: 'Failed to end the lobby' });
   }
 });
 
@@ -220,7 +241,6 @@ router.put('/lobbies/:lobbyId/players/:userId/items/:itemId/upload', upload.sing
   }
 });
 
-// Delete image for player item
 router.delete('/lobbies/:lobbyId/players/:userId/items/:itemId/deleteImage', async (req, res) => {
   const { lobbyId, userId, itemId } = req.params;
 
@@ -244,8 +264,20 @@ router.delete('/lobbies/:lobbyId/players/:userId/items/:itemId/deleteImage', asy
       }
     }); 
 
-    await db.run(
-      `UPDATE player_items SET found = 0, image = '' WHERE lobby_id = ? AND player_id = ? AND item_id = ?`,
+    //  Update the player's points in the lobbies table
+
+    const lobby = await db.get(`SELECT * FROM lobbies WHERE id = ?`, [lobbyId]);
+    let pointsArray = JSON.parse(lobby.points || '[]');
+    const itemPoints = 10;
+
+    for(const entry of pointsArray) {
+      if (entry.id === userId) {
+        entry.points -= itemPoints;
+      }
+    }
+
+    await db.run(`UPDATE lobbies SET points = ? WHERE id = ?`, [JSON.stringify(pointsArray), lobbyId]);
+    await db.run(`UPDATE player_items SET found = 0, image = '' WHERE lobby_id = ? AND player_id = ? AND item_id = ?`,
       [lobbyId, userId, itemId]
     );
 
@@ -253,49 +285,6 @@ router.delete('/lobbies/:lobbyId/players/:userId/items/:itemId/deleteImage', asy
   } catch (error) {
     console.error('Error deleting image:', error);
     res.status(500).json({ error: 'Failed to delete image' });
-  }
-});
-
-router.put('/lobbies/:lobbyId/players/:userId/items/markFound', async (req, res) => {
-  const { lobbyId, userId } = req.params;
-  const { items } = req.body; // Expected to receive an array of item IDs to be marked as found
-
-  try {
-    const db = await connectDB();
-
-    for (let itemId of items) {
-      await db.run(
-        `UPDATE player_items SET found = ? WHERE lobby_id = ? AND player_id = ? AND item_id = ?`,
-        [true, lobbyId, userId, itemId]
-      );
-    }
-
-    res.status(200).json({ message: 'Items marked as found successfully' });
-  } catch (error) {
-    console.error('Error marking items as found:', error);
-    res.status(500).json({ error: 'Failed to mark items as found' });
-  }
-});
-
-// Save final scores for the lobby
-router.post('/lobbies/:lobbyId/saveScores', async (req, res) => {
-  const { lobbyId } = req.params;
-  const { players } = req.body; 
-
-  try {
-    const db = await connectDB();
-
-    for (let player of players) {
-      await db.run(
-        `INSERT INTO results (lobby_id, player_id, points) VALUES (?, ?, ?)`,
-        [lobbyId, player.id, player.points]
-      );
-    }
-
-    res.status(200).json({ message: 'Scores saved successfully' });
-  } catch (error) {
-    console.error('Error saving scores:', error);
-    res.status(500).json({ error: 'Failed to save scores' });
   }
 });
 

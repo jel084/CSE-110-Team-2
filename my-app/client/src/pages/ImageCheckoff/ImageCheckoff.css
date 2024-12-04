@@ -1,0 +1,96 @@
+/* General page styling */
+.image-checkoff-page {
+    background-color: #8ecae6;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    justify-content: space-between;
+    align-items: center;
+    text-align: center;
+    font-family: "Arial", sans-serif;
+    color: #023047; /* Deep blue for text */
+  }
+  
+  /* Top and bottom bars */
+  .top-bar,
+  .bottom-bar {
+    background-color: #fb8500;
+    color: white;
+    font-size: 24px;
+    font-weight: bold;
+    padding: 10px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  }
+  
+  /* Image checkoff content */
+  .image-checkoff {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+  }
+  
+  .submission {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    max-width: 400px;
+    text-align: center;
+  }
+  
+  .submission-image {
+    width: 100%;
+    border-radius: 8px;
+    margin-bottom: 15px;
+  }
+  
+  .submission-info h2 {
+    font-size: 20px;
+    margin-bottom: 8px;
+  }
+  
+  .submission-info p {
+    font-size: 16px;
+    margin-bottom: 15px;
+  }
+  
+  /* Action buttons */
+  .action-buttons button {
+    margin: 10px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+  }
+  
+  .confirm-button {
+    background-color: #4caf50;
+    color: white;
+    transition: background-color 0.3s;
+  }
+  
+  .confirm-button:hover {
+    background-color: #388e3c;
+  }
+  
+  .deny-button {
+    background-color: #f44336;
+    color: white;
+    transition: background-color 0.3s;
+  }
+  
+  .deny-button:hover {
+    background-color: #d32f2f;
+  }
+  
+  /* Empty queue message */
+  .empty-queue {
+    font-size: 18px;
+    color: #555;
+  }

@@ -5,4 +5,5 @@ export const ROUTES = {
     LOBBY: "/lobby/:lobbyId/:userId",
     SCAVENGE: "/scavenge/:lobbyId/:userId",
     WINNERS: "/winners",
+    CHECKOFF: "/checkoff/:lobbyId"
 };
