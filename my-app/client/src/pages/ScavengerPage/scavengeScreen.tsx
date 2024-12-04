@@ -144,6 +144,8 @@ const ScavengeScreen: React.FC = () => {
         if (response.status === 200 && response.data && response.data.item) {
           const updatedItem = response.data.item;
           const updatedItems = [...items];
+          updatedItems[currentIndex].found = updatedItem.found;
+          console.log(items[currentIndex].found);
           updatedItems[currentIndex].image = updatedItem.image;
           setItems(updatedItems);
           setErrorMessage(null);
@@ -169,6 +171,7 @@ const ScavengeScreen: React.FC = () => {
           console.log('Image deleted successfully');
           const updatedItems = [...items];
           updatedItems[currentIndex].image = undefined;
+          updatedItems[currentIndex].found = false;
           setItems(updatedItems);
         }
       } catch (error) {
@@ -206,6 +209,10 @@ const ScavengeScreen: React.FC = () => {
       }
     }
   };
+
+  const handleClick = () => {
+    navigate(`/winners`);
+  };
   return (
     <>
       <GoBackButton
@@ -226,7 +233,7 @@ const ScavengeScreen: React.FC = () => {
             <p>Item List:</p>
             <div className="scavenge-item-container">
               {items.length > 0 && (
-                <div className={`scavenge-item-carousel`}>
+                <div className={`scavenge-item-carousel ${items[currentIndex].found ? "found" : "" }`}>
                   <button className="scavenge-arrow-button" onClick={prevItem}>
                     &larr;
                   </button>
@@ -259,9 +266,15 @@ const ScavengeScreen: React.FC = () => {
             <p>{errorMessage || 'No image selected'}</p>
           )}
         </div>
+        {items.length > 0 && items[currentIndex].found ? (
+        <div className="scavenge-foundText">
+          <p className="scavenge-found-text">Item found!</p>
+        </div>
+        ) : null}
       </div>
+
       <div className="scavenge-spacer2">
-        <button className="scavenge-submit-items-button" disabled={!allItemsFound}>
+        <button className="scavenge-submit-items-button" disabled={!allItemsFound} onClick = {handleClick}>
           Submit
         </button>
       </div>

@@ -49,7 +49,6 @@ router.post('/join', (req, res) => __awaiter(void 0, void 0, void 0, function* (
             players.push(userId);
             pointsArray.push({ id: userId, points: 0 });
             yield db.run(`UPDATE lobbies SET players = ?, points = ? WHERE pin = ?`, [JSON.stringify(players), JSON.stringify(pointsArray), pin]);
-            // Insert items for the player into player_items
             let scavengerItems = JSON.parse(lobby.scavengerItems || '[]');
             for (let item of scavengerItems) {
                 yield db.run(`INSERT OR IGNORE INTO player_items (player_id, lobby_id, item_id, found, image)
