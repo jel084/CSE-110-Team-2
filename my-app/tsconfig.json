@@ -3,7 +3,7 @@
     "module": "commonjs",         
     "target": "es6",
     "outDir": "./dist",
-    "rootDir": "./src",
+    "rootDir": "./server",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
@@ -17,6 +17,6 @@
     "resolveJsonModule": true,
     "isolatedModules": true
   },
-  "include": ["src/**/*"],
+  "include": ["server/**/*"],
   "exclude": ["node_modules", "client"]
 }

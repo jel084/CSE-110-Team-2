@@ -1,7 +1,7 @@
 
-import { Player, Item } from "./types";
+import { Player, Item } from "./types/types";
 import axios from 'axios';
-export const API_BASE_URL = "http://localhost:5000";
+export const API_BASE_URL = "http://localhost:8080";
 
 // Function to get all players from the backend. Method: GET
 export const getPlayers = async (): Promise<Player[]> => {
@@ -16,7 +16,7 @@ export const getPlayers = async (): Promise<Player[]> => {
 // Function to get items for a player in a specific lobby. Method: GET
 export const getItemsForPlayer = async (lobbyId: number, userId: string): Promise<Item[]> => {
 	try {
-	  const response = await axios.get(`http://localhost:5000/api/lobbies/${lobbyId}/players/${userId}/items`);
+	  const response = await axios.get(`http://localhost:8080/api/lobbies/${lobbyId}/players/${userId}/items`);
 	  console.log("Fetched items from response:", response.data);
 	  
 	  if (Array.isArray(response.data)) {

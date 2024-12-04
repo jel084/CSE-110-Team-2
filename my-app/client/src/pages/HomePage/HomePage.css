@@ -1,0 +1,136 @@
+@import url('https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Pirata+One&family=Press+Start+2P&family=Roboto:wght@100&family=Rye&display=swap');
+
+.background-image {
+    background-image: url('../../../public/bg_img.jpg');
+    background-size: cover;
+    background-position: center;
+    min-height: 100vh;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.game-title {
+    padding: 10vh 5vh;
+    border-radius: 30px;
+    background: rgba(252, 133, 0, 0.80);
+    margin-top: 10vh;
+    height: 20vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.game-title-text {
+    font-family: 'Rye';
+    font-size: 80px;
+    letter-spacing: 2px;
+}
+
+.mainPage-button-container {
+    display: flex;
+    flex-direction: column;
+    gap: 5vh;
+    margin-top: 30vh;
+    align-items: center;
+}
+
+.homepage-button {
+    padding: 3vh 5vh;
+    border: none;
+    border-radius: 20px;
+    background: rgba(252, 133, 0, 0.8);
+    font-size: 2.6rem;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.homepage-button:hover {
+    background: rgba(252, 133, 0, 1);
+    transform: translateY(-5px); 
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2); 
+}
+
+.question-button {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border-radius: 30px;
+    background: rgba(252, 133, 0, 0.80);
+    transition: all 0.3s ease-in-out;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.question-button:hover {
+    background-color: rgba(252, 133, 0, 1);
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+}
+
+.question-icon {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+/* Rules Popup */
+.rules-popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.popup-content {
+    background-color: white;
+    padding: 2rem;
+    border-radius: 10px;
+    width: 80%;
+    max-width: 550px;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.popup-content h2 {
+    margin-bottom: 1rem;
+    font-size: 2rem;
+    color: rgba(252, 133, 0, 1);
+}
+
+.popup-content p {
+    font-size: 1.2rem;
+    line-height: 1.5;
+}
+
+.close-button {
+    position: absolute;
+    padding: 10px;
+    width: 50px; /* Match the button size with the image size */
+    height: 50px;
+    border-radius: 25px;
+    top: 10px;
+    left: 10px;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: black;
+    background: rgba(252, 133, 0, 0.8);
+}
