@@ -1,9 +1,11 @@
 import '@testing-library/jest-dom/jest-globals';
 import '@testing-library/jest-dom';
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import HostView from "../pages/CreateGamePage/HostView";
 import { BrowserRouter } from "react-router-dom";
+import axios from 'axios';
 
+jest.mock('axios');
 describe("Test Host View Screen", () => {
   test("renders page", () => {
     render(
@@ -62,7 +64,12 @@ describe("Test Host View Screen", () => {
     expect(lobbyInput).toHaveValue('1234');
   });
 
-  test("creates game with one item", () => {
+  test("creates game with one item", async () => {
+    axios.post = jest.fn().mockResolvedValueOnce({
+      status: 201,
+      data: { message: 'Lobby created successfully!' },
+    });
+
     render(
       <BrowserRouter>
         <HostView />
@@ -95,13 +102,18 @@ describe("Test Host View Screen", () => {
     const startButton = screen.getByText("Start Game");
     expect(startButton).toBeInTheDocument();
     fireEvent.click(startButton);
-    setTimeout(() => {
+    await waitFor(() => {
       const successMessage = screen.getByText("Lobby created successfully!");
       expect(successMessage).toBeInTheDocument();
-    }, 1000);
+    });
   });
 
-  test("creates game with multiple items and one deletion", () => {
+  test("creates game with multiple items and one deletion", async () => {
+    axios.post = jest.fn().mockResolvedValueOnce({
+      status: 201,
+      data: { message: 'Lobby created successfully!' },
+    });
+    
     render(
       <BrowserRouter>
         <HostView />
@@ -157,9 +169,9 @@ describe("Test Host View Screen", () => {
     const startButton = screen.getByText("Start Game");
     expect(startButton).toBeInTheDocument();
     fireEvent.click(startButton);
-    setTimeout(() => {
+    await waitFor(() => {
       const successMessage = screen.getByText("Lobby created successfully!");
       expect(successMessage).toBeInTheDocument();
-    }, 1000);
+    });
   });
 });
