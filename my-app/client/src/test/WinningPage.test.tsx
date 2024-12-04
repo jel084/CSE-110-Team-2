@@ -26,6 +26,11 @@ describe("Test Winning Page Screen", () => {
     );
 
     // check if page renders
+    const timeUp = screen.getByText("⏰ Time is up! ⏰");
+    const viewResults = screen.getByText("View Results");
+    expect(timeUp).toBeInTheDocument();
+    expect(viewResults).toBeInTheDocument();
+    fireEvent.click(viewResults);
     await waitFor(() => {
         const winnerTitle = screen.getByText('🎉 Player 2 got 1st place! 🎉');
         const firstPlace = screen.getByText('1');
@@ -50,6 +55,11 @@ describe("Test Winning Page Screen", () => {
             ]
         }
     });
+    Object.assign(navigator, {
+      clipboard: {
+        writeText: jest.fn().mockResolvedValue(undefined),
+      },
+    });
 
     render(
         <BrowserRouter>
@@ -58,12 +68,22 @@ describe("Test Winning Page Screen", () => {
     );
 
     // check if page renders
+    const timeUp = screen.getByText("⏰ Time is up! ⏰");
+    const viewResults = screen.getByText("View Results");
+    expect(timeUp).toBeInTheDocument();
+    expect(viewResults).toBeInTheDocument();
+    fireEvent.click(viewResults);
     await waitFor(() => {
-        const saveButton = screen.getByText("Save Results");
-        expect(saveButton).toBeInTheDocument();
-        fireEvent.click(saveButton);
-        const successMessage = screen.getByText("Scores saved successfully!");
-        expect(successMessage).toBeInTheDocument();
+      const saveButton = screen.getByText("Save Results");
+      expect(saveButton).toBeInTheDocument();
+    });
+
+    const saveButton = screen.getByText("Save Results");
+    fireEvent.click(saveButton);
+  
+    await waitFor(() => {
+      const successMessage = screen.getByText("Saved!");
+      expect(successMessage).toBeInTheDocument();
     });
   });
 
@@ -83,15 +103,18 @@ describe("Test Winning Page Screen", () => {
         </MemoryRouter>
     );
 
+    const timeUp = screen.getByText("⏰ Time is up! ⏰");
+    const viewResults = screen.getByText("View Results");
+    expect(timeUp).toBeInTheDocument();
+    expect(viewResults).toBeInTheDocument();
+    fireEvent.click(viewResults);
     await waitFor(() => {
         const scoreTitle = screen.getByText("No players found");
         const joinButton = screen.getByText("Join New Game");
         expect(scoreTitle).toBeInTheDocument();
         expect(joinButton).toBeInTheDocument();
         fireEvent.click(joinButton);
-    });
 
-    await waitFor(() => {
         const pinTitle = screen.getByText("Enter Lobby Code");
         const pinInput = screen.getByPlaceholderText("Lobby PIN");
         const playerInput = screen.getByPlaceholderText("Player Name");

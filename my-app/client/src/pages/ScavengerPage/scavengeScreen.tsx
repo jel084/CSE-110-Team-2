@@ -75,7 +75,7 @@ const ScavengeScreen: React.FC = () => {
       } catch (error) {
         console.error('Error ending the game:', error);
       }
-      navigate(`/timeup`);
+      navigate(`/winners`);
     }
   };
 

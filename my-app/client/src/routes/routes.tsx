@@ -7,7 +7,6 @@ import CreateGamePage from "../pages/CreateGamePage/HostView";
 import LobbyPage from "../pages/LobbyPage/LobbyPage";
 import WinningPage from "../pages/WinningPage/scoreScreen";
 import ScavengerPage from "../pages/ScavengerPage/scavengeScreen";
-import TimeUpPage from "../pages/TimeUpPage/TimeUpPage";
 
 export const router = createBrowserRouter([
   {
@@ -35,9 +34,4 @@ export const router = createBrowserRouter([
     path: ROUTES.WINNERS,
     element: <WinningPage />,
   },
-
-  {
-    path: ROUTES.TIMEUP,
-    element: <TimeUpPage/>
-  }
 ]);
