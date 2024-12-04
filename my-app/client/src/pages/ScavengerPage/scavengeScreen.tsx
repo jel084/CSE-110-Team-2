@@ -266,11 +266,11 @@ const ScavengeScreen: React.FC = () => {
             <p>{errorMessage || 'No image selected'}</p>
           )}
         </div>
+        {items.length > 0 && items[currentIndex].found ? (
         <div className="scavenge-foundText">
-          {items.length > 0 && items[currentIndex].found && (
-            <p className="scavenge-found-text">Item found!</p>
-          )}
+          <p className="scavenge-found-text">Item found!</p>
         </div>
+        ) : null}
       </div>
 
       <div className="scavenge-spacer2">
