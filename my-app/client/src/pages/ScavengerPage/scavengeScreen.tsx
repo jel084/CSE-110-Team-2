@@ -249,7 +249,7 @@ const ScavengeScreen: React.FC = () => {
           </section>
           <div className="scavenge-image-container">
             <label htmlFor="image">Upload Image</label>
-            <input type="file" name="image" id="image" accept="image/*" onChange={handleImageChange} />
+            <input type="file" name="image" id="image" data-testid='file-input' accept="image/*" onChange={handleImageChange} />
           </div>
           <button className="scavenge-delete-button" onClick={handleDeleteImage}>
             🗑️

@@ -17,6 +17,7 @@ const db_1 = require("./db");
 const multer_1 = __importDefault(require("multer"));
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
+const lobbies_1 = require("./lobbies");
 const router = express_1.default.Router();
 router.get('/lobbies', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -29,35 +30,7 @@ router.get('/lobbies', (req, res) => __awaiter(void 0, void 0, void 0, function*
         res.status(500).json({ error: 'Failed to retrieve lobbies' });
     }
 }));
-router.post('/create', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { lobbyName, scavengerItems, userId, gameTime, pin } = req.body;
-    if (!userId) {
-        return res.status(400).json({ error: 'Host userId is required' });
-    }
-    try {
-        const db = yield (0, db_1.connectDB)();
-        // Insert the new lobby
-        yield db.run(`INSERT INTO lobbies (lobbyName, host, players, scavengerItems, points, pin, gameTime, status)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`, [
-            lobbyName,
-            userId,
-            JSON.stringify([]),
-            JSON.stringify(scavengerItems),
-            JSON.stringify([]),
-            pin,
-            gameTime,
-            'waiting'
-        ]);
-        // Retrieve the newly created lobby to get its ID
-        const newLobby = yield db.get(`SELECT * FROM lobbies WHERE host = ? ORDER BY id DESC LIMIT 1`, [userId]);
-        const lobbyId = newLobby.id;
-        res.status(201).json({ message: `Lobby '${lobbyName}' created by ${userId}`, lobbyId });
-    }
-    catch (error) {
-        console.error('Error creating lobby:', error);
-        res.status(500).json({ error: 'Failed to create lobby' });
-    }
-}));
+router.post('/create', lobbies_1.createLobby);
 router.post('/join', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { userId, pin } = req.body;
     try {
@@ -280,9 +253,8 @@ router.get('/lobbies/:lobbyId/gameTime', (req, res) => __awaiter(void 0, void 0,
         if (!lobby) {
             return res.status(404).json({ error: 'Lobby not found' });
         }
-        const gameTime = JSON.parse(lobby.gameTime || '0');
-        // Ensure players is an array of strings
-        if (!gameTime) {
+        const gameTime = lobby.gameTime;
+        if (gameTime === undefined || gameTime === null) {
             return res.status(500).json({ error: 'Invalid game time data' });
         }
         res.status(200).json({ gameTime });
@@ -322,6 +294,22 @@ router.post('/lobbies/:lobbyId/start', (req, res) => __awaiter(void 0, void 0, v
     catch (error) {
         console.error('Error starting lobby:', error);
         res.status(500).json({ error: 'Failed to start lobby' });
+    }
+}));
+router.post('/lobbies/:lobbyId/end', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { lobbyId } = req.params;
+    try {
+        const db = yield (0, db_1.connectDB)();
+        const lobby = yield db.get(`SELECT * FROM lobbies WHERE id = ?`, [lobbyId]);
+        if (!lobby) {
+            return res.status(404).json({ error: 'Lobby not found' });
+        }
+        yield db.run(`UPDATE lobbies SET status = ? WHERE id = ?`, ['ended', lobbyId]);
+        res.status(200).json({ message: `Lobby ${lobbyId} ended successfully` });
+    }
+    catch (error) {
+        console.error('Error ending lobby:', error);
+        res.status(500).json({ error: 'Failed to end the lobby' });
     }
 }));
 router.get('/lobbies/:lobbyId/score', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
