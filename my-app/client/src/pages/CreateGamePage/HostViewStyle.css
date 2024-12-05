@@ -200,9 +200,26 @@ button:hover{
     font-size: 30px; 
     margin-top: 0px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+    position: relative;
 }
 
 .checkoff-button.disabled {
     background-color: #ccc;
     cursor: not-allowed;
+}
+
+.timer-display{
+    position: fixed;
+    top: 45vh; 
+    right: 5vw;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; 
+    background-color: rgba(255, 183, 3, 0.9); 
+    padding: 3vh; 
+    border-radius: 15px;
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2); 
+    transition: all 0.3s ease-in-out;
+    max-width: 250px;
 }
