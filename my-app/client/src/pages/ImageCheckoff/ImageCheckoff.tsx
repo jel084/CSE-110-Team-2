@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import "./ImageCheckoff.css";
 
 interface Submission {
@@ -6,19 +7,63 @@ interface Submission {
   playerName: string;
   itemName: string;
   imageUrl: string;
+  lobbyId: number;
+  userId: string;
+  itemId: number;
 }
 
 const ImageCheckoff: React.FC = () => {
-  const [queue, setQueue] = useState<Submission[]>([
-    { id: 1, playerName: "Jane", itemName: "Apple", imageUrl: "/images/apple.jpg" },
-    { id: 2, playerName: "John", itemName: "Banana", imageUrl: "/images/banana.jpg" },
-    { id: 3, playerName: "Alice", itemName: "Carrot", imageUrl: "/images/carrot.jpg" },
-  ]);
+  const [queue, setQueue] = useState<Submission[]>([]);
+  const [currentIndex, setCurrentIndex] = useState<number>(0);
 
-  const handleAction = (id: number, points: number) => {
-    // Handle awarding points (update state/backend as needed)
-    console.log(`Player with submission ID ${id} awarded ${points} points`);
-    setQueue((prevQueue) => prevQueue.filter((submission) => submission.id !== id));
+  useEffect(() => {
+    const fetchSubmissions = async () => {
+      try {
+        const response = await axios.get("http://localhost:8080/api/lobbies/submissions");
+
+        // Map and construct the correct image URLs for all submissions
+        const formattedSubmissions = response.data.submissions.map((submission: any, index: number) => ({
+          id: index + 1,
+          playerName: submission.userId,
+          itemName: submission.itemName || `Item ${submission.itemId}`,
+          imageUrl: submission.image ? `http://localhost:8080${submission.image}` : '',
+          lobbyId: submission.lobbyId,
+          userId: submission.userId,
+          itemId: submission.itemId,
+        }));
+
+        setQueue(formattedSubmissions);
+      } catch (error) {
+        console.error("Error fetching submissions:", error);
+      }
+    };
+
+    fetchSubmissions();
+  }, []);
+
+  const handleAction = async (id: number, points: number, approved: boolean) => {
+    const currentSubmission = queue[currentIndex];
+    try {
+      await axios.post('http://localhost:8080/api/lobbies/approveSubmission', {
+        lobbyId: currentSubmission.lobbyId,
+        userId: currentSubmission.playerName,
+        itemId: currentSubmission.itemId,
+        points,
+        approved,
+      });
+  
+      setQueue((prevQueue) => prevQueue.filter((submission) => submission.id !== currentSubmission.id));
+    } catch (error) {
+      console.error('Error processing submission:', error);
+    }
+  };
+
+  const prevSubmission = () => {
+    setCurrentIndex((prev) => (prev === 0 ? queue.length - 1 : prev - 1));
+  };
+
+  const nextSubmission = () => {
+    setCurrentIndex((prev) => (prev === queue.length - 1 ? 0 : prev + 1));
   };
 
   return (
@@ -27,22 +72,39 @@ const ImageCheckoff: React.FC = () => {
       <div className="image-checkoff">
         {queue.length > 0 ? (
           <div className="submission">
-            <img src={queue[0].imageUrl} alt={queue[0].itemName} className="submission-image" />
+            <div className="arrow-buttons">
+              <button className="arrow-button" onClick={prevSubmission}>
+                &larr;
+              </button>
+              <button className="arrow-button" onClick={nextSubmission}>
+                &rarr;
+              </button>
+            </div>
+            <img
+              src={queue[currentIndex].imageUrl}
+              alt={queue[currentIndex].itemName}
+              className="submission-image"
+              onError={(e) => {
+                e.currentTarget.src = "/path/to/default/image.png";
+                e.currentTarget.alt = "Image not available";
+              }}
+            />
             <div className="submission-info">
-              <h2>{queue[0].playerName}</h2>
-              <p>Submitted: {queue[0].itemName}</p>
+              <h2>{queue[currentIndex].playerName}</h2>
+              <p>Submitted: {queue[currentIndex].itemName}</p>
               <div className="action-buttons">
-                <button
-                  className="confirm-button"
-                  onClick={() => handleAction(queue[0].id, 10)}
-                >
-                  Confirm
-                </button>
-                <button
-                  className="deny-button"
-                  onClick={() => handleAction(queue[0].id, 0)}
-                >
-                  Deny
+
+              <button
+                className="confirm-button"
+                onClick={() => handleAction(queue[currentIndex].id, 10, true)}
+              >
+                Confirm
+              </button>
+              <button
+                className="deny-button"
+                onClick={() => handleAction(queue[currentIndex].id, 0, false)}
+              >
+                Deny
                 </button>
               </div>
             </div>
