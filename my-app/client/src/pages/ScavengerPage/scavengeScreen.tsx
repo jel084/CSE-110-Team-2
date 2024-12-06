@@ -247,13 +247,20 @@ const ScavengeScreen: React.FC = () => {
               )}
             </div>
           </section>
-          <div className="scavenge-image-container">
-            <label htmlFor="image">Upload Image</label>
+          {/* <div className="scavenge-image-container">
+            <label htmlFor="image" className = 'upload-image-button'>Upload Image</label>
             <input type="file" name="image" id="image" data-testid='file-input' accept="image/*" onChange={handleImageChange} />
           </div>
           <button className="scavenge-delete-button" onClick={handleDeleteImage}>
             🗑️
-          </button>
+          </button> */}
+           <div className="scavenge-image-container">
+            <label htmlFor="image" className = 'upload-image-button'>Upload Image</label>
+            <input type="file" name="image" id="image" data-testid='file-input' accept="image/*" onChange={handleImageChange} />
+            <button className="scavenge-delete-button" onClick={handleDeleteImage}>
+              🗑️
+            </button>
+          </div>
           <div className="scavenge-set-time">
             <label>Time Remaining:</label>
             <input type="text" value={formatTime(timeRemaining)} placeholder="hr:mm:ss" />

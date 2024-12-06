@@ -130,52 +130,39 @@ button:hover{
     margin: 0 10px;
 }
 
-.scavenge-image-container {
 
-    position: relative;
+.scavenge-image-container {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    float: center;
-    
-    left: 5vw;
-    
-    text-align:center;
-    border: none;
-    margin: 10px;
-    box-sizing: border-box;
-    padding: 10px 20px;
-    border-radius: 15px;
+    gap: 10px; 
+    justify-content: center;
+    margin-top: 45px;
+}
+
+.upload-image-button {
+    margin: 0; 
+    margin-right: 10px; 
     background-color: #8ECAE6;
+    border-radius: 15px;
+    text-align: center;
     font-size: 24px;
     color: white;
-
-    margin-top: 6.1vh;
+    box-sizing: border-box;
+    margin: 10px;
+    padding: 10px 20px;
 }
 
 .scavenge-delete-button {
-    position: relative;
-    justify-content: space-between;
-    align-items: center;
-    float: center;
-    text-align:center;
-    border: none;
-
-    margin: 10px;
-    box-sizing: border-box;
-    padding: 10px 20px;
-    border-radius: 15px;
+    margin-left: 0;
     background-color: #FF0000;
-    font-size: 24px;
-    color: white;
-
-    right: 8vw;
-    margin-top: 6vh;
-
-
-
+    padding: 10px 20px;
 }
 
+.upload-image-button:hover{
+    background-color: #FFA726; 
+    box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
+    transform: translateY(-3px);
+}
 
 .arrow-button:hover,
 .delete-button:hover {
@@ -192,11 +179,11 @@ button:hover{
     text-align: center;
 }
 
-.scavenge-image-container:hover{
+/* .scavenge-image-container:hover{
     background-color: #FFA726; 
     box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
     transform: translateY(-3px);
-}
+} */
 
 .scavenge-set-time {
 
