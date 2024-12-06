@@ -236,7 +236,7 @@ describe('/join tests', () => {
     `);
     await db.run(`
       INSERT INTO player_items VALUES
-      ('Player 1', 1, 1, 0, ''), ('Player 1', 1, 2, 0, '')
+      ('Player 1', 1, 1, 0, '', 0), ('Player 1', 1, 2, 0, '', 0)
     `);
   
     const res = await axios.post(`http://localhost:${PORT}/api/join`, {
@@ -403,8 +403,8 @@ describe('/items tests', () => {
     `);
     await db.run(`
       INSERT INTO player_items VALUES
-      ('Player 1', 1, 1, 0, ''), ('Player 1', 1, 2, 0, ''),
-      ('Player 2', 1, 1, 0, ''), ('Player 2', 1, 2, 1, 'test.jpg')
+      ('Player 1', 1, 1, 0, '', 0), ('Player 1', 1, 2, 0, '', 0),
+      ('Player 2', 1, 1, 0, '', 0), ('Player 2', 1, 2, 1, 'test.jpg', 0)
     `);
 
     // Perform the GET request to the appropriate /items endpoint
