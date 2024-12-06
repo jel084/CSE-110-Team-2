@@ -3,6 +3,7 @@ import { connectDB } from './db';
 import multer from 'multer';
 import fs from 'fs';
 import path from 'path';
+import { createLobby } from './lobbies';
 
 const router = express.Router();
 
@@ -17,42 +18,7 @@ router.get('/lobbies', async (req, res) => {
   }
 });
 
-router.post('/create', async (req, res) => {
-  const { lobbyName, scavengerItems, userId, gameTime, pin } = req.body;
-
-  if (!userId) {
-    return res.status(400).json({ error: 'Host userId is required' });
-  }
-
-  try {
-    const db = await connectDB();
-
-    // Insert the new lobby
-    await db.run(
-      `INSERT INTO lobbies (lobbyName, host, players, scavengerItems, points, pin, gameTime, status)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        lobbyName,
-        userId,
-        JSON.stringify([]), 
-        JSON.stringify(scavengerItems),
-        JSON.stringify([]), 
-        pin,
-        gameTime,
-        'waiting'
-      ]
-    );
-
-    // Retrieve the newly created lobby to get its ID
-    const newLobby = await db.get(`SELECT * FROM lobbies WHERE host = ? ORDER BY id DESC LIMIT 1`, [userId]);
-    const lobbyId = newLobby.id;
-
-    res.status(201).json({ message: `Lobby '${lobbyName}' created by ${userId}`, lobbyId });
-  } catch (error) {
-    console.error('Error creating lobby:', error);
-    res.status(500).json({ error: 'Failed to create lobby' });
-  }
-});
+router.post('/create', createLobby);
 
 router.post('/join', async (req, res) => {
   const {userId, pin } = req.body;
@@ -82,7 +48,6 @@ router.post('/join', async (req, res) => {
         [JSON.stringify(players), JSON.stringify(pointsArray), pin]
       );
 
-      // Insert items for the player into player_items
       let scavengerItems = JSON.parse(lobby.scavengerItems || '[]');
       for (let item of scavengerItems) {
         await db.run(
@@ -230,7 +195,6 @@ router.put('/lobbies/:lobbyId/players/:userId/items/:itemId/upload', upload.sing
   try {
     const db = await connectDB();
 
- 
     const playerItem = await db.get(
       `SELECT * FROM player_items WHERE lobby_id = ? AND player_id = ? AND item_id = ?`,
       [lobbyId, userId, itemId]
@@ -245,24 +209,6 @@ router.put('/lobbies/:lobbyId/players/:userId/items/:itemId/upload', upload.sing
       `UPDATE player_items SET found = ?, image = ? WHERE lobby_id = ? AND player_id = ? AND item_id = ?`,
       [true, imageUrl, lobbyId, userId, itemId]
     );
-
-    //  Update the player's points in the lobbies table
-    const lobby = await db.get(`SELECT * FROM lobbies WHERE id = ?`, [lobbyId]);
-
-    if (!lobby) {
-      return res.status(404).json({ error: 'Lobby not found' });
-    }
-
-    // Parse the points array from the lobby record
-    let pointsArray = JSON.parse(lobby.points || '[]');
-
-    // Find the player in the points array
-    const playerIndex = pointsArray.findIndex((p: { id: string; points: number }) => p.id === userId);
-    if (playerIndex !== -1) {
- 
-      pointsArray[playerIndex].points += 10;
-    }
-    await db.run(`UPDATE lobbies SET points = ? WHERE id = ?`, [JSON.stringify(pointsArray), lobbyId]);
 
     const updatedPlayerItem = await db.get(
       `SELECT * FROM player_items WHERE lobby_id = ? AND player_id = ? AND item_id = ?`,
@@ -351,24 +297,23 @@ router.get('/lobbies/:lobbyId/gameTime', async (req, res) => {
   const { lobbyId } = req.params;
 
   try {
-    const db = await connectDB();
-    const lobby = await db.get(`SELECT * FROM lobbies WHERE id = ?`, [lobbyId]);
+      const db = await connectDB();
+      const lobby = await db.get(`SELECT * FROM lobbies WHERE id = ?`, [lobbyId]);
 
-    if (!lobby) {
-      return res.status(404).json({ error: 'Lobby not found' });
-    }
+      if (!lobby) {
+          return res.status(404).json({ error: 'Lobby not found' });
+      }
 
-    const gameTime = JSON.parse(lobby.gameTime || '0');
+      const gameTime = lobby.gameTime;
 
-    // Ensure players is an array of strings
-    if (!gameTime) {
-      return res.status(500).json({ error: 'Invalid game time data' });
-    }
+      if (gameTime === undefined || gameTime === null) {
+          return res.status(500).json({ error: 'Invalid game time data' });
+      }
 
-    res.status(200).json({ gameTime });
+      res.status(200).json({ gameTime });
   } catch (error) {
-    console.error('Error retrieving gameTime:', error);
-    res.status(500).json({ error: 'Failed to retrieve gameTime'});
+      console.error('Error retrieving gameTime:', error);
+      res.status(500).json({ error: 'Failed to retrieve gameTime' });
   }
 });
 
@@ -413,6 +358,26 @@ router.post('/lobbies/:lobbyId/start', async (req, res) => {
   }
 });
 
+router.post('/lobbies/:lobbyId/end', async (req, res) => {
+  const { lobbyId } = req.params;
+
+  try {
+    const db = await connectDB();
+    const lobby = await db.get(`SELECT * FROM lobbies WHERE id = ?`, [lobbyId]);
+
+    if (!lobby) {
+      return res.status(404).json({ error: 'Lobby not found' });
+    }
+
+    await db.run(`UPDATE lobbies SET status = ? WHERE id = ?`, ['ended', lobbyId]);
+
+    res.status(200).json({ message: `Lobby ${lobbyId} ended successfully` });
+  } catch (error) {
+    console.error('Error ending lobby:', error);
+    res.status(500).json({ error: 'Failed to end the lobby' });
+  }
+});
+
 router.get('/lobbies/:lobbyId/score', async (req, res) => {
   const { lobbyId } = req.params;
 
@@ -434,6 +399,77 @@ router.get('/lobbies/:lobbyId/score', async (req, res) => {
   } catch (error) {
     console.error('Error retrieving lobby score:', error);
     res.status(500).json({ error: 'Failed to retrieve lobby score' });
+  }
+});
+
+router.get('/lobbies/submissions', async (req, res) => {
+  try {
+    const db = await connectDB();
+ 
+    const submissions = await db.all(`
+      SELECT pi.player_id AS userId, pi.item_id AS itemId, pi.lobby_id AS lobbyId, pi.image, l.lobbyName
+      FROM player_items pi
+      JOIN lobbies l ON l.id = pi.lobby_id
+      WHERE pi.found = 1 AND (pi.approved IS NULL OR pi.approved = 0)
+    `);
+    res.status(200).json({ submissions });
+  } catch (error) {
+    console.error('Error fetching submissions:', error);
+    res.status(500).json({ error: 'Failed to retrieve submissions' });
+  }
+});
+
+router.post('/lobbies/approveSubmission', async (req, res) => {
+  const { lobbyId, userId, itemId, points, approved } = req.body;
+
+  try {
+    const db = await connectDB();
+
+    // Update the `approved` column in the player_items table
+    await db.run(
+      `UPDATE player_items SET approved = ? WHERE lobby_id = ? AND player_id = ? AND item_id = ?`,
+      [approved ? 1 : -1, lobbyId, userId, itemId]  
+    );
+
+    if (approved) {
+      // If approved, add points
+      const lobby = await db.get(`SELECT * FROM lobbies WHERE id = ?`, [lobbyId]);
+      if (lobby) {
+        let pointsArray = JSON.parse(lobby.points || '[]');
+        const playerIndex = pointsArray.findIndex((p: { id: string }) => p.id === userId);
+        if (playerIndex !== -1) {
+          pointsArray[playerIndex].points += points;
+          await db.run(`UPDATE lobbies SET points = ? WHERE id = ?`, [JSON.stringify(pointsArray), lobbyId]);
+        }
+      }
+    }
+
+    res.status(200).json({ message: 'Submission processed successfully' });
+  } catch (error) {
+    console.error('Error processing submission:', error);
+    res.status(500).json({ error: 'Failed to process submission' });
+  }
+});
+
+router.get('/lobbies/:lobbyId/players/:userId/items/:itemId/status', async (req, res) => {
+  const { lobbyId, userId, itemId } = req.params;
+
+  try {
+    const db = await connectDB();
+
+    const playerItem = await db.get(
+      `SELECT approved FROM player_items WHERE lobby_id = ? AND player_id = ? AND item_id = ?`,
+      [lobbyId, userId, itemId]
+    );
+
+    if (!playerItem) {
+      return res.status(404).json({ error: 'Player item not found' });
+    }
+
+    res.status(200).json({ approved: playerItem.approved });
+  } catch (error) {
+    console.error('Error retrieving approval status:', error);
+    res.status(500).json({ error: 'Failed to retrieve approval status' });
   }
 });
 

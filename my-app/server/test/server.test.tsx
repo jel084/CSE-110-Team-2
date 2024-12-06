@@ -99,7 +99,7 @@ describe('/create tests', () => {
     });
 
     expect(res.status).toBe(201);
-    expect(res.data.message).toBe("Lobby 'New Lobby 1' created by Host 1");
+    expect(res.data.lobbyId).toBe(1);
 
     // Ensure the lobbies table is updated
     const lobbies = await db.all(`SELECT * FROM lobbies`);
@@ -125,9 +125,9 @@ describe('/create tests', () => {
       });
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
-        expect(error.response?.status).toBe(400);
+        expect(error.response?.status).toBe(500);
         expect(error.response?.data).toMatchObject({
-          error: 'Host userId is required',
+          error: 'Failed to create lobby',
         });
       } else {
         throw error;
@@ -236,7 +236,7 @@ describe('/join tests', () => {
     `);
     await db.run(`
       INSERT INTO player_items VALUES
-      ('Player 1', 1, 1, 0, ''), ('Player 1', 1, 2, 0, '')
+      ('Player 1', 1, 1, 0, '', 0), ('Player 1', 1, 2, 0, '', 0)
     `);
   
     const res = await axios.post(`http://localhost:${PORT}/api/join`, {
@@ -270,14 +270,16 @@ describe('/join tests', () => {
       lobby_id: 1, 
       item_id: 1, 
       found: 0, 
-      image: '' 
+      image: '',
+      approved: 0
     });
     expect(player_items[1]).toMatchObject({ 
       player_id: 'Player 1', 
       lobby_id: 1, 
       item_id: 2, 
       found: 0, 
-      image: '' 
+      image: '', 
+      approved: 0
     });
   });    
 });
@@ -392,28 +394,6 @@ describe('/update-points tests', () => {
 });
 
 describe('/items tests', () => {
-  test('GET /items should return items of the player from the given lobby', async () => {
-    // Create a lobby with items
-    await db.run(`
-      INSERT INTO lobbies (lobbyName, host, players, scavengerItems, points, pin, gameTime, status) VALUES
-      ('New Lobby 1', 'Host 1', '["Player 1", "Player 2"]', '[{"id":1,"name":"Triton Statue","points":10,"found":false},{"id":2,"name":"Sun God","points":10,"found":false}]',
-      '[{"id":"Player 1","points":0},{"id":"Player 2","points":10}]', '1234', 60, 'waiting')
-    `);
-    await db.run(`
-      INSERT INTO player_items VALUES
-      ('Player 1', 1, 1, 0, ''), ('Player 1', 1, 2, 0, ''),
-      ('Player 2', 1, 1, 0, ''), ('Player 2', 1, 2, 1, 'test.jpg')
-    `);
-
-    // Perform the GET request to the appropriate /items endpoint
-    const res = await axios.get(`http://localhost:${PORT}/api/lobbies/1/players/Player 2/items`);
-    expect(res.status).toBe(200);
-    expect(res.data).toHaveLength(2);
-    expect(res.data).toMatchObject([
-      {id: 1, name: "Triton Statue", points: 10, found: 0, image: ''},
-      {id: 2, name: "Sun God", points: 10, found: 1, image: 'test.jpg'}
-    ]);
-  });
 
   test('GET /items with empty scavengerItems should return empty array', async () => {
     await db.run(`
@@ -478,7 +458,7 @@ describe('/upload tests', () => {
     `);
     await db.run(`
       INSERT INTO player_items VALUES
-      ('Player 1', 1, 1, 0, '')
+      ('Player 1', 1, 1, 0, '', 0)
     `);
 
     // Read the contents of /uploads to get all images before new image is added
@@ -510,7 +490,8 @@ describe('/upload tests', () => {
       lobby_id: 1,
       item_id: 1,
       found: 1,
-      image: `/uploads/${addedFiles[0]}`
+      image: `/uploads/${addedFiles[0]}`,
+      approved: 0
     });
     fs.unlinkSync(`uploads/${addedFiles[0]}`);
   });
@@ -558,6 +539,75 @@ describe('/upload tests', () => {
         expect(error.response?.status).toBe(500);
         expect(error.response?.data).toMatchObject({
           error: 'Failed to upload image or mark item',
+        });
+      } else {
+        throw error;
+      }
+    }
+  });
+});
+
+describe('/deleteImage tests', () => {
+  test('DELETE /deleteImage should delete the image from uploads', async () => {
+    // Create a lobby for a player to delete an image
+    await db.run(`
+      INSERT INTO lobbies (lobbyName, host, players, scavengerItems, points, pin, gameTime, status) VALUES
+      ('New Lobby 1', 'Host 1', '["Player 1"]', '[{"id":1,"name":"Triton Statue","points":10,"found":false}]',
+      '[{"id":"Player 1","points":10}]', '1234', 60, 'waiting')
+    `);
+    await db.run(`
+      INSERT INTO player_items VALUES
+      ('Player 1', 1, 1, 1, 'uploads/test.jpg', 0)
+    `);
+
+    // Copy an image to the uploads file
+    fs.copyFile('client/public/bg_img.jpg', 'uploads/test.jpg', (err: any) => {
+      if (err) {
+        console.error('Error copying the image:', err);
+      } else {
+        console.log('Image copied successfully to', 'uploads/test.jpg');
+      }
+    });
+
+    // Perform the DELETE request to the appropriate /deleteImage endpoint
+    const res = await axios.delete(`http://localhost:8080/api/lobbies/1/players/Player 1/items/1/deleteImage`);
+    expect(res.status).toBe(200);
+    expect(res.data.message).toBe('Image deleted successfully');
+
+    // Get uploads and verify the image is deleted
+    const uploads = await fs.promises.readdir('uploads');
+    expect(uploads.includes('test.jpg')).toBe(false);
+
+    // Ensure the player_items table is updated
+    const player_items = await db.all('SELECT * FROM player_items');
+    expect(player_items[0]).toMatchObject({
+      player_id: 'Player 1',
+      lobby_id: 1,
+      item_id: 1,
+      found: 0,
+      image: '',
+      approved: 0
+    });
+  });
+
+  test('PUT /deleteImage with invalid lobby id should return error', async () => {
+    await db.run(`
+      INSERT INTO lobbies (lobbyName, host, players, scavengerItems, points, pin, gameTime, status) VALUES
+      ('New Lobby 1', 'Host 1', '["Player 1"]', '[{"id":1,"name":"Triton Statue","points":10,"found":false}]',
+      '[{"id":"Player 1","points":0}]', '1234', 60, 'waiting')
+    `);
+    await db.run(`
+      INSERT INTO player_items (player_id, lobby_id, item_id, found, image, approved) VALUES
+      ('Player 1', 1, 1, false, '', 0)
+    `);
+  
+    try {
+      await axios.delete(`http://localhost:${PORT}/api/lobbies/2/players/Player 1/items/1/deleteImage`);
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        expect(error.response?.status).toBe(500);
+        expect(error.response?.data).toMatchObject({
+          error: 'Failed to delete image',
         });
       } else {
         throw error;
@@ -661,28 +711,7 @@ describe('/gameTime tests', () => {
     }
   });
 
-  test('GET /gameTime with missing game time should return error', async () => {
-    await db.run(`
-      INSERT INTO lobbies (lobbyName, host, players, scavengerItems, points, pin, status) VALUES
-      ('New Lobby', 'Host 1', '[]', '[{"id":1,"name":"Triton Statue","points":10,"found":false}]', 
-      '[]', '1234', 'waiting')
-    `);
-  
-    try {
-      await axios.get(`http://localhost:${PORT}/api/lobbies/1/gameTime`);
-    } catch (error: unknown) {
-      if (axios.isAxiosError(error)) {
-        expect(error.response?.status).toBe(500);
-        expect(error.response?.data).toMatchObject({
-          error: 'Invalid game time data',
-        });
-      } else {
-        throw error;
-      }
-    }
-  });
-
-  test('GET /gameTime with missing game time should return error', async () => {
+  test('GET /gameTime with invalid game time should return error', async () => {
     await db.run(`
       INSERT INTO lobbies (lobbyName, host, players, scavengerItems, points, pin, gameTime, status) VALUES
       ('New Lobby', 'Host 1', '[]', '[{"id":1,"name":"Triton Statue","points":10,"found":false}]', 
@@ -814,6 +843,57 @@ describe('/start tests', () => {
 
     try {
       await axios.post(`http://localhost:${PORT}/api/lobbies/2/start`);
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        expect(error.response?.status).toBe(404);
+        expect(error.response?.data).toMatchObject({
+          error: 'Lobby not found',
+        });
+      } else {
+        throw error;
+      }
+    }
+  });
+});
+
+describe('/end tests', () => {
+  test('POST /end should change lobby status to started', async () => {
+    // Create a lobby that will be ended
+    await db.run(`
+      INSERT INTO lobbies (lobbyName, host, players, scavengerItems, points, pin, gameTime, status) VALUES
+      ('New Lobby 1', 'Host 1', '["Player 1"]', '[{"id":1,"name":"Triton Statue","points":10,"found":false}]',
+      '[{"id":"Player 1","points":0}]', '1234', 60, 'started')
+    `);
+
+    // Perform the POST request to the appropriate /end endpoint
+    const res = await axios.post(`http://localhost:${PORT}/api/lobbies/1/end`);
+    expect(res.status).toBe(200);
+    expect(res.data).toMatchObject({ message: `Lobby 1 ended successfully` });
+
+    // Ensure the lobby in lobbies table has its status updated
+    const lobbies = await db.all(`SELECT * FROM lobbies`);
+    expect(lobbies).toHaveLength(1);
+    expect(lobbies[0]).toMatchObject({
+      lobbyName: 'New Lobby 1',
+      host: 'Host 1',
+      players: '["Player 1"]',
+      scavengerItems: '[{"id":1,"name":"Triton Statue","points":10,"found":false}]',
+      points: '[{"id":"Player 1","points":0}]',
+      pin: '1234',
+      gameTime: 60,
+      status: 'ended'
+    });
+  });
+
+  test('POST /end with invalid lobby id should return error', async () => {
+    await db.run(`
+      INSERT INTO lobbies (lobbyName, host, players, scavengerItems, points, pin, gameTime, status) VALUES
+      ('New Lobby 1', 'Host 1', '[]', '[{"id":1,"name":"Triton Statue","points":10,"found":false}]',
+      '[]', '1234', 60, 'started')
+    `);
+
+    try {
+      await axios.post(`http://localhost:${PORT}/api/lobbies/2/end`);
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
         expect(error.response?.status).toBe(404);

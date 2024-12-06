@@ -27,8 +27,8 @@ const initDatabase = () => __awaiter(void 0, void 0, void 0, function* () {
       scavengerItems TEXT,
       points TEXT,
       pin TEXT NOT NULL,
-      gameTime INTEGER NOT NULL DEFAULT 0,
-      status TEXT DEFAULT 'waiting'
+      status TEXT DEFAULT 'waiting',
+      gameTime INTEGER NOT NULL
     )
   `);
     //Player scavenge item status 
@@ -39,7 +39,18 @@ const initDatabase = () => __awaiter(void 0, void 0, void 0, function* () {
       item_id INTEGER NOT NULL,
       found BOOLEAN DEFAULT 0,
       image TEXT,
+      approved BOOLEAN DEFAULT 0,
       PRIMARY KEY (player_id, lobby_id, item_id),
+      FOREIGN KEY (lobby_id) REFERENCES lobbies(id)
+    )
+  `);
+    //Results Table
+    yield db.exec(`
+    CREATE TABLE IF NOT EXISTS results (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      lobby_id INTEGER NOT NULL,
+      player_id TEXT NOT NULL,
+      points INTEGER NOT NULL,
       FOREIGN KEY (lobby_id) REFERENCES lobbies(id)
     )
   `);

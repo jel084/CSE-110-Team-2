@@ -7,43 +7,46 @@ import GoBackButton from "../../components/GoBackButton/GoBackButton";
 import PopupWindow from "../../components/PopupWindow/PopupWindow";
 
 function HostView() {
-  const [lobbyCode, setLobbyCode] = useState('');
-  const [timeInput, setTimeInput] = useState('');
+  const [lobbyCode, setLobbyCode] = useState("");
+  const [timeInput, setTimeInput] = useState("");
   const [timeRemaining, setTimeRemaining] = useState(0);
-  const [newItem, setNewItem] = useState('');
+  const [newItem, setNewItem] = useState("");
   const [items, setItems] = useState<Item[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [hostName, setHostName] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
+  const [hostName, setHostName] = useState("");
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
   const [showInvalidPopup, setShowInvalidPopup] = useState(false);
   const [invalidMessage, setInvalidMessage] = useState("");
-  
+  const [isCheckoffEnabled, setIsCheckoffEnabled] = useState(false);
+  const [timeUpPopup, setTimeUpPopup] = useState(false);
+  const [lobbyId, setLobbyId] = useState<string | null>(null); 
+
+  const navigate = useNavigate();
+
   const handleTimeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     let value = e.target.value;
-  
+
     // Remove all non-digit characters
-    value = value.replace(/\D/g, '');
-  
+    value = value.replace(/\D/g, "");
+
     // Limit to 6 digits
     value = value.substring(0, 6);
-  
+
     // Insert colons at the appropriate positions
     if (value.length <= 2) {
-      // Seconds only
       value = value;
     } else if (value.length <= 4) {
-      // Minutes and seconds
-      value = value.replace(/(\d{1,2})(\d{2})/, '$1:$2');
+      value = value.replace(/(\d{1,2})(\d{2})/, "$1:$2");
     } else {
-      // Hours, minutes, and seconds
-      value = value.replace(/(\d{1,2})(\d{2})(\d{2})/, '$1:$2:$3');
+      value = value.replace(/(\d{1,2})(\d{2})(\d{2})/, "$1:$2:$3");
     }
-  
+
     setTimeInput(value);
   };
-  
+
   const convertTimeToSeconds = (time: string) => {
-    const timeParts = time.split(':').reverse(); // Reverse to start from seconds
+    const timeParts = time.split(":").reverse();
     let seconds = 0;
 
     if (timeParts[0]) {
@@ -102,8 +105,15 @@ function HostView() {
   };
 
   const handleCreateLobby = async () => {
-    if (!lobbyCode || items.length === 0 || !timeInput || convertTimeToSeconds(timeInput) === 0) {
-      setInvalidMessage("Please enter a valid lobby code, add at least one item, and set a valid time.");
+    if (
+      !lobbyCode ||
+      items.length === 0 ||
+      !timeInput ||
+      convertTimeToSeconds(timeInput) === 0
+    ) {
+      setInvalidMessage(
+        "Please enter a valid lobby code, add at least one item, and set a valid time."
+      );
       setShowInvalidPopup(true);
       return;
     }
@@ -120,6 +130,9 @@ function HostView() {
       if (response.status === 201) {
         const { lobbyId } = response.data;
         setSuccessMessage("Lobby created successfully!");
+        setShowSuccessPopup(true);
+        setIsCheckoffEnabled(true);
+        setLobbyId(lobbyId); // Set the lobby ID to use for navigation
         setTimeout(() => setSuccessMessage(""), 8080);
       }
     } catch (error) {
@@ -140,7 +153,7 @@ function HostView() {
       setTimeRemaining((prev) => {
         if (prev <= 1) {
           clearInterval(interval);
-          alert("Time's up!");
+          setTimeUpPopup(true);
           return 0;
         }
         return prev - 1;
@@ -158,17 +171,22 @@ function HostView() {
       .map((val) => String(val).padStart(2, "0"))
       .join(":");
   };
+
   const toggleRulesPopup = () => {
     setShowInvalidPopup((prev) => !prev);
   };
 
+  const toggleLobbyPopup = () => {
+    setShowSuccessPopup((prev) => !prev);
+  };
+
+  const toggleTimeUpPopup = () => {
+    setTimeUpPopup((prev) => !prev);
+  };
+
   return (
     <>
-      <div className="spacer">
-        {successMessage && (
-          <div className="success-message">{successMessage}</div>
-        )}
-      </div>
+      <div className="spacer"></div>
       <div className="host-view">
         <GoBackButton />
         <header className="header">
@@ -233,16 +251,39 @@ function HostView() {
             </div>
           )}
         </section>
-        <button
-          className="start-game-button"
-          onClick={() => {
-            handleCreateLobby();
-            startTimer();
-          }}
-        >
-          Start Game
-        </button>
+        <div className="button-group">
+          <button
+            className="start-game-button"
+            onClick={() => {
+              handleCreateLobby();
+              startTimer();
+            }}
+          >
+            Start Game
+          </button>
+          <button
+            className={`checkoff-button ${isCheckoffEnabled ? "" : "disabled"}`}
+            onClick={() => isCheckoffEnabled && lobbyId && navigate(`/checkoff/${lobbyId}`)} // Navigate to the correct lobbyId
+            disabled={!isCheckoffEnabled}
+          >
+            Checkoff Page
+          </button>
+        </div>
       </div>
+      {timeUpPopup && (
+        <PopupWindow
+          title="Time's Up!"
+          message={"Time's up! Game is over. Please check off your items."}
+          onClose={toggleTimeUpPopup}
+        />
+      )}
+      {showSuccessPopup && (
+        <PopupWindow
+          title="Success"
+          message={"Lobby created successfully!"}
+          onClose={toggleLobbyPopup}
+        />
+      )}
       {showInvalidPopup && (
         <PopupWindow
           title="Invalid Input"

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getItemsForPlayer } from '../../player-utils';
 import { Item } from '../../types/types';
@@ -6,9 +6,13 @@ import './scavengeScreen.css';
 import axios from 'axios';
 import GoBackButton from '../../components/GoBackButton/GoBackButton';
 
+interface ExtendedItem extends Item {
+  approvalStatus?: 'waiting' | 'approved' | 'denied' | null;
+}
+
 const ScavengeScreen: React.FC = () => {
   const { lobbyId, userId } = useParams<{ lobbyId: string; userId: string }>();
-  const [items, setItems] = useState<Item[]>([]);
+  const [items, setItems] = useState<ExtendedItem[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [timeRemaining, setTimeRemaining] = useState(11110);
@@ -69,7 +73,6 @@ const ScavengeScreen: React.FC = () => {
   const endGame = async () => {
     if (lobbyId) {
       try {
-        // Update the status of the game to 'ended'
         const response = await axios.post(`http://localhost:8080/api/lobbies/${lobbyId}/end`);
         console.log('Game ended:', response.data);
       } catch (error) {
@@ -93,7 +96,11 @@ const ScavengeScreen: React.FC = () => {
           const fetchedItems = await getItemsForPlayer(parseInt(lobbyId), userId);
           console.log('Fetched items:', fetchedItems);
           if (Array.isArray(fetchedItems)) {
-            setItems(fetchedItems);
+            const itemsWithApproval: ExtendedItem[] = fetchedItems.map(item => ({
+              ...item,
+              approvalStatus: item.found ? 'approved' : null
+            }));
+            setItems(itemsWithApproval);
           } else {
             setErrorMessage('Failed to load items. Please try again.');
           }
@@ -140,11 +147,15 @@ const ScavengeScreen: React.FC = () => {
           }
         );
 
-        console.log(response); // Log response to verify the format
         if (response.status === 200 && response.data && response.data.item) {
           const updatedItem = response.data.item;
           const updatedItems = [...items];
-          updatedItems[currentIndex].image = updatedItem.image;
+          updatedItems[currentIndex] = {
+            ...updatedItems[currentIndex],
+            found: updatedItem.found,
+            image: updatedItem.image,
+            approvalStatus: 'waiting' // Set status to 'waiting' after image upload
+          };
           setItems(updatedItems);
           setErrorMessage(null);
           console.log('Item image uploaded successfully');
@@ -158,6 +169,37 @@ const ScavengeScreen: React.FC = () => {
     }
   };
 
+  // Poll for host approval after successful upload
+  useEffect(() => {
+    let approvalInterval: NodeJS.Timeout;
+    if (items[currentIndex]?.approvalStatus === 'waiting') {
+      approvalInterval = setInterval(async () => {
+        try {
+          const response = await axios.get(
+            `http://localhost:8080/api/lobbies/${lobbyId}/players/${userId}/items/${items[currentIndex].id}/status`
+          );
+          if (response.data) {
+            const { approved } = response.data;
+            const updatedItems = [...items];
+            if (approved === 1) {
+              updatedItems[currentIndex].approvalStatus = 'approved';
+            } else if (approved === -1) {
+              updatedItems[currentIndex].approvalStatus = 'denied';
+            }
+            setItems(updatedItems);
+            if (approved !== null) {
+              clearInterval(approvalInterval);
+            }
+          }
+        } catch (error) {
+          console.error('Error checking approval status:', error);
+        }
+      }, 3000); 
+    }
+  
+    return () => clearInterval(approvalInterval);
+  }, [items, currentIndex, lobbyId, userId]);
+
   const handleDeleteImage = async () => {
     if (lobbyId && userId && items[currentIndex]?.image) {
       try {
@@ -168,7 +210,12 @@ const ScavengeScreen: React.FC = () => {
         if (response.status === 200) {
           console.log('Image deleted successfully');
           const updatedItems = [...items];
-          updatedItems[currentIndex].image = undefined;
+          updatedItems[currentIndex] = {
+            ...updatedItems[currentIndex],
+            image: undefined,
+            found: false,
+            approvalStatus: null
+          };
           setItems(updatedItems);
         }
       } catch (error) {
@@ -206,6 +253,11 @@ const ScavengeScreen: React.FC = () => {
       }
     }
   };
+
+  const handleClick = () => {
+    navigate(`/winners`);
+  };
+
   return (
     <>
       <GoBackButton
@@ -226,7 +278,7 @@ const ScavengeScreen: React.FC = () => {
             <p>Item List:</p>
             <div className="scavenge-item-container">
               {items.length > 0 && (
-                <div className={`scavenge-item-carousel`}>
+                <div className={`scavenge-item-carousel ${items[currentIndex].found ? "found" : "" }`}>
                   <button className="scavenge-arrow-button" onClick={prevItem}>
                     &larr;
                   </button>
@@ -240,18 +292,26 @@ const ScavengeScreen: React.FC = () => {
               )}
             </div>
           </section>
-          <div className="scavenge-image-container">
-            <label htmlFor="image">Upload Image</label>
-            <input type="file" name="image" id="image" accept="image/*" onChange={handleImageChange} />
+          {/* <div className="scavenge-image-container">
+            <label htmlFor="image" className = 'upload-image-button'>Upload Image</label>
+            <input type="file" name="image" id="image" data-testid='file-input' accept="image/*" onChange={handleImageChange} />
           </div>
           <button className="scavenge-delete-button" onClick={handleDeleteImage}>
             🗑️
-          </button>
+          </button> */}
+           <div className="scavenge-image-container">
+            <label htmlFor="image" className = 'upload-image-button'>Upload Image</label>
+            <input type="file" name="image" id="image" data-testid='file-input' accept="image/*" onChange={handleImageChange} />
+            <button className="scavenge-delete-button" onClick={handleDeleteImage}>
+              🗑️
+            </button>
+          </div>
           <div className="scavenge-set-time">
             <label>Time Remaining:</label>
-            <input type="text" value={formatTime(timeRemaining)} placeholder="hr:mm:ss" />
+            <input type="text" value={formatTime(timeRemaining)} placeholder="hr:mm:ss" readOnly />
           </div>
         </header>
+        
         <div className="scavenge-image-preview">
           {items[currentIndex]?.image ? (
             <img src={`http://localhost:8080${items[currentIndex].image}`} alt="Selected" />
@@ -259,9 +319,25 @@ const ScavengeScreen: React.FC = () => {
             <p>{errorMessage || 'No image selected'}</p>
           )}
         </div>
+        {items.length > 0 && items[currentIndex].approvalStatus === 'approved' && (
+          <div className="scavenge-foundText">
+            <p className="scavenge-found-text">Item found!</p>
+          </div>
+        )}
+        {items.length > 0 && items[currentIndex].approvalStatus === 'waiting' && (
+          <div className="scavenge-waitingText">
+            <p className="scavenge-waiting-text">Upload successful, waiting for host approval.</p>
+          </div>
+        )}
+        {items.length > 0 && items[currentIndex].approvalStatus === 'denied' && (
+          <div className="scavenge-deniedText">
+            <p className="scavenge-denied-text">Upload denied by host, please try again.</p>
+          </div>
+        )}
       </div>
+
       <div className="scavenge-spacer2">
-        <button className="scavenge-submit-items-button" disabled={!allItemsFound}>
+        <button className="scavenge-submit-items-button" disabled={!allItemsFound} onClick={handleClick}>
           Submit
         </button>
       </div>
