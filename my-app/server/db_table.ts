@@ -31,6 +31,7 @@ export const initDatabase = async () => {
       item_id INTEGER NOT NULL,
       found BOOLEAN DEFAULT 0,
       image TEXT,
+      approved BOOLEAN DEFAULT 0,
       PRIMARY KEY (player_id, lobby_id, item_id),
       FOREIGN KEY (lobby_id) REFERENCES lobbies(id)
     )

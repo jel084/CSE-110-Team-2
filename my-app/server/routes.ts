@@ -195,7 +195,6 @@ router.put('/lobbies/:lobbyId/players/:userId/items/:itemId/upload', upload.sing
   try {
     const db = await connectDB();
 
- 
     const playerItem = await db.get(
       `SELECT * FROM player_items WHERE lobby_id = ? AND player_id = ? AND item_id = ?`,
       [lobbyId, userId, itemId]
@@ -210,24 +209,6 @@ router.put('/lobbies/:lobbyId/players/:userId/items/:itemId/upload', upload.sing
       `UPDATE player_items SET found = ?, image = ? WHERE lobby_id = ? AND player_id = ? AND item_id = ?`,
       [true, imageUrl, lobbyId, userId, itemId]
     );
-
-    //  Update the player's points in the lobbies table
-    const lobby = await db.get(`SELECT * FROM lobbies WHERE id = ?`, [lobbyId]);
-
-    if (!lobby) {
-      return res.status(404).json({ error: 'Lobby not found' });
-    }
-
-    // Parse the points array from the lobby record
-    let pointsArray = JSON.parse(lobby.points || '[]');
-
-    // Find the player in the points array
-    const playerIndex = pointsArray.findIndex((p: { id: string; points: number }) => p.id === userId);
-    if (playerIndex !== -1) {
- 
-      pointsArray[playerIndex].points += 10;
-    }
-    await db.run(`UPDATE lobbies SET points = ? WHERE id = ?`, [JSON.stringify(pointsArray), lobbyId]);
 
     const updatedPlayerItem = await db.get(
       `SELECT * FROM player_items WHERE lobby_id = ? AND player_id = ? AND item_id = ?`,
@@ -418,6 +399,77 @@ router.get('/lobbies/:lobbyId/score', async (req, res) => {
   } catch (error) {
     console.error('Error retrieving lobby score:', error);
     res.status(500).json({ error: 'Failed to retrieve lobby score' });
+  }
+});
+
+router.get('/lobbies/submissions', async (req, res) => {
+  try {
+    const db = await connectDB();
+ 
+    const submissions = await db.all(`
+      SELECT pi.player_id AS userId, pi.item_id AS itemId, pi.lobby_id AS lobbyId, pi.image, l.lobbyName
+      FROM player_items pi
+      JOIN lobbies l ON l.id = pi.lobby_id
+      WHERE pi.found = 1 AND (pi.approved IS NULL OR pi.approved = 0)
+    `);
+    res.status(200).json({ submissions });
+  } catch (error) {
+    console.error('Error fetching submissions:', error);
+    res.status(500).json({ error: 'Failed to retrieve submissions' });
+  }
+});
+
+router.post('/lobbies/approveSubmission', async (req, res) => {
+  const { lobbyId, userId, itemId, points, approved } = req.body;
+
+  try {
+    const db = await connectDB();
+
+    // Update the `approved` column in the player_items table
+    await db.run(
+      `UPDATE player_items SET approved = ? WHERE lobby_id = ? AND player_id = ? AND item_id = ?`,
+      [approved ? 1 : -1, lobbyId, userId, itemId]  
+    );
+
+    if (approved) {
+      // If approved, add points
+      const lobby = await db.get(`SELECT * FROM lobbies WHERE id = ?`, [lobbyId]);
+      if (lobby) {
+        let pointsArray = JSON.parse(lobby.points || '[]');
+        const playerIndex = pointsArray.findIndex((p: { id: string }) => p.id === userId);
+        if (playerIndex !== -1) {
+          pointsArray[playerIndex].points += points;
+          await db.run(`UPDATE lobbies SET points = ? WHERE id = ?`, [JSON.stringify(pointsArray), lobbyId]);
+        }
+      }
+    }
+
+    res.status(200).json({ message: 'Submission processed successfully' });
+  } catch (error) {
+    console.error('Error processing submission:', error);
+    res.status(500).json({ error: 'Failed to process submission' });
+  }
+});
+
+router.get('/lobbies/:lobbyId/players/:userId/items/:itemId/status', async (req, res) => {
+  const { lobbyId, userId, itemId } = req.params;
+
+  try {
+    const db = await connectDB();
+
+    const playerItem = await db.get(
+      `SELECT approved FROM player_items WHERE lobby_id = ? AND player_id = ? AND item_id = ?`,
+      [lobbyId, userId, itemId]
+    );
+
+    if (!playerItem) {
+      return res.status(404).json({ error: 'Player item not found' });
+    }
+
+    res.status(200).json({ approved: playerItem.approved });
+  } catch (error) {
+    console.error('Error retrieving approval status:', error);
+    res.status(500).json({ error: 'Failed to retrieve approval status' });
   }
 });
 

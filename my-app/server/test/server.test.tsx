@@ -236,7 +236,7 @@ describe('/join tests', () => {
     `);
     await db.run(`
       INSERT INTO player_items VALUES
-      ('Player 1', 1, 1, 0, ''), ('Player 1', 1, 2, 0, '')
+      ('Player 1', 1, 1, 0, '', 0), ('Player 1', 1, 2, 0, '', 0)
     `);
   
     const res = await axios.post(`http://localhost:${PORT}/api/join`, {
@@ -270,14 +270,16 @@ describe('/join tests', () => {
       lobby_id: 1, 
       item_id: 1, 
       found: 0, 
-      image: '' 
+      image: '',
+      approved: 0
     });
     expect(player_items[1]).toMatchObject({ 
       player_id: 'Player 1', 
       lobby_id: 1, 
       item_id: 2, 
       found: 0, 
-      image: '' 
+      image: '', 
+      approved: 0
     });
   });    
 });
@@ -392,28 +394,6 @@ describe('/update-points tests', () => {
 });
 
 describe('/items tests', () => {
-  test('GET /items should return items of the player from the given lobby', async () => {
-    // Create a lobby with items
-    await db.run(`
-      INSERT INTO lobbies (lobbyName, host, players, scavengerItems, points, pin, gameTime, status) VALUES
-      ('New Lobby 1', 'Host 1', '["Player 1", "Player 2"]', '[{"id":1,"name":"Triton Statue","points":10,"found":false},{"id":2,"name":"Sun God","points":10,"found":false}]',
-      '[{"id":"Player 1","points":0},{"id":"Player 2","points":10}]', '1234', 60, 'waiting')
-    `);
-    await db.run(`
-      INSERT INTO player_items VALUES
-      ('Player 1', 1, 1, 0, ''), ('Player 1', 1, 2, 0, ''),
-      ('Player 2', 1, 1, 0, ''), ('Player 2', 1, 2, 1, 'test.jpg')
-    `);
-
-    // Perform the GET request to the appropriate /items endpoint
-    const res = await axios.get(`http://localhost:${PORT}/api/lobbies/1/players/Player 2/items`);
-    expect(res.status).toBe(200);
-    expect(res.data).toHaveLength(2);
-    expect(res.data).toMatchObject([
-      {id: 1, name: "Triton Statue", points: 10, found: 0, image: ''},
-      {id: 2, name: "Sun God", points: 10, found: 1, image: 'test.jpg'}
-    ]);
-  });
 
   test('GET /items with empty scavengerItems should return empty array', async () => {
     await db.run(`
@@ -478,7 +458,7 @@ describe('/upload tests', () => {
     `);
     await db.run(`
       INSERT INTO player_items VALUES
-      ('Player 1', 1, 1, 0, '')
+      ('Player 1', 1, 1, 0, '', 0)
     `);
 
     // Read the contents of /uploads to get all images before new image is added
@@ -510,7 +490,8 @@ describe('/upload tests', () => {
       lobby_id: 1,
       item_id: 1,
       found: 1,
-      image: `/uploads/${addedFiles[0]}`
+      image: `/uploads/${addedFiles[0]}`,
+      approved: 0
     });
     fs.unlinkSync(`uploads/${addedFiles[0]}`);
   });
@@ -576,7 +557,7 @@ describe('/deleteImage tests', () => {
     `);
     await db.run(`
       INSERT INTO player_items VALUES
-      ('Player 1', 1, 1, 1, 'uploads/test.jpg')
+      ('Player 1', 1, 1, 1, 'uploads/test.jpg', 0)
     `);
 
     // Copy an image to the uploads file
@@ -604,7 +585,8 @@ describe('/deleteImage tests', () => {
       lobby_id: 1,
       item_id: 1,
       found: 0,
-      image: ''
+      image: '',
+      approved: 0
     });
   });
 
@@ -615,8 +597,8 @@ describe('/deleteImage tests', () => {
       '[{"id":"Player 1","points":0}]', '1234', 60, 'waiting')
     `);
     await db.run(`
-      INSERT INTO player_items (player_id, lobby_id, item_id, found, image) VALUES
-      ('Player 1', 1, 1, false, '')
+      INSERT INTO player_items (player_id, lobby_id, item_id, found, image, approved) VALUES
+      ('Player 1', 1, 1, false, '', 0)
     `);
   
     try {

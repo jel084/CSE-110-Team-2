@@ -1,96 +1,128 @@
 /* General page styling */
 .image-checkoff-page {
-    background-color: #8ecae6;
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-    justify-content: space-between;
-    align-items: center;
-    text-align: center;
-    font-family: "Arial", sans-serif;
-    color: #023047; /* Deep blue for text */
-  }
-  
-  /* Top and bottom bars */
-  .top-bar,
-  .bottom-bar {
-    background-color: #fb8500;
-    color: white;
-    font-size: 24px;
-    font-weight: bold;
-    padding: 10px;
-    width: 100%;
-    text-align: center;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-  }
-  
-  /* Image checkoff content */
-  .image-checkoff {
-    flex-grow: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-  }
-  
-  .submission {
-    background: white;
-    border-radius: 12px;
-    padding: 20px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-    max-width: 400px;
-    text-align: center;
-  }
-  
-  .submission-image {
-    width: 100%;
-    border-radius: 8px;
-    margin-bottom: 15px;
-  }
-  
-  .submission-info h2 {
-    font-size: 20px;
-    margin-bottom: 8px;
-  }
-  
-  .submission-info p {
-    font-size: 16px;
-    margin-bottom: 15px;
-  }
-  
-  /* Action buttons */
-  .action-buttons button {
-    margin: 10px;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 16px;
-    font-weight: bold;
-  }
-  
-  .confirm-button {
-    background-color: #4caf50;
-    color: white;
-    transition: background-color 0.3s;
-  }
-  
-  .confirm-button:hover {
-    background-color: #388e3c;
-  }
-  
-  .deny-button {
-    background-color: #f44336;
-    color: white;
-    transition: background-color 0.3s;
-  }
-  
-  .deny-button:hover {
-    background-color: #d32f2f;
-  }
-  
-  /* Empty queue message */
-  .empty-queue {
-    font-size: 18px;
-    color: #555;
-  }
+  background-color: #8ecae6;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  justify-content: space-between;
+  align-items: center;
+  text-align: center;
+  font-family: "Arial", sans-serif;
+  color: #023047; /* Deep blue for text */
+}
+
+/* Top and bottom bars */
+.top-bar,
+.bottom-bar {
+  background-color: #fb8500;
+  color: white;
+  font-size: 24px;
+  font-weight: bold;
+  padding: 10px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* Image checkoff content */
+.image-checkoff {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.submission {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  max-width: 500px;
+  text-align: center;
+  position: relative;
+}
+
+.arrow-button {
+  background-color: #ffb703;
+  border: none;
+  border-radius: 50%;
+  width: 45px;
+  height: 45px;
+  cursor: pointer;
+  color: white;
+  font-size: 24px;
+  margin: 15px;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.arrow-button:hover {
+  box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
+  transform: translateY(-3px);
+}
+
+/* Image styling */
+.submission-image {
+  width: 100%;
+  height: auto;
+  max-height: 400px; 
+  object-fit: contain; 
+  margin-bottom: 15px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.submission-info h2 {
+  font-size: 20px;
+  margin-bottom: 8px;
+  color: #333;
+}
+
+.submission-info p {
+  font-size: 16px;
+  margin-bottom: 20px;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.action-buttons button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  transition: background-color 0.3s, box-shadow 0.3s;
+}
+
+.confirm-button {
+  background-color: #4caf50;
+  color: white;
+}
+
+.confirm-button:hover {
+  background-color: #388e3c;
+  box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
+}
+
+.deny-button {
+  background-color: #f44336;
+  color: white;
+}
+
+.deny-button:hover {
+  background-color: #d32f2f;
+  box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
+}
+
+.empty-queue {
+  font-size: 18px;
+  color: #555;
+  margin-top: 20px;
+}

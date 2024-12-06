@@ -20,6 +20,7 @@ function HostView() {
   const [invalidMessage, setInvalidMessage] = useState("");
   const [isCheckoffEnabled, setIsCheckoffEnabled] = useState(false);
   const [timeUpPopup, setTimeUpPopup] = useState(false);
+  const [lobbyId, setLobbyId] = useState<string | null>(null); 
 
   const navigate = useNavigate();
 
@@ -34,13 +35,10 @@ function HostView() {
 
     // Insert colons at the appropriate positions
     if (value.length <= 2) {
-      // Seconds only
       value = value;
     } else if (value.length <= 4) {
-      // Minutes and seconds
       value = value.replace(/(\d{1,2})(\d{2})/, "$1:$2");
     } else {
-      // Hours, minutes, and seconds
       value = value.replace(/(\d{1,2})(\d{2})(\d{2})/, "$1:$2:$3");
     }
 
@@ -48,7 +46,7 @@ function HostView() {
   };
 
   const convertTimeToSeconds = (time: string) => {
-    const timeParts = time.split(":").reverse(); // Reverse to start from seconds
+    const timeParts = time.split(":").reverse();
     let seconds = 0;
 
     if (timeParts[0]) {
@@ -133,7 +131,8 @@ function HostView() {
         const { lobbyId } = response.data;
         setSuccessMessage("Lobby created successfully!");
         setShowSuccessPopup(true);
-        setIsCheckoffEnabled(true); // Enable the checkoff button
+        setIsCheckoffEnabled(true);
+        setLobbyId(lobbyId); // Set the lobby ID to use for navigation
         setTimeout(() => setSuccessMessage(""), 8080);
       }
     } catch (error) {
@@ -155,7 +154,6 @@ function HostView() {
         if (prev <= 1) {
           clearInterval(interval);
           setTimeUpPopup(true);
-          // alert("Time's up!");
           return 0;
         }
         return prev - 1;
@@ -265,7 +263,7 @@ function HostView() {
           </button>
           <button
             className={`checkoff-button ${isCheckoffEnabled ? "" : "disabled"}`}
-            onClick={() => isCheckoffEnabled && navigate("/checkoff/{lobbyId}")}
+            onClick={() => isCheckoffEnabled && lobbyId && navigate(`/checkoff/${lobbyId}`)} // Navigate to the correct lobbyId
             disabled={!isCheckoffEnabled}
           >
             Checkoff Page
