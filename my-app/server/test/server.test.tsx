@@ -480,7 +480,7 @@ describe('/upload tests', () => {
     `);
     await db.run(`
       INSERT INTO player_items VALUES
-      ('Player 1', 1, 1, 0, '')
+      ('Player 1', 1, 1, 0, '', 0)
     `);
 
     // Read the contents of /uploads to get all images before new image is added
