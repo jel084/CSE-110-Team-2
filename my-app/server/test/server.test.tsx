@@ -270,14 +270,16 @@ describe('/join tests', () => {
       lobby_id: 1, 
       item_id: 1, 
       found: 0, 
-      image: '' 
+      image: '',
+      approved: 0
     });
     expect(player_items[1]).toMatchObject({ 
       player_id: 'Player 1', 
       lobby_id: 1, 
       item_id: 2, 
       found: 0, 
-      image: '' 
+      image: '', 
+      approved: 0
     });
   });    
 });
@@ -410,8 +412,8 @@ describe('/items tests', () => {
     expect(res.status).toBe(200);
     expect(res.data).toHaveLength(2);
     expect(res.data).toMatchObject([
-      {id: 1, name: "Triton Statue", points: 10, found: 0, image: ''},
-      {id: 2, name: "Sun God", points: 10, found: 1, image: 'test.jpg'}
+      {id: 1, name: "Triton Statue", points: 10, found: 0, image: '', approved: 0},
+      {id: 2, name: "Sun God", points: 10, found: 1, image: 'test.jpg', approved: 0}
     ]);
   });
 
@@ -510,7 +512,8 @@ describe('/upload tests', () => {
       lobby_id: 1,
       item_id: 1,
       found: 1,
-      image: `/uploads/${addedFiles[0]}`
+      image: `/uploads/${addedFiles[0]}`,
+      approved: 0
     });
     fs.unlinkSync(`uploads/${addedFiles[0]}`);
   });
@@ -604,7 +607,8 @@ describe('/deleteImage tests', () => {
       lobby_id: 1,
       item_id: 1,
       found: 0,
-      image: ''
+      image: '',
+      approved: 0
     });
   });
 
