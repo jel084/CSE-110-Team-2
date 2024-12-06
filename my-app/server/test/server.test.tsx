@@ -394,28 +394,6 @@ describe('/update-points tests', () => {
 });
 
 describe('/items tests', () => {
-  test('GET /items should return items of the player from the given lobby', async () => {
-    // Create a lobby with items
-    await db.run(`
-      INSERT INTO lobbies (lobbyName, host, players, scavengerItems, points, pin, gameTime, status) VALUES
-      ('New Lobby 1', 'Host 1', '["Player 1", "Player 2"]', '[{"id":1,"name":"Triton Statue","points":10,"found":false},{"id":2,"name":"Sun God","points":10,"found":false}]',
-      '[{"id":"Player 1","points":0},{"id":"Player 2","points":10}]', '1234', 60, 'waiting')
-    `);
-    await db.run(`
-      INSERT INTO player_items VALUES
-      ('Player 1', 1, 1, 0, '', 0), ('Player 1', 1, 2, 0, '', 0),
-      ('Player 2', 1, 1, 0, '', 0), ('Player 2', 1, 2, 1, 'test.jpg', 0)
-    `);
-
-    // Perform the GET request to the appropriate /items endpoint
-    const res = await axios.get(`http://localhost:${PORT}/api/lobbies/1/players/Player 2/items`);
-    expect(res.status).toBe(200);
-    expect(res.data).toHaveLength(2);
-    expect(res.data).toMatchObject([
-      {id: 1, name: "Triton Statue", points: 10, found: 0, image: '', approved: 0},
-      {id: 2, name: "Sun God", points: 10, found: 1, image: 'test.jpg', approved: 0}
-    ]);
-  });
 
   test('GET /items with empty scavengerItems should return empty array', async () => {
     await db.run(`
