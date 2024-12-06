@@ -579,7 +579,7 @@ describe('/deleteImage tests', () => {
     `);
     await db.run(`
       INSERT INTO player_items VALUES
-      ('Player 1', 1, 1, 1, 'uploads/test.jpg')
+      ('Player 1', 1, 1, 1, 'uploads/test.jpg', 0)
     `);
 
     // Copy an image to the uploads file
@@ -619,8 +619,8 @@ describe('/deleteImage tests', () => {
       '[{"id":"Player 1","points":0}]', '1234', 60, 'waiting')
     `);
     await db.run(`
-      INSERT INTO player_items (player_id, lobby_id, item_id, found, image) VALUES
-      ('Player 1', 1, 1, false, '')
+      INSERT INTO player_items (player_id, lobby_id, item_id, found, image, approved) VALUES
+      ('Player 1', 1, 1, false, '', 0)
     `);
   
     try {
